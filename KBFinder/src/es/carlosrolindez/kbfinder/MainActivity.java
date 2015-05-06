@@ -2,7 +2,10 @@ package es.carlosrolindez.kbfinder;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,10 +13,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ListView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private static String TAG = "Main Activity";
+	
+	private boolean namesReceiver = false;
 
     private BluetoothAdapter mBluetoothAdapter = null;
 	
@@ -32,17 +38,6 @@ public class MainActivity extends Activity {
 		    finish();
 		}		
 		
-		
-/*		ArrayList<KBdevice> deviceList = new ArrayList<KBdevice>();
-		
-	
-
-		KBdeviceListAdapter deviceListAdapter = new KBdeviceListAdapter(this,deviceList);
-		ListView list = (ListView)findViewById(R.id.list);  
-        list.setAdapter(deviceListAdapter);
-        list.setOnItemClickListener(onItemClickListener);  */
-        
- //       showResultSet(productList);
     }
 	
     @Override
@@ -63,8 +58,18 @@ public class MainActivity extends Activity {
     public void onResume() {
         super.onResume();
 
-        Log.d(TAG, "onResume");
 
+        Log.d(TAG, "onResume");
+        
+		if (!namesReceiver) {
+			IntentFilter filter = new IntentFilter(Constants.NameFilter);
+			registerReceiver(receiverBtNames, filter);
+			namesReceiver = true;
+		}
+
+
+        A2dpService.searchBtPairedNames(this);
+        
        // Performing this check in onResume() covers the case in which BT was
         // not enabled during onStart(), so we were paused to enable it...
         // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
@@ -137,4 +142,23 @@ public class MainActivity extends Activity {
 		}
 		return super.onOptionsItemSelected(item);
 	}
+	
+	BroadcastReceiver receiverBtNames = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			/*		ArrayList<KBdevice> deviceList = new ArrayList<KBdevice>();*/
+			
+			
+
+			KBdeviceListAdapter deviceListAdapter = new KBdeviceListAdapter(context, A2dpService.deviceList);
+			ListView list = (ListView)findViewById(R.id.list);  
+	        list.setAdapter(deviceListAdapter);
+	        list.setOnItemClickListener(onItemClickListener);  
+	        
+	 //       showResultSet(productList);
+		}
+
+	};
+
 }

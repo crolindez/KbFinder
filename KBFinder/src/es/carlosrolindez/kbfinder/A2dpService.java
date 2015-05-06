@@ -27,11 +27,11 @@ public class A2dpService {
 	private static boolean mBtIsBound = false;
 	private static boolean mBtA2dpIsBound = false;
 	
-	public ArrayList<KBdevice> deviceList = new ArrayList<KBdevice>();
+	public static ArrayList<KBdevice> deviceList = new ArrayList<KBdevice>();
 	
 	
 
-	public void searchBtPairedNames(Context context) {
+	public static void searchBtPairedNames(Context context) {
 		Intent intent = new Intent(IBluetooth.class.getName());
 		mContextBt = context;
 		if (!mBtIsBound) {
@@ -45,7 +45,7 @@ public class A2dpService {
 		}
 	}
 
-	public ServiceConnection mBtServiceConnection = new ServiceConnection() {
+	public static ServiceConnection mBtServiceConnection = new ServiceConnection() {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
@@ -62,11 +62,12 @@ public class A2dpService {
 
 	};
 
-	private void sendNames() {
+	private static void sendNames() {
 		BluetoothAdapter mBTA = BluetoothAdapter.getDefaultAdapter();
 
 		if (mBTA != null) {
 			Set<BluetoothDevice> pairedDevices = mBTA.getBondedDevices();
+			deviceList.clear();
 
 			if (pairedDevices.size() > 0) {
 				
@@ -92,7 +93,7 @@ public class A2dpService {
 		mContextBt.sendBroadcast(intent);
 	}
 
-	public void startA2dp(Context context) {
+	public static void startA2dp(Context context) {
 
 		mContextBtA2dp = context;
 		Intent i = new Intent(IBluetoothA2dp.class.getName());
@@ -105,13 +106,13 @@ public class A2dpService {
 
 	}
 
-	private void sendA2dpConnection() {
+	private static void sendA2dpConnection() {
 		Intent intent = new Intent();
 		intent.setAction(Constants.a2dpFilter);
 		mContextBtA2dp.sendBroadcast(intent);
 	};
 
-	public ServiceConnection mBtA2dpServiceConnection = new ServiceConnection() {
+	public static ServiceConnection mBtA2dpServiceConnection = new ServiceConnection() {
 
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
@@ -129,7 +130,7 @@ public class A2dpService {
 
 	};
 
-	public void doUnbindServiceBt() {
+	public static void doUnbindServiceBt() {
 		if (mBtIsBound) {
 			try {
 				mContextBt.unbindService(mBtServiceConnection);
@@ -143,7 +144,7 @@ public class A2dpService {
 
 	}
 	
-	public void doUnbindServiceBtA2dp() {
+	public static void doUnbindServiceBtA2dp() {
 		if (mBtA2dpIsBound) {
 			try {
 				mContextBtA2dp.unbindService(mBtA2dpServiceConnection);

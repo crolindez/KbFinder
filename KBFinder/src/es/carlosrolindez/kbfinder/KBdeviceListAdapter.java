@@ -19,10 +19,10 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	private LayoutInflater inflater;
 	private ArrayList<KBdevice> mKBdeviceList;
 	
-	public KBdeviceListAdapter(Activity activity,ArrayList<KBdevice> deviceList)
+	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList)
 	{
 		mKBdeviceList = deviceList;
-		inflater = (LayoutInflater)activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
 	
 	@Override
