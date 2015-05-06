@@ -31,5 +31,8 @@ public interface Constants {
     // Key names from A2dpService
 	public static final String a2dpFilter = "es.carlosrolindez.A2dpService.FILTER";
 	public static final String NameFilter = "es.carlosrolindez.A2dpService.NAME";
+	
+    // Intent request codes
+	public static final int REQUEST_ENABLE_BT = 1;
 
 }
