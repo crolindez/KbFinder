@@ -1,5 +1,7 @@
 package es.carlosrolindez.kbfinder;
 
+import java.util.ArrayList;
+
 
 
 public class KBdevice  {
@@ -26,6 +28,14 @@ public class KBdevice  {
 		deviceType = type;
 		deviceName = name;
 		deviceMAC = MAC;
+	}
+	
+	public boolean deviceInArray(ArrayList<KBdevice> deviceList) {
+		for (KBdevice device : deviceList)
+		{
+			if (deviceMAC.equals(device.deviceMAC)) return true;
+		}
+		return false;
 	}
 
 }
