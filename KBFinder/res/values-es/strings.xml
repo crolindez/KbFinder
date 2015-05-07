@@ -4,4 +4,5 @@
 	<string name="action_settings">Configuración</string>
 	<string name="bt_not_availabe">Bluetooth no disponible</string>
 	<string name="bt_not_enabled">Bluetooth no habilitado</string>
+	<string name="button_scan">Buscar equipos KBsound</string>
 </resources>
