@@ -18,7 +18,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity {
+public class KBfinder extends Activity {
 	private static String TAG = "Main Activity";
 	
 	private boolean namesReceiver = false;
