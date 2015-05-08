@@ -81,8 +81,9 @@ public class A2dpService {
 					}
 					if (currentName == null)
 						currentName = device.getName();
-					KBdevice kbdevice = new KBdevice(KBdevice.IN_WALL,currentName,device.getAddress());
-					deviceList.add(kbdevice);
+					KBdevice kbdevice = new KBdevice(currentName,device.getAddress());
+					if (kbdevice.deviceType != KBdevice.OTHER)
+						deviceList.add(kbdevice);
 					
 				}
 			}

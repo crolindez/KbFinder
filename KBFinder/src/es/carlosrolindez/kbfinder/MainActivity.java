@@ -211,8 +211,9 @@ public class MainActivity extends Activity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // If it's already paired, skip it, because it's been listed already
                 if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-					KBdevice kbdevice = new KBdevice(KBdevice.IN_WALL,device.getName(),device.getAddress());
+					KBdevice kbdevice = new KBdevice(device.getName(),device.getAddress());
                 	if (kbdevice.deviceInArray(A2dpService.deviceList)) return;
+					if (kbdevice.deviceType == KBdevice.OTHER) return;
 					A2dpService.deviceList.add(kbdevice);
 					deviceListAdapter.notifyDataSetChanged();
 					

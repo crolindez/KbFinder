@@ -83,14 +83,19 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		switch (device.deviceType)
 		{
 		case KBdevice.IN_WALL:
+			imageDeviceType.setVisibility(View.VISIBLE);
 			imageDeviceType.setImageResource(R.drawable.inwall);
 			break;
 		case KBdevice.ISELECT:
+			imageDeviceType.setVisibility(View.VISIBLE);
 			imageDeviceType.setImageResource(R.drawable.iselect);
 			break;
 		case KBdevice.SELECTBT:
+			imageDeviceType.setVisibility(View.VISIBLE);
 			imageDeviceType.setImageResource(R.drawable.selectbt);
 			break;		
+		default:
+			imageDeviceType.setVisibility(View.INVISIBLE);
 		}
 		
 		deviceName.setText(device.deviceName);
