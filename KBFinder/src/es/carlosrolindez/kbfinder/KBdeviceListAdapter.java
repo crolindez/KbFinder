@@ -4,6 +4,7 @@ package es.carlosrolindez.kbfinder;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -101,37 +102,15 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		deviceName.setText(device.deviceName);
 		deviceMAC.setText(device.deviceMAC);
 
-	
-/*		if ( (product.itemMode==NavisionTool.LOADER_PRODUCT_BOM) || (product.itemMode==NavisionTool.LOADER_PRODUCT_IN_USE) )
-		{	
-			purchaseValue =  Float.parseFloat(product.purchase);
-			inProductionValue =  Float.parseFloat(product.inProduction);
-			saleValue =  Float.parseFloat(product.sale);
-			usedInProductionValue =  Float.parseFloat(product.usedInProduction);
-			transferValue =  Float.parseFloat(product.transfer);
-			orderPointValue = Float.parseFloat(product.orderPoint);
-            if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
-                if ((stockValue + purchaseValue + inProductionValue) < (saleValue + transferValue + usedInProductionValue))
-                    localView.setBackgroundDrawable(localView.getResources().getDrawable(R.drawable.consume_bg));
-                else if ((stockValue + inProductionValue) < (saleValue + transferValue + usedInProductionValue))
-                    localView.setBackgroundDrawable(localView.getResources().getDrawable(R.drawable.stock_bg));
-                else if ((stockValue + purchaseValue + inProductionValue) < (saleValue + transferValue + usedInProductionValue + orderPointValue))
-                    localView.setBackgroundDrawable(localView.getResources().getDrawable(R.drawable.danger_bg));
-                else
-                    localView.setBackgroundDrawable(localView.getResources().getDrawable(R.drawable.cost_bg));
-            }
-            else {
-                if ((stockValue + purchaseValue + inProductionValue) < (saleValue + transferValue + usedInProductionValue))
-                    drawResourceInView(R.drawable.consume_bg,localView);
-                else if ((stockValue + inProductionValue) < (saleValue + transferValue + usedInProductionValue))
-                    drawResourceInView(R.drawable.stock_bg,localView);
-                else if ((stockValue + purchaseValue + inProductionValue) < (saleValue + transferValue + usedInProductionValue + orderPointValue))
-                    drawResourceInView(R.drawable.danger_bg,localView);
-                else
-                    drawResourceInView(R.drawable.cost_bg,localView);
-            }
-		}				
-		*/
+		if (device.connected) {
+			localView.setBackgroundColor(Color.BLACK);
+			deviceName.setTextColor(Color.WHITE);
+			deviceMAC.setTextColor(Color.WHITE);
+		} else {
+			localView.setBackgroundColor(Color.WHITE);
+			deviceName.setTextColor(Color.BLACK);
+			deviceMAC.setTextColor(Color.BLACK);
+		}
 		
 
 		return localView;

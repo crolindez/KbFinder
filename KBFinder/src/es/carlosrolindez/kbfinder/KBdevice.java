@@ -70,13 +70,10 @@ public class KBdevice  {
 		}	
 	}
 	
-	public static void disconnectDeviceInArray(String MAC,ArrayList<KBdevice> deviceList) {
+	public static void disconnectDevices(ArrayList<KBdevice> deviceList) {
 		for (KBdevice device : deviceList)
 		{
-			if (MAC.equals(device.deviceMAC)) {
-				device.connected = false;
-				return;
-			}
+			device.connected = false;
 		}	
 	}
 

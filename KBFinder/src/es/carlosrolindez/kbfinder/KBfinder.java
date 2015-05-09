@@ -81,21 +81,10 @@ public class KBfinder extends Activity {
 
 			
 			namesReceiver = true;
+			
+	        A2dpService.searchBtPairedNames(this);
 		}
 		
-
-        A2dpService.searchBtPairedNames(this);
-        
-       // Performing this check in onResume() covers the case in which BT was
-        // not enabled during onStart(), so we were paused to enable it...
-        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
-/*        if (mChatService != null) {
-            // Only if the state is STATE_NONE, do we know that we haven't started already
-            if (mChatService.getState() == BluetoothChatService.STATE_NONE) {
-                // Start the Bluetooth chat services
-                mChatService.start();
-            }
-        }*/
     }
 
     
@@ -106,13 +95,10 @@ public class KBfinder extends Activity {
             case Constants.REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
-                    // Bluetooth is now enabled, so set up a chat session
-//                    setupChat();
+
                 } else {
-                    // User did not enable Bluetooth or an error occurred
                     Log.d(TAG, "BT not enabled");
-                    Toast.makeText(this, R.string.bt_not_enabled,
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.bt_not_enabled,Toast.LENGTH_SHORT).show();
                     finish();
                 }
         }
@@ -210,7 +196,9 @@ public class KBfinder extends Activity {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 // If it's already paired, skip it, because it's been listed already
-                if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
+                /*if (device.getBondState() != BluetoothDevice.BOND_BONDED) */
+                // TODO
+                {
 					KBdevice kbdevice = new KBdevice(device.getName(),device.getAddress());
                 	if (kbdevice.deviceInArray(A2dpService.deviceList)) return;
 					if (kbdevice.deviceType == KBdevice.OTHER) return;
@@ -232,10 +220,12 @@ public class KBfinder extends Activity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);    
                 KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
                 Toast.makeText(getApplicationContext(), device.getName() + " Connected", Toast.LENGTH_SHORT).show();
+				deviceListAdapter.notifyDataSetChanged();
             } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
-                KBdevice.disconnectDeviceInArray(device.getAddress(),A2dpService.deviceList);
+                KBdevice.disconnectDevices(A2dpService.deviceList);
                 Toast.makeText(getApplicationContext(), device.getName() + " Disconnected", Toast.LENGTH_SHORT).show();
+				deviceListAdapter.notifyDataSetChanged();
             }
 
 		}
