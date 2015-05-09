@@ -67,22 +67,22 @@ public class KBfinder extends Activity {
         Log.d(TAG, "onResume");
         
 		if (!namesReceiver) {
-			IntentFilter filter = new IntentFilter(Constants.NameFilter);
-			registerReceiver(receiverBtNames, filter);
-			
-	        // Register for broadcasts when a device is discovered
-	        filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-	        this.registerReceiver(receiverBtNames, filter);
+			IntentFilter filter1 = new IntentFilter(Constants.NameFilter);
+			IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+	        IntentFilter filter3 = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
+	        IntentFilter filter4 = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+	        IntentFilter filter5 = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
 
-	        // Register for broadcasts when discovery has finished
-	        filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-	        this.registerReceiver(receiverBtNames, filter);
+	        this.registerReceiver(mBtReceiver, filter1);
+	        this.registerReceiver(mBtReceiver, filter2);
+	        this.registerReceiver(mBtReceiver, filter3);	  
+	        this.registerReceiver(mBtReceiver, filter4);	
+	        this.registerReceiver(mBtReceiver, filter5);	
+
 			
 			namesReceiver = true;
 		}
 		
-
-
 
         A2dpService.searchBtPairedNames(this);
         
@@ -159,7 +159,7 @@ public class KBfinder extends Activity {
 	protected void onDestroy() {
 		try {
 			if (namesReceiver) {
-				unregisterReceiver(receiverBtNames);
+				unregisterReceiver(mBtReceiver);
 				namesReceiver = false;
 			}
 			A2dpService.doUnbindServiceBt();
@@ -198,7 +198,7 @@ public class KBfinder extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	BroadcastReceiver receiverBtNames = new BroadcastReceiver() {
+	BroadcastReceiver mBtReceiver = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
