@@ -228,7 +228,16 @@ public class KBfinder extends Activity {
 				ListView list = (ListView)findViewById(R.id.list);  
 				list.setAdapter(deviceListAdapter);
 				list.setOnItemClickListener(onItemClickListener);  
-			}
+			} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);    
+                KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
+                Toast.makeText(getApplicationContext(), device.getName() + " Connected", Toast.LENGTH_SHORT).show();
+            } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
+                KBdevice.disconnectDeviceInArray(device.getAddress(),A2dpService.deviceList);
+                Toast.makeText(getApplicationContext(), device.getName() + " Disconnected", Toast.LENGTH_SHORT).show();
+            }
+
 		}
 
 	};
