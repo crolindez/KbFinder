@@ -23,17 +23,20 @@ public class KBdevice  {
 	public int deviceType;
 	public String deviceName;
 	public String deviceMAC;
+	public boolean connected;
 
 	
 	public KBdevice () 	{
 		deviceType = OTHER;
 		deviceName = "";
 		deviceMAC = "";
+		connected = false;
 	}
 	
 	public KBdevice(String name, String MAC) {
 		deviceName = name;
 		deviceMAC = MAC;
+		connected = false;
 
 		deviceType = getDeviceType(MAC);
 		Log.e(TAG,MAC + ": " + deviceType);
@@ -56,5 +59,27 @@ public class KBdevice  {
 		return OTHER;
 		
 	}
+	
+	public static void connectDeviceInArray(String MAC,ArrayList<KBdevice> deviceList) {
+		for (KBdevice device : deviceList)
+		{
+			if (MAC.equals(device.deviceMAC)) {
+				device.connected = true;
+				return;
+			}
+		}	
+	}
+	
+	public static void disconnectDeviceInArray(String MAC,ArrayList<KBdevice> deviceList) {
+		for (KBdevice device : deviceList)
+		{
+			if (MAC.equals(device.deviceMAC)) {
+				device.connected = false;
+				return;
+			}
+		}	
+	}
+
+
 
 }
