@@ -62,24 +62,31 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
 	{	
-		final KBdevice device;
+		final KBdevice device =  mKBdeviceList.get(position);
 		
 	    if (mKBdeviceList == null)
 	    	return null;
 	    
 		View localView = convertView;
-		
-		if (localView==null)
-		{
+	
+		if (device.connected) {
+			localView = inflater.inflate(R.layout.device_list_connected_row, parent, false);
+
+		} else {
 			localView = inflater.inflate(R.layout.device_list_row, parent, false);
 		}
+	
+	/*	if (localView==null)
+		{
+			localView = inflater.inflate(R.layout.device_list_row, parent, false);
+		}*/
 		
 		ImageView imageDeviceType = (ImageView)localView.findViewById(R.id.device_type);
 
 		TextView deviceName = (TextView)localView.findViewById(R.id.device_name);
 		TextView deviceMAC = (TextView)localView.findViewById(R.id.device_mac);
 
-		device = mKBdeviceList.get(position);
+
 		
 		switch (device.deviceType)
 		{
@@ -102,7 +109,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		deviceName.setText(device.deviceName);
 		deviceMAC.setText(device.deviceMAC);
 
-		if (device.connected) {
+	/*	if (device.connected) {
 			localView.setBackgroundResource(R.drawable.connected_selector);
 			deviceName.setTextColor(Color.WHITE);
 			deviceMAC.setTextColor(Color.WHITE);
@@ -110,7 +117,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 			localView.setBackgroundResource(R.drawable.notconnected_selector);
 			deviceName.setTextColor(Color.BLACK);
 			deviceMAC.setTextColor(Color.BLACK);
-		}
+		}*/
 		
         
 		
