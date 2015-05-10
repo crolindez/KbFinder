@@ -103,14 +103,16 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		deviceMAC.setText(device.deviceMAC);
 
 		if (device.connected) {
-			localView.setBackgroundColor(Color.BLACK);
+			localView.setBackgroundResource(R.drawable.connected_selector);
 			deviceName.setTextColor(Color.WHITE);
 			deviceMAC.setTextColor(Color.WHITE);
 		} else {
-			localView.setBackgroundColor(Color.WHITE);
+			localView.setBackgroundResource(R.drawable.notconnected_selector);
 			deviceName.setTextColor(Color.BLACK);
 			deviceMAC.setTextColor(Color.BLACK);
 		}
+		
+        
 		
 
 		return localView;

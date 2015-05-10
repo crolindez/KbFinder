@@ -2,7 +2,8 @@ package es.carlosrolindez.kbfinder;
 
 import java.util.ArrayList;
 
-import android.util.Log;
+import android.bluetooth.BluetoothDevice;
+
 
 
 
@@ -24,6 +25,7 @@ public class KBdevice  {
 	public String deviceName;
 	public String deviceMAC;
 	public boolean connected;
+	BluetoothDevice mDevice;
 
 	
 	public KBdevice () 	{
@@ -31,24 +33,26 @@ public class KBdevice  {
 		deviceName = "";
 		deviceMAC = "";
 		connected = false;
+		mDevice = null;
 	}
 	
-	public KBdevice(String name, String MAC) {
+	public KBdevice(String name, BluetoothDevice device) {
 		deviceName = name;
-		deviceMAC = MAC;
+		deviceMAC = device.getAddress();
 		connected = false;
+		mDevice = device;
 
-		deviceType = getDeviceType(MAC);
-		Log.e(TAG,MAC + ": " + deviceType);
+		deviceType = getDeviceType(deviceMAC);
+
 
 	}
 	
-	public boolean deviceInArray(ArrayList<KBdevice> deviceList) {
+	public static BluetoothDevice deviceInArray(ArrayList<KBdevice> deviceList, String MAC) {
 		for (KBdevice device : deviceList)
 		{
-			if (deviceMAC.equals(device.deviceMAC)) return true;
+			if (MAC.equals(device.deviceMAC)) return device.mDevice;
 		}
-		return false;
+		return null;
 	}
 	
 	private int getDeviceType(String deviceMAC) {
@@ -70,10 +74,13 @@ public class KBdevice  {
 		}	
 	}
 	
-	public static void disconnectDevices(ArrayList<KBdevice> deviceList) {
+	public static void disconnectDevices(String MAC,ArrayList<KBdevice> deviceList) {
 		for (KBdevice device : deviceList)
 		{
-			device.connected = false;
+			if (MAC.equals(device.deviceMAC)) {
+				device.connected = false;
+				return;
+			}
 		}	
 	}
 

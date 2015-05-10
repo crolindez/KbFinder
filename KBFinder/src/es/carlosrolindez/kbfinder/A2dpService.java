@@ -18,7 +18,7 @@ import android.util.Log;
 public class A2dpService {
 	private static String TAG = "A2DP Service";
 
-	private static IBluetoothA2dp iBtA2dp = null;
+	public static IBluetoothA2dp iBtA2dp = null;
 	private static IBluetooth iBt = null;
 	
 	private static Context mContextBt;
@@ -81,7 +81,7 @@ public class A2dpService {
 					}
 					if (currentName == null)
 						currentName = device.getName();
-					KBdevice kbdevice = new KBdevice(currentName,device.getAddress());
+					KBdevice kbdevice = new KBdevice(currentName,device);
 					if (kbdevice.deviceType != KBdevice.OTHER)
 						deviceList.add(kbdevice);
 					

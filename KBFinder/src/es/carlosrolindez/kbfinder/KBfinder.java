@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -21,11 +22,14 @@ import android.widget.Toast;
 public class KBfinder extends Activity {
 	private static String TAG = "Main Activity";
 	
-	private boolean namesReceiver = false;
+	private boolean namesReceiverRegistered = false;
+	private boolean a2dpReceiverRegistered = false;
 
     private BluetoothAdapter mBluetoothAdapter = null;
     
     private KBdeviceListAdapter deviceListAdapter = null;
+    
+    private String connectingMAC;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -66,21 +70,21 @@ public class KBfinder extends Activity {
 
         Log.d(TAG, "onResume");
         
-		if (!namesReceiver) {
+		if (!namesReceiverRegistered) {
 			IntentFilter filter1 = new IntentFilter(Constants.NameFilter);
-			IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-	        IntentFilter filter3 = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
-	        IntentFilter filter4 = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED);
+			IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);			
+			IntentFilter filter3 = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);			
+	        IntentFilter filter4 = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
 	        IntentFilter filter5 = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
 
 	        this.registerReceiver(mBtReceiver, filter1);
 	        this.registerReceiver(mBtReceiver, filter2);
 	        this.registerReceiver(mBtReceiver, filter3);	  
 	        this.registerReceiver(mBtReceiver, filter4);	
-	        this.registerReceiver(mBtReceiver, filter5);	
+	        this.registerReceiver(mBtReceiver, filter5);		        
 
 			
-			namesReceiver = true;
+	        namesReceiverRegistered = true;
 			
 	        A2dpService.searchBtPairedNames(this);
 		}
@@ -111,48 +115,22 @@ public class KBfinder extends Activity {
 		@Override
     	public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
     	{ 			
-/*	    	Intent intent = new Intent (view.getContext(), InfoActivity.class);
-	        Product product = (Product)parent.getItemAtPosition(position);
-        	intent.putExtra(NavisionTool.LAUNCH_REFERENCE, product.reference);        	
-        	intent.putExtra(NavisionTool.LAUNCH_DESCRIPTION, product.description);  
-        	intent.putExtra(NavisionTool.LAUNCH_INFO_MODE, NavisionTool.INFO_MODE_SUMMARY);
-        	startActivity(intent);*/
-        	
-           // Cancel discovery because it's costly and we're about to connect
 			mBluetoothAdapter.cancelDiscovery();
-
-    /*        // Get the device MAC address, which is the last 17 chars in the View
-            String info = ((TextView) v).getText().toString();
-            String address = info.substring(info.length() - 17);
-
-            // Create the result Intent and include the MAC address
-            Intent intent = new Intent();
-            intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
-
-            // Set result and finish this Activity
-            setResult(Activity.RESULT_OK, intent);
-            finish();
-            
-        	*/
-        	
-//        	Toast.makeText(view.getContext(), "List Item", Toast.LENGTH_SHORT).show();ç
-			
+			KBdevice device = (KBdevice)parent.getItemAtPosition(position);
+			connectBluetoothA2dp(device.deviceMAC);		
     	}
 	};
   
 		
 	@Override
 	protected void onDestroy() {
-		try {
-			if (namesReceiver) {
-				unregisterReceiver(mBtReceiver);
-				namesReceiver = false;
-			}
-			A2dpService.doUnbindServiceBt();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		a2dpDone();
+		
+		if (namesReceiverRegistered) {
+			unregisterReceiver(mBtReceiver);
+			namesReceiverRegistered = false;
 		}
+		A2dpService.doUnbindServiceBt();
 		super.onDestroy();
 	}
 		
@@ -184,7 +162,19 @@ public class KBfinder extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	BroadcastReceiver mBtReceiver = new BroadcastReceiver() {
+	private void connectBluetoothA2dp(String deviceMAC) {
+		connectingMAC = deviceMAC;
+		
+		if (!a2dpReceiverRegistered) {
+			IntentFilter filter1 = new IntentFilter(Constants.a2dpFilter);
+			registerReceiver(mA2dpReceiver, filter1);
+			a2dpReceiverRegistered = true;
+		}
+		A2dpService.startA2dp(this);
+
+	}
+	
+	private final BroadcastReceiver mBtReceiver = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -195,12 +185,11 @@ public class KBfinder extends Activity {
                 Log.e(TAG, "ACTION_FOUND");
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                // If it's already paired, skip it, because it's been listed already
-                /*if (device.getBondState() != BluetoothDevice.BOND_BONDED) */
+                device.fetchUuidsWithSdp();
                 // TODO
                 {
-					KBdevice kbdevice = new KBdevice(device.getName(),device.getAddress());
-                	if (kbdevice.deviceInArray(A2dpService.deviceList)) return;
+					KBdevice kbdevice = new KBdevice(device.getName(), device);
+                	if (KBdevice.deviceInArray(A2dpService.deviceList, device.getAddress())!=null) return;
 					if (kbdevice.deviceType == KBdevice.OTHER) return;
 					A2dpService.deviceList.add(kbdevice);
 					deviceListAdapter.notifyDataSetChanged();
@@ -219,12 +208,12 @@ public class KBfinder extends Activity {
 			} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);    
                 KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
-                Toast.makeText(getApplicationContext(), device.getName() + " Connected", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getApplicationContext(), device.getName() + " Connected", Toast.LENGTH_SHORT).show();
 				deviceListAdapter.notifyDataSetChanged();
             } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
-                KBdevice.disconnectDevices(A2dpService.deviceList);
-                Toast.makeText(getApplicationContext(), device.getName() + " Disconnected", Toast.LENGTH_SHORT).show();
+                KBdevice.disconnectDevices(device.getAddress(),A2dpService.deviceList);
+//                Toast.makeText(getApplicationContext(), device.getName() + " Disconnected", Toast.LENGTH_SHORT).show();
 				deviceListAdapter.notifyDataSetChanged();
             }
 
@@ -232,6 +221,55 @@ public class KBfinder extends Activity {
 
 	};
 	
+	private final BroadcastReceiver mA2dpReceiver = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context arg0, Intent arg1) {
+			new connectA2dpTask().execute(connectingMAC);
+		}
+
+	};
+
+	private class connectA2dpTask extends AsyncTask<String, Void, Boolean> {
+
+
+		@Override
+		protected void onPostExecute(Boolean result) {
+
+			super.onPostExecute(result);
+			a2dpDone();
+		}
+
+		BluetoothAdapter bta = BluetoothAdapter.getDefaultAdapter();
+
+		protected void onPreExecute() {
+
+		}
+
+		@Override
+		protected Boolean doInBackground(String... arg0) {
+			
+			BluetoothDevice device;
+
+			BluetoothAdapter mBTA = BluetoothAdapter.getDefaultAdapter();
+			if (mBTA == null || !mBTA.isEnabled())
+				return false;
+			if   ((device = KBdevice.deviceInArray(A2dpService.deviceList, arg0[0])) == null) return false;
+
+			try {
+				if (A2dpService.iBtA2dp != null && A2dpService.iBtA2dp.getConnectionState(device) == 0)
+					A2dpService.iBtA2dp.connect(device);
+				else
+					A2dpService.iBtA2dp.disconnect(device);
+
+			} catch (Exception e) {
+
+			}
+
+			return true;
+		}
+
+	}	
     /**
      * Start device discover with the BluetoothAdapter
      */
@@ -244,6 +282,16 @@ public class KBfinder extends Activity {
         // Request discover from BluetoothAdapter
         mBluetoothAdapter.startDiscovery();
     }
+    
+	private void a2dpDone() {
+		if (a2dpReceiverRegistered) {
+			unregisterReceiver(mA2dpReceiver);
+			a2dpReceiverRegistered = false;
+		}
+		A2dpService.doUnbindServiceBtA2dp();
+
+	}
+
 
 
 }
