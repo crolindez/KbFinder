@@ -69,24 +69,19 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	    
 		View localView = convertView;
 	
-		if (device.connected) {
-			localView = inflater.inflate(R.layout.device_list_connected_row, parent, false);
-
-		} else {
-			localView = inflater.inflate(R.layout.device_list_row, parent, false);
-		}
-	
-	/*	if (localView==null)
+		if (localView==null)
 		{
 			localView = inflater.inflate(R.layout.device_list_row, parent, false);
-		}*/
+		}
 		
 		ImageView imageDeviceType = (ImageView)localView.findViewById(R.id.device_type);
 
 		TextView deviceName = (TextView)localView.findViewById(R.id.device_name);
 		TextView deviceMAC = (TextView)localView.findViewById(R.id.device_mac);
 
-
+		ImageView button_previous = (ImageView)localView.findViewById(R.id.previous);
+		ImageView button_play_pause = (ImageView)localView.findViewById(R.id.play_pause);
+		ImageView button_next = (ImageView)localView.findViewById(R.id.next);
 		
 		switch (device.deviceType)
 		{
@@ -109,17 +104,30 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		deviceName.setText(device.deviceName);
 		deviceMAC.setText(device.deviceMAC);
 
-	/*	if (device.connected) {
-			localView.setBackgroundResource(R.drawable.connected_selector);
+		if (device.connected) {
+//			localView.setBackgroundResource(R.drawable.connected_selector);
+			button_previous.setVisibility(View.VISIBLE);
+			button_play_pause.setVisibility(View.VISIBLE);
+			button_next.setVisibility(View.VISIBLE);
 			deviceName.setTextColor(Color.WHITE);
 			deviceMAC.setTextColor(Color.WHITE);
 		} else {
-			localView.setBackgroundResource(R.drawable.notconnected_selector);
+//			localView.setBackgroundResource(R.drawable.notconnected_selector);
+			button_previous.setVisibility(View.GONE);
+			button_play_pause.setVisibility(View.GONE);
+			button_next.setVisibility(View.GONE);
 			deviceName.setTextColor(Color.BLACK);
 			deviceMAC.setTextColor(Color.BLACK);
-		}*/
+		}
 		
-        
+		/*		if (device.connected) {
+		localView = inflater.inflate(R.layout.device_list_connected_row, parent, false);
+
+	} else {
+		localView = inflater.inflate(R.layout.device_list_row, parent, false);
+	}
+*/
+
 		
 
 		return localView;

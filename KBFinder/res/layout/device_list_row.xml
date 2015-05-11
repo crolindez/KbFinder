@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content" 
-    android:background="@drawable/notconnected_selector">
-
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:background="@drawable/notconnected_selector" >
     <ImageView
         android:id="@+id/device_type"
         android:layout_alignParentLeft="true"
-        android:layout_centerVertical="true"
+        android:layout_alignParentTop="true"
         android:layout_width="120dp" 
         android:layout_height="64dp" /> 
 	<TextView
@@ -17,9 +16,9 @@
 		android:layout_alignParentTop="true"
 		android:layout_toRightOf="@id/device_type"
 		android:gravity="center_vertical|center_horizontal"
-		android:paddingLeft="5dip"
-		android:text=""
-		android:textColor="#040404"
+		android:paddingLeft="5dp"
+		android:text="asdafsdf"
+		android:textColor="#ffffff"
 		android:textSize="18sp"
 		android:textStyle="bold"
 		android:typeface="sans" />
@@ -27,14 +26,45 @@
     	android:id="@+id/device_mac"
     	android:layout_width="180dp"
     	android:layout_height="32dp"
-    	android:layout_alignParentBottom="true"
-    	android:layout_centerHorizontal="false"
+		android:layout_below="@id/device_name"
     	android:layout_toRightOf="@id/device_type"
     	android:gravity="center_vertical|center_horizontal"
-    	android:paddingLeft="5dip"
-    	android:text=""
-    	android:textColor="#040404"
+    	android:paddingLeft="5dp"
+    	android:text="asdfasdf"
+    	android:textColor="#ffffff"
     	android:textSize="12sp"
     	android:textStyle="normal"
     	android:typeface="sans" />
+	<ImageButton
+		android:id="@+id/play_pause"
+		android:layout_width="48dp"
+		android:layout_height="48dp"
+		android:layout_below="@id/device_type"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="10dp"	
+		android:layout_marginLeft="1dp"
+		android:layout_marginRight="1dp"
+		android:layout_marginBottom="10dp"		
+		android:background="@drawable/play_pause_selector" 
+		android:visibility="gone" />
+   	<ImageButton
+        android:id="@+id/previous"
+		android:layout_below="@id/device_type"
+		android:layout_toLeftOf="@id/play_pause"
+		android:layout_marginTop="10dp"	
+        android:layout_width="48dp" 
+        android:layout_height="48dp" 
+		android:layout_marginBottom="10dp"		
+        android:background="@drawable/previous_selector" 
+		android:visibility="gone" /> 
+	<ImageButton
+		android:id="@+id/next"
+		android:layout_width="48dp"
+		android:layout_height="48dp"
+		android:layout_below="@id/device_type"
+		android:layout_toRightOf="@id/play_pause"
+		android:layout_marginTop="10dp"	
+		android:layout_marginBottom="10dp"		
+		android:background="@drawable/next_selector"  
+		android:visibility="gone" />
 </RelativeLayout>
