@@ -7,8 +7,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +32,7 @@ public class KBfinder extends Activity {
     private KBdeviceListAdapter deviceListAdapter = null;
     
     private String connectingMAC;
+    
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +79,7 @@ public class KBfinder extends Activity {
 			IntentFilter filter3 = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);			
 	        IntentFilter filter4 = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
 	        IntentFilter filter5 = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+	        
 
 	        this.registerReceiver(mBtReceiver, filter1);
 	        this.registerReceiver(mBtReceiver, filter2);
@@ -208,14 +212,39 @@ public class KBfinder extends Activity {
 			} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);    
                 KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
-//                Toast.makeText(getApplicationContext(), device.getName() + " Connected", Toast.LENGTH_SHORT).show();
-				deviceListAdapter.notifyDataSetChanged();
+ 				deviceListAdapter.notifyDataSetChanged();
+                Toast.makeText(getApplicationContext(), device.getName() + " A2dp Connected", Toast.LENGTH_SHORT).show();
+
+                if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.IN_WALL) {
+	                new CountDownTimer(2000, 1000) {
+	                	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+	    				@Override
+	    				public void onFinish() {
+	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) *0.5),	AudioManager.FLAG_SHOW_UI);
+	    				}
+	    				@Override
+	    				public void onTick(long millisUntilFinished) {
+	    				}
+	    			}.start();
+                } else if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.ISELECT) {
+	                new CountDownTimer(2000, 1000) {
+	                	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+	    				@Override
+	    				public void onFinish() {
+	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * 0.8), AudioManager.FLAG_SHOW_UI);
+	    				}
+	    				@Override
+	    				public void onTick(long millisUntilFinished) {
+	    				}
+	    			}.start();
+                }
+	
             } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
                 KBdevice.disconnectDevices(device.getAddress(),A2dpService.deviceList);
-//                Toast.makeText(getApplicationContext(), device.getName() + " Disconnected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), device.getName() + " A2dp Disconnected", Toast.LENGTH_SHORT).show();
 				deviceListAdapter.notifyDataSetChanged();
-            }
+            } 
 
 		}
 
@@ -235,15 +264,11 @@ public class KBfinder extends Activity {
 
 		@Override
 		protected void onPostExecute(Boolean result) {
-
 			super.onPostExecute(result);
 			a2dpDone();
 		}
 
-		BluetoothAdapter bta = BluetoothAdapter.getDefaultAdapter();
-
 		protected void onPreExecute() {
-
 		}
 
 		@Override

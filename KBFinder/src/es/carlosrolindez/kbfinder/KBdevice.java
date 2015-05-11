@@ -55,7 +55,7 @@ public class KBdevice  {
 		return null;
 	}
 	
-	private int getDeviceType(String deviceMAC) {
+	public static int getDeviceType(String deviceMAC) {
 		String MAC = deviceMAC.substring(0,8);
 		if (MAC.equals(iSelectFootprint)) return ISELECT;
 		if (MAC.equals(inWalltFootprint)) return IN_WALL;

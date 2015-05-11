@@ -4,5 +4,6 @@
 	<string name="action_settings">Configuración</string>
 	<string name="bt_not_availabe">Bluetooth no disponible</string>
 	<string name="bt_not_enabled">Bluetooth no habilitado</string>
-	<string name="button_scan">Buscar equipos KBsound</string>
+	<string name="a2dp_connected">A2dp Conectado</string>
+	<string name="a2dp_disconnected">A2dp Desconectado</string>
 </resources>
