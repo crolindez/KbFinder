@@ -4,9 +4,12 @@ package es.carlosrolindez.kbfinder;
 import java.util.ArrayList;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.content.Intent;
+import android.os.SystemClock;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -16,9 +19,11 @@ public class KBdeviceListAdapter extends BaseAdapter {
 
 	private LayoutInflater inflater;
 	private ArrayList<KBdevice> mKBdeviceList;
+	private Context mContext;
 	
 	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList)
 	{
+		mContext = context;
 		mKBdeviceList = deviceList;
 		inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
@@ -83,6 +88,9 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		ImageView button_play_pause = (ImageView)localView.findViewById(R.id.play_pause);
 		ImageView button_next = (ImageView)localView.findViewById(R.id.next);
 		
+		
+		
+
 		switch (device.deviceType)
 		{
 		case KBdevice.IN_WALL:
@@ -101,33 +109,88 @@ public class KBdeviceListAdapter extends BaseAdapter {
 			imageDeviceType.setVisibility(View.INVISIBLE);
 		}
 		
+		
 		deviceName.setText(device.deviceName);
 		deviceMAC.setText(device.deviceMAC);
 
 		if (device.connected) {
-//			localView.setBackgroundResource(R.drawable.connected_selector);
 			button_previous.setVisibility(View.VISIBLE);
 			button_play_pause.setVisibility(View.VISIBLE);
 			button_next.setVisibility(View.VISIBLE);
-			deviceName.setTextColor(Color.WHITE);
-			deviceMAC.setTextColor(Color.WHITE);
+	
+			button_previous.setOnClickListener(new OnClickListener() 
+			{
+				@Override
+				public void onClick(View v) 
+				{
+					Intent intent = new Intent("com.android.music.musicservicecommand");
+					intent.putExtra("command", "play");
+					mContext.sendBroadcast(intent);
+					/*long eventtime = SystemClock.uptimeMillis();
+					
+					Intent downIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null); 
+					KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0); 
+					downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent); 
+					mContext.sendBroadcast(downIntent, null); 
+					
+					Intent upIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null); 
+					KeyEvent upEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0); 
+					upIntent.putExtra(Intent.EXTRA_KEY_EVENT, upEvent); 
+					mContext.sendBroadcast(upIntent, null);*/ 
+				}
+			});
+
+			button_play_pause.setOnClickListener(new OnClickListener() 
+			{
+				@Override
+				public void onClick(View v) 
+				{
+					Intent intent = new Intent("com.android.music.musicservicecommand");
+					intent.putExtra("command", "togglepause");
+					mContext.sendBroadcast(intent);
+					/*long eventtime = SystemClock.uptimeMillis();
+					
+					Intent downIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null); 
+					KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0); 
+					downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent); 
+					mContext.sendBroadcast(downIntent, null); 
+					
+					Intent upIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null); 
+					KeyEvent upEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0); 
+					upIntent.putExtra(Intent.EXTRA_KEY_EVENT, upEvent); 
+					mContext.sendBroadcast(upIntent, null);*/ 
+				}
+			});
+
+			button_next.setOnClickListener(new OnClickListener() 
+			{
+				@Override
+				public void onClick(View v) 
+				{
+					Intent intent = new Intent("com.android.music.musicservicecommand");
+					intent.putExtra("command", "next");
+					mContext.sendBroadcast(intent);
+					/*long eventtime = SystemClock.uptimeMillis();
+					
+					Intent downIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null); 
+					KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0); 
+					downIntent.putExtra(Intent.EXTRA_KEY_EVENT, downEvent); 
+					mContext.sendBroadcast(downIntent, null); 
+					
+					Intent upIntent = new Intent(Intent.ACTION_MEDIA_BUTTON, null); 
+					KeyEvent upEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0); 
+					upIntent.putExtra(Intent.EXTRA_KEY_EVENT, upEvent); 
+					mContext.sendBroadcast(upIntent, null);*/ 
+				}
+			});
+
 		} else {
-//			localView.setBackgroundResource(R.drawable.notconnected_selector);
 			button_previous.setVisibility(View.GONE);
 			button_play_pause.setVisibility(View.GONE);
 			button_next.setVisibility(View.GONE);
-			deviceName.setTextColor(Color.BLACK);
-			deviceMAC.setTextColor(Color.BLACK);
+
 		}
 		
-		/*		if (device.connected) {
-		localView = inflater.inflate(R.layout.device_list_connected_row, parent, false);
-
-	} else {
-		localView = inflater.inflate(R.layout.device_list_row, parent, false);
-	}
-*/
-
 		
 
 		return localView;

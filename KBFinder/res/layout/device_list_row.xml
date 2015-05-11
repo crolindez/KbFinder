@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
+	android:descendantFocusability="blocksDescendants"
 	android:background="@drawable/notconnected_selector" >
     <ImageView
         android:id="@+id/device_type"
@@ -18,7 +19,7 @@
 		android:gravity="center_vertical|center_horizontal"
 		android:paddingLeft="5dp"
 		android:text="asdafsdf"
-		android:textColor="#ffffff"
+		android:textColor="#040404"
 		android:textSize="18sp"
 		android:textStyle="bold"
 		android:typeface="sans" />
@@ -31,7 +32,7 @@
     	android:gravity="center_vertical|center_horizontal"
     	android:paddingLeft="5dp"
     	android:text="asdfasdf"
-    	android:textColor="#ffffff"
+    	android:textColor="#040404"
     	android:textSize="12sp"
     	android:textStyle="normal"
     	android:typeface="sans" />
