@@ -1,8 +1,10 @@
 package es.carlosrolindez.kbfinder;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 import android.bluetooth.BluetoothDevice;
+import android.util.Log;
 
 
 
@@ -20,6 +22,8 @@ public class KBdevice  {
     private static final String iSelectFootprint = "00:08:F4";
     private static final String inWalltFootprint = "00:0D:18";
     private static final String selectBtFootprint = "8C:DE:52";
+	
+    public static final UUID MY_UUID_SECURE = UUID.fromString("00000000-0000-1000-8000-00805f9b34fb");
     
 	public int deviceType;
 	public String deviceName;
@@ -84,6 +88,46 @@ public class KBdevice  {
 		}	
 	}
 
+	public static long password(String MAC) {
 
-
+		String[] macAddressParts = MAC.split(":");
+		Byte[] macAddressBytes = new Byte[6];
+		long littleMac = 0;
+		int rotation;
+		long code = 0;
+		long pin;
+		
+		Log.e("MAC",MAC);
+		for(int i=2; i<6; i++) {
+		    Long hex = Long.parseLong(macAddressParts[i], 16);
+		    //macAddressBytes[i] = hex.byteValue();
+		    littleMac *= 256;
+		    littleMac += hex;
+		}
+		Log.e("littleMac"," "+littleMac);
+		
+		rotation = Integer.parseInt(macAddressParts[5], 16) & 0x0f;
+		Log.e("rotation"," "+rotation);
+		
+		for(int i=0; i<4; i++) {
+			Long hex =  Long.parseLong(macAddressParts[i], 16);
+		    //macAddressBytes[i] = hex.byteValue();
+		    code *= 256;
+		    code += hex;
+		}
+		Log.e("code"," "+code);
+		code = code >> rotation;
+		Log.e("code rotated"," "+code);
+		
+		code &= 0xffff;
+		littleMac &= 0xffff;
+		pin = littleMac ^ code;
+		Log.e("pin"," "+pin);
+		pin %= 10000;
+		Log.e("pin"," "+pin);
+		
+		return pin;
+				
+	}
+	
 }

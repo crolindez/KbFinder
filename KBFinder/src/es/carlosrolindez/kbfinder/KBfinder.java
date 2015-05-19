@@ -39,9 +39,6 @@ public class KBfinder extends Activity {
 		super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		setContentView(R.layout.activity_main);
-
-		
-        Log.d(TAG, "onCreate");
 		
 		mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -56,8 +53,6 @@ public class KBfinder extends Activity {
     public void onStart() {
         super.onStart();
 
-        Log.d(TAG, "onStart");
-
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
@@ -70,22 +65,20 @@ public class KBfinder extends Activity {
     public void onResume() {
         super.onResume();
 
-
-        Log.d(TAG, "onResume");
-        
 		if (!namesReceiverRegistered) {
 			IntentFilter filter1 = new IntentFilter(Constants.NameFilter);
 			IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);			
 			IntentFilter filter3 = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);			
 	        IntentFilter filter4 = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
-	        IntentFilter filter5 = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-	        
+	        IntentFilter filter5 = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);	
+	        IntentFilter filter6 = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);	    
 
 	        this.registerReceiver(mBtReceiver, filter1);
 	        this.registerReceiver(mBtReceiver, filter2);
 	        this.registerReceiver(mBtReceiver, filter3);	  
 	        this.registerReceiver(mBtReceiver, filter4);	
-	        this.registerReceiver(mBtReceiver, filter5);		        
+	        this.registerReceiver(mBtReceiver, filter5);	
+	        this.registerReceiver(mBtReceiver, filter6);	
 
 			
 	        namesReceiverRegistered = true;
@@ -97,7 +90,6 @@ public class KBfinder extends Activity {
 
     
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult");
 
         switch (requestCode) {
             case Constants.REQUEST_ENABLE_BT:
@@ -105,7 +97,6 @@ public class KBfinder extends Activity {
                 if (resultCode == Activity.RESULT_OK) {
 
                 } else {
-                    Log.d(TAG, "BT not enabled");
                     Toast.makeText(this, R.string.bt_not_enabled,Toast.LENGTH_SHORT).show();
                     finish();
                 }
@@ -121,7 +112,14 @@ public class KBfinder extends Activity {
     	{ 			
 			mBluetoothAdapter.cancelDiscovery();
 			KBdevice device = (KBdevice)parent.getItemAtPosition(position);
-			connectBluetoothA2dp(device.deviceMAC);		
+			
+			Log.e("clave"," "+KBdevice.password(device.deviceMAC));
+
+			if (device.mDevice.getBondState() != BluetoothDevice.BOND_BONDED)
+				device.mDevice.createBond();
+			else
+				connectBluetoothA2dp(device.deviceMAC);
+				
     	}
 	};
   
@@ -186,10 +184,10 @@ public class KBfinder extends Activity {
 
             // When discovery finds a device
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                Log.e(TAG, "ACTION_FOUND");
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                device.fetchUuidsWithSdp();
+                
+//                device.fetchUuidsWithSdp();
                 // TODO
                 {
 					KBdevice kbdevice = new KBdevice(device.getName(), device);
@@ -201,7 +199,6 @@ public class KBfinder extends Activity {
                 }
             // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.e(TAG, "ACTION_DISCOVERY_FINISHED");
                 setProgressBarIndeterminateVisibility(false);
             
             } else if (Constants.NameFilter.equals(action)) {
@@ -244,8 +241,12 @@ public class KBfinder extends Activity {
                 KBdevice.disconnectDevices(device.getAddress(),A2dpService.deviceList);
                 Toast.makeText(getApplicationContext(), device.getName() + " A2dp Disconnected", Toast.LENGTH_SHORT).show();
 				deviceListAdapter.notifyDataSetChanged();
-            } 
-
+            } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
+                if (device.getBondState()==BluetoothDevice.BOND_BONDED) {
+                	connectBluetoothA2dp(device.getAddress());
+                }
+            }
 		}
 
 	};
@@ -275,31 +276,34 @@ public class KBfinder extends Activity {
 		protected Boolean doInBackground(String... arg0) {
 			
 			BluetoothDevice device;
+//	        BluetoothSocket socket;
 
 			BluetoothAdapter mBTA = BluetoothAdapter.getDefaultAdapter();
 			if (mBTA == null || !mBTA.isEnabled())
 				return false;
-			if   ((device = KBdevice.deviceInArray(A2dpService.deviceList, arg0[0])) == null) return false;
-
-			try {
-				if (A2dpService.iBtA2dp != null && A2dpService.iBtA2dp.getConnectionState(device) == 0)
-					A2dpService.iBtA2dp.connect(device);
-				else
-					A2dpService.iBtA2dp.disconnect(device);
-
-			} catch (Exception e) {
-
+			if   ((device = KBdevice.deviceInArray(A2dpService.deviceList, arg0[0])) == null) {
+				return false;
 			}
 
+			try {
+				if ( (A2dpService.iBtA2dp != null) && (A2dpService.iBtA2dp.getConnectionState(device) == 0)  && (device.getBondState() == BluetoothDevice.BOND_BONDED) ) {
+					A2dpService.iBtA2dp.connect(device);
+				} else {
+					A2dpService.iBtA2dp.disconnect(device);
+				}
+
+			} catch (Exception e) {
+			}
 			return true;
 		}
 
 	}	
-    /**
+
+	
+	/**
      * Start device discover with the BluetoothAdapter
      */
     private void doDiscovery() {
-        Log.e(TAG, "doDiscovery()");
 
         // Indicate scanning in the title
         setProgressBarIndeterminateVisibility(true);

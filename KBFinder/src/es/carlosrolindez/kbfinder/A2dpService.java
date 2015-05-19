@@ -13,7 +13,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
+
 
 public class A2dpService {
 	private static String TAG = "A2DP Service";
@@ -29,8 +29,6 @@ public class A2dpService {
 	
 	public static ArrayList<KBdevice> deviceList = new ArrayList<KBdevice>();
 	
-	
-
 	public static void searchBtPairedNames(Context context) {
 		Intent intent = new Intent(IBluetooth.class.getName());
 		mContextBt = context;
@@ -38,7 +36,6 @@ public class A2dpService {
 			if (mContextBt.bindService(intent, mBtServiceConnection, Context.BIND_AUTO_CREATE)) {
 
 			} else {
-				Log.e(TAG, "Could not bind to Bluetooth Service");
 			}
 		} else {
 			sendNames();
@@ -84,7 +81,7 @@ public class A2dpService {
 					KBdevice kbdevice = new KBdevice(currentName,device);
 					if (kbdevice.deviceType != KBdevice.OTHER)
 						deviceList.add(kbdevice);
-					
+								
 				}
 			}
 		}
@@ -102,7 +99,6 @@ public class A2dpService {
 		if (context.bindService(i, mBtA2dpServiceConnection, Context.BIND_AUTO_CREATE)) {
 
 		} else {
-			Log.e(TAG, "Could not bind to Bluetooth A2dp Service");
 		}
 
 	}
@@ -156,6 +152,8 @@ public class A2dpService {
 			
 		}
 	}
+	
+
 
 }
 
