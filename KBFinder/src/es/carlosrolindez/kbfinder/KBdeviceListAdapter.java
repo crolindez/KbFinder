@@ -22,12 +22,14 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	private LayoutInflater inflater;
 	private ArrayList<KBdevice> mKBdeviceList;
 	private Context mContext;
+//	private SwipeListViewTouchListener.OnClickCallBack mCallBack;
 	
-	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList)
+	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList/*,SwipeListViewTouchListener.OnClickCallBack onClickCallBack*/)
 	{
 		mContext = context;
 		mKBdeviceList = deviceList;
 		inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//		mCallBack = onClickCallBack;
 	}
 	
 	@Override
@@ -106,7 +108,6 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		case KBdevice.SELECTBT:
 			imageDeviceType.setVisibility(View.VISIBLE);
 			imageDeviceType.setImageResource(R.drawable.selectbt);
-			localView.setOnTouchListener(new SwipeListViewTouchListener(localView));
 			break;		
 		default:
 			imageDeviceType.setVisibility(View.INVISIBLE);
@@ -120,6 +121,8 @@ public class KBdeviceListAdapter extends BaseAdapter {
 			button_previous.setVisibility(View.VISIBLE);
 			button_play_pause.setVisibility(View.VISIBLE);
 			button_next.setVisibility(View.VISIBLE);
+			if (device.deviceType == KBdevice.SELECTBT)
+				localView.setOnTouchListener(null);
 	
 			button_previous.setOnClickListener(new OnClickListener() 
 			{
@@ -188,6 +191,9 @@ public class KBdeviceListAdapter extends BaseAdapter {
 			button_previous.setVisibility(View.GONE);
 			button_play_pause.setVisibility(View.GONE);
 			button_next.setVisibility(View.GONE);
+			
+			if (device.deviceType == KBdevice.SELECTBT)
+				localView.setOnTouchListener(new SwipeListViewTouchListener(localView, (SwipeListViewTouchListener.OnClickCallBack) mContext));
 
 		}
 		

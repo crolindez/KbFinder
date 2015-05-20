@@ -22,7 +22,7 @@ public class KBdevice  {
     private static final String inWalltFootprint = "00:0D:18";
     private static final String selectBtFootprint = "8C:DE:52";
 	
-    public static final UUID MY_UUID_SECURE = UUID.fromString("00000000-0000-1000-8000-00805f9b34fb");
+//    public static final UUID MY_UUID_SECURE = UUID.fromString("00000000-0000-1000-8000-00805f9b34fb");
     
 	public int deviceType;
 	public String deviceName;

@@ -19,9 +19,10 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class KBfinder extends Activity {
+public class KBfinder extends Activity implements SwipeListViewTouchListener.OnClickCallBack {
 	private static String TAG = "KBfinder";
 	
 	private boolean namesReceiverRegistered = false;
@@ -102,14 +103,30 @@ public class KBfinder extends Activity {
                 }
         }
     }
-
-
     
+    public void onClickSelectBT(View view)
+    {
+		BluetoothDevice device;
+		
+		mBluetoothAdapter.cancelDiscovery();
+		String deviceMAC = ((TextView) view.findViewById(R.id.device_mac)).getText().toString();
+
+		if   ((device = KBdevice.deviceInArray(A2dpService.deviceList, deviceMAC)) == null) 
+			return;
+			
+		Log.e("clave"," "+KBdevice.password(deviceMAC));
+	
+		if (device.getBondState() != BluetoothDevice.BOND_BONDED)
+			device.createBond();
+
+		connectBluetoothA2dp(deviceMAC);
+	}
+
 	OnItemClickListener onItemClickListener = new OnItemClickListener() 
 	{
 		@Override
     	public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
-    	{ 			
+    	{ 	
 			mBluetoothAdapter.cancelDiscovery();
 			KBdevice device = (KBdevice)parent.getItemAtPosition(position);
 			
