@@ -22,7 +22,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 public class KBfinder extends Activity {
-	private static String TAG = "Main Activity";
+	private static String TAG = "KBfinder";
 	
 	private boolean namesReceiverRegistered = false;
 	private boolean a2dpReceiverRegistered = false;

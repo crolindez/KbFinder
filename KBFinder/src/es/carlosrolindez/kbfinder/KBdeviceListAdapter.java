@@ -15,7 +15,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+
 public class KBdeviceListAdapter extends BaseAdapter {
+	private static String TAG = "KBdeviceListAdapter";
 
 	private LayoutInflater inflater;
 	private ArrayList<KBdevice> mKBdeviceList;
@@ -104,6 +106,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		case KBdevice.SELECTBT:
 			imageDeviceType.setVisibility(View.VISIBLE);
 			imageDeviceType.setImageResource(R.drawable.selectbt);
+			localView.setOnTouchListener(new SwipeListViewTouchListener(localView));
 			break;		
 		default:
 			imageDeviceType.setVisibility(View.INVISIBLE);
@@ -200,5 +203,5 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	    notifyDataSetChanged();		
 	}
 
-	
+
 }

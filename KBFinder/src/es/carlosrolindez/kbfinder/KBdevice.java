@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothDevice;
-import android.util.Log;
 
 
 
@@ -97,34 +96,26 @@ public class KBdevice  {
 		long code = 0;
 		long pin;
 		
-		Log.e("MAC",MAC);
 		for(int i=2; i<6; i++) {
 		    Long hex = Long.parseLong(macAddressParts[i], 16);
-		    //macAddressBytes[i] = hex.byteValue();
 		    littleMac *= 256;
 		    littleMac += hex;
 		}
-		Log.e("littleMac"," "+littleMac);
 		
 		rotation = Integer.parseInt(macAddressParts[5], 16) & 0x0f;
-		Log.e("rotation"," "+rotation);
 		
 		for(int i=0; i<4; i++) {
 			Long hex =  Long.parseLong(macAddressParts[i], 16);
-		    //macAddressBytes[i] = hex.byteValue();
 		    code *= 256;
 		    code += hex;
 		}
-		Log.e("code"," "+code);
-		code = code >> rotation;
-		Log.e("code rotated"," "+code);
-		
+		code = code >> rotation;		
 		code &= 0xffff;
+
 		littleMac &= 0xffff;
+
 		pin = littleMac ^ code;
-		Log.e("pin"," "+pin);
 		pin %= 10000;
-		Log.e("pin"," "+pin);
 		
 		return pin;
 				
