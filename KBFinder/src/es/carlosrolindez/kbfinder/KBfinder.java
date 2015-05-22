@@ -22,7 +22,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class KBfinder extends Activity implements SwipeListViewTouchListener.OnClickCallBack {
+public class KBfinder extends Activity  {
 	private static String TAG = "KBfinder";
 	
 	private boolean namesReceiverRegistered = false;
@@ -128,9 +128,7 @@ public class KBfinder extends Activity implements SwipeListViewTouchListener.OnC
     	public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
     	{ 	
 			mBluetoothAdapter.cancelDiscovery();
-			KBdevice device = (KBdevice)parent.getItemAtPosition(position);
-			
-			Log.e("clave"," "+KBdevice.password(device.deviceMAC));
+			KBdevice device = (KBdevice)parent.getItemAtPosition(position);			
 
 			if (device.mDevice.getBondState() != BluetoothDevice.BOND_BONDED)
 				device.mDevice.createBond();
@@ -219,8 +217,8 @@ public class KBfinder extends Activity implements SwipeListViewTouchListener.OnC
                 setProgressBarIndeterminateVisibility(false);
             
             } else if (Constants.NameFilter.equals(action)) {
-				deviceListAdapter = new KBdeviceListAdapter(context, A2dpService.deviceList);
 				ListView list = (ListView)findViewById(R.id.list);  
+				deviceListAdapter = new KBdeviceListAdapter(context, A2dpService.deviceList , list);
 				list.setAdapter(deviceListAdapter);
 				list.setOnItemClickListener(onItemClickListener);  
 			} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {

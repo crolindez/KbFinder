@@ -6,13 +6,18 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 
@@ -22,14 +27,15 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	private LayoutInflater inflater;
 	private ArrayList<KBdevice> mKBdeviceList;
 	private Context mContext;
+	private ListView listView;
 //	private SwipeListViewTouchListener.OnClickCallBack mCallBack;
 	
-	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList/*,SwipeListViewTouchListener.OnClickCallBack onClickCallBack*/)
+	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList,ListView list)
 	{
 		mContext = context;
 		mKBdeviceList = deviceList;
 		inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//		mCallBack = onClickCallBack;
+		listView = list;
 	}
 	
 	@Override
@@ -56,17 +62,19 @@ public class KBdeviceListAdapter extends BaseAdapter {
 			return position;
 	}
 	
-/*	public ArrayList<KBdevice> getProductList() 
-	{
-		return mKBdeviceList;
-	}
+	
+    public static class KBfinderHolder {
+        public RelativeLayout mainView;
+        public RelativeLayout shareView;
+        
+        public KBfinderHolder(View view)
+        {
+                mainView = (RelativeLayout)view.findViewById(R.id.main_layout);
+                shareView = (RelativeLayout)view.findViewById(R.id.back_layout);
+        }
+    }
+	
 
-    @TargetApi(16)
-    private void drawResourceInView(int resource, View viewer)
-    {
-        viewer.setBackground(viewer.getResources().getDrawable(resource));
-
-    }*/
 	
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent)
@@ -87,11 +95,14 @@ public class KBdeviceListAdapter extends BaseAdapter {
 
 		TextView deviceName = (TextView)localView.findViewById(R.id.device_name);
 		TextView deviceMAC = (TextView)localView.findViewById(R.id.device_mac);
+		TextView password = (TextView)localView.findViewById(R.id.back_text);
+		password.setText(""+KBdevice.password(device.deviceMAC));
+
 
 		ImageView button_previous = (ImageView)localView.findViewById(R.id.previous);
 		ImageView button_play_pause = (ImageView)localView.findViewById(R.id.play_pause);
 		ImageView button_next = (ImageView)localView.findViewById(R.id.next);
-		
+
 		
 		
 
@@ -193,15 +204,105 @@ public class KBdeviceListAdapter extends BaseAdapter {
 			button_next.setVisibility(View.GONE);
 			
 			if (device.deviceType == KBdevice.SELECTBT)
-				localView.setOnTouchListener(new SwipeListViewTouchListener(localView, (SwipeListViewTouchListener.OnClickCallBack) mContext));
-
+				localView.setOnTouchListener(new SwipeView(new KBfinderHolder(localView), position,listView));
+			else 
+				localView.setOnTouchListener(null);
 		}
 		
-		
-
 		return localView;
 	}
 	
+	public class SwipeView implements View.OnTouchListener {
+		
+		private int mSlop;
+
+        private boolean motionInterceptDisallowed = false;
+        private KBfinderHolder holder;
+
+	    private float mDownX;
+	    private ListView listView;
+	 
+	    public SwipeView(KBfinderHolder h, int position, ListView list) {
+	        ViewConfiguration vc = ViewConfiguration.get(mContext);
+	        mSlop = vc.getScaledTouchSlop();
+
+	        listView = list;
+	        holder = h;
+	    }
+
+	   
+		@Override
+	    public boolean onTouch(View view, MotionEvent motionEvent) {
+
+	        switch (motionEvent.getActionMasked()) {
+	        case MotionEvent.ACTION_DOWN:
+	            {
+	                mDownX = motionEvent.getRawX();
+	                motionInterceptDisallowed = false;
+	                view.setPressed(true);
+	            }
+
+	            return true;
+
+	        case MotionEvent.ACTION_MOVE:
+	            {
+	                float deltaX = motionEvent.getRawX() - mDownX;
+	                if ( (Math.abs(deltaX) > mSlop) && !motionInterceptDisallowed ) {
+	                	listView.requestDisallowInterceptTouchEvent(true);
+	                	motionInterceptDisallowed = true;
+	                    view.setPressed(false);
+	                }
+
+	                
+	                swipeView((int)deltaX);
+
+	                return true;
+	            }
+	 
+	        case MotionEvent.ACTION_UP:
+	        	{
+	        		view.setPressed(false);
+        			swipeView(0);
+	        		if (motionInterceptDisallowed) {
+	        			listView.requestDisallowInterceptTouchEvent(false);
+	        			motionInterceptDisallowed = false;
+	        		} else {
+	        			//TODO
+	        			
+	        		}
+
+		            return true;          
+
+	        	}
+
+	        case MotionEvent.ACTION_CANCEL:
+	        	{
+
+		    	   swipeView(0);
+		    	   listView.requestDisallowInterceptTouchEvent(false);
+		    	   motionInterceptDisallowed = false;
+
+	               return false;
+
+	        	}
+	        }
+	        return true;
+	    }
+		
+		
+	    private void swipeView(int distance) {
+	        View animationView = holder.mainView;
+	        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) animationView.getLayoutParams();
+	        params.rightMargin = -distance;
+	        params.leftMargin = distance;
+	        animationView.setLayoutParams(params);
+	    }
+	    
+
+	}
+
+
+
 
 	public  void showResultSet(  ArrayList<KBdevice> deviceList)
 	{
