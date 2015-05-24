@@ -18,7 +18,7 @@
 	    	android:layout_height="32dp"
 	    	android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-	    	android:text="ñljñlkj"
+	    	android:text=""
 	    	android:textColor="#040404"
 	    	android:textSize="24sp"
 	    	android:textStyle="bold"
@@ -46,7 +46,7 @@
 			android:layout_toRightOf="@id/device_type"
 			android:gravity="center_vertical|center_horizontal"
 			android:paddingLeft="5dp"
-			android:text="asdafsdf"
+			android:text=""
 			android:textColor="#040404"
 			android:textSize="18sp"
 			android:textStyle="bold"
@@ -59,15 +59,15 @@
 	    	android:layout_toRightOf="@id/device_type"
 	    	android:gravity="center_vertical|center_horizontal"
 	    	android:paddingLeft="5dp"
-	    	android:text="asdfasdf"
+	    	android:text=""
 	    	android:textColor="#040404"
 	    	android:textSize="12sp"
 	    	android:textStyle="normal"
 	    	android:typeface="sans" />
 		<ImageButton
 			android:id="@+id/play_pause"
-			android:layout_width="48dp"
-			android:layout_height="48dp"
+			android:layout_width="64dp"
+			android:layout_height="64dp"
 			android:layout_below="@id/device_type"
 			android:layout_centerHorizontal="true"
 			android:layout_marginTop="10dp"	
@@ -75,27 +75,34 @@
 			android:layout_marginRight="1dp"
 			android:layout_marginBottom="10dp"		
 			android:background="@drawable/play_pause_selector" 
-			android:visibility="gone" />
+			android:visibility="gone" />		
 	   	<ImageButton
 	        android:id="@+id/previous"
 			android:layout_below="@id/device_type"
 			android:layout_toLeftOf="@id/play_pause"
 			android:layout_marginTop="10dp"	
-	        android:layout_width="48dp" 
-	        android:layout_height="48dp" 
+	        android:layout_width="64dp" 
+	        android:layout_height="64dp" 
 			android:layout_marginBottom="10dp"		
 	        android:background="@drawable/previous_selector" 
 			android:visibility="gone" /> 
 		<ImageButton
 			android:id="@+id/next"
-			android:layout_width="48dp"
-			android:layout_height="48dp"
+			android:layout_width="64dp"
+			android:layout_height="64dp"
 			android:layout_below="@id/device_type"
 			android:layout_toRightOf="@id/play_pause"
 			android:layout_marginTop="10dp"	
 			android:layout_marginBottom="10dp"		
 			android:background="@drawable/next_selector"  
 			android:visibility="gone" />
-
+		<ImageButton
+			android:id="@+id/app_button"
+			android:layout_width="192dp"
+			android:layout_height="64dp"
+			android:layout_below="@id/device_type"
+			android:layout_centerHorizontal="true"
+			android:background="@drawable/app_selector"
+			android:visibility="gone" />
 	</RelativeLayout>
 </RelativeLayout>  

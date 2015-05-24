@@ -102,6 +102,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		ImageView button_previous = (ImageView)localView.findViewById(R.id.previous);
 		ImageView button_play_pause = (ImageView)localView.findViewById(R.id.play_pause);
 		ImageView button_next = (ImageView)localView.findViewById(R.id.next);
+		ImageView button_app = (ImageView)localView.findViewById(R.id.app_button);
 
 		
 		
@@ -129,76 +130,100 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		deviceMAC.setText(device.deviceMAC);
 
 		if (device.connected) {
-			button_previous.setVisibility(View.VISIBLE);
-			button_play_pause.setVisibility(View.VISIBLE);
-			button_next.setVisibility(View.VISIBLE);
-			if (device.deviceType == KBdevice.SELECTBT)
-				localView.setOnTouchListener(null);
+			if ( (device.deviceType == KBdevice.IN_WALL) || (device.deviceType == KBdevice.ISELECT)) {
+				
+				button_previous.setVisibility(View.VISIBLE);
+				button_play_pause.setVisibility(View.VISIBLE);
+				button_next.setVisibility(View.VISIBLE);
+		
+				button_previous.setOnClickListener(new OnClickListener() 
+				{
+					@Override
+					public void onClick(View v) 
+					{
+						AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
 	
-			button_previous.setOnClickListener(new OnClickListener() 
-			{
-				@Override
-				public void onClick(View v) 
+						long eventtime = SystemClock.uptimeMillis() - 1;
+						KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
+						am.dispatchMediaKeyEvent(downEvent);
+	
+						eventtime++;
+						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);         
+						am.dispatchMediaKeyEvent(upEvent);
+						
+						/*Intent intent = new Intent("com.android.music.musicservicecommand");
+						intent.putExtra("command", "previous");
+						mContext.sendBroadcast(intent);*/
+					}
+				});
+	
+				button_play_pause.setOnClickListener(new OnClickListener() 
 				{
-					AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
-
-					long eventtime = SystemClock.uptimeMillis() - 1;
-					KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);
-					am.dispatchMediaKeyEvent(downEvent);
-
-					eventtime++;
-					KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);         
-					am.dispatchMediaKeyEvent(upEvent);
-					
-					/*Intent intent = new Intent("com.android.music.musicservicecommand");
-					intent.putExtra("command", "previous");
-					mContext.sendBroadcast(intent);*/
-				}
-			});
-
-			button_play_pause.setOnClickListener(new OnClickListener() 
-			{
-				@Override
-				public void onClick(View v) 
+					@Override
+					public void onClick(View v) 
+					{
+						AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+	
+						long eventtime = SystemClock.uptimeMillis() - 1;
+						KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);
+						am.dispatchMediaKeyEvent(downEvent);
+	
+						eventtime++;
+						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);         
+						am.dispatchMediaKeyEvent(upEvent);
+						
+						/*Intent intent = new Intent("com.android.music.musicservicecommand");
+						intent.putExtra("command", "togglepause");
+						mContext.sendBroadcast(intent);*/
+					}
+				});
+	
+				button_next.setOnClickListener(new OnClickListener() 
 				{
-					AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+					@Override
+					public void onClick(View v) 
+					{
+						AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+	
+						long eventtime = SystemClock.uptimeMillis() - 1;
+						KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT, 0);
+						am.dispatchMediaKeyEvent(downEvent);
+	
+						eventtime++;
+						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_NEXT, 0);         
+						am.dispatchMediaKeyEvent(upEvent);
+	
+						/*Intent intent = new Intent("com.android.music.musicservicecommand");
+						intent.putExtra("command", "next");
+						mContext.sendBroadcast(intent);*/
+					}
+				});
+			} else {
+				button_app.setVisibility(View.VISIBLE);
+				button_app.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) 
+					{
+						AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+	
+						long eventtime = SystemClock.uptimeMillis() - 1;
+						KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);
+						am.dispatchMediaKeyEvent(downEvent);
+	
+						eventtime++;
+						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);         
+						am.dispatchMediaKeyEvent(upEvent);
+	
+						/*Intent intent = new Intent("com.android.music.musicservicecommand");
+						intent.putExtra("command", "next");
+						mContext.sendBroadcast(intent);*/
+					}
+				});
 
-					long eventtime = SystemClock.uptimeMillis() - 1;
-					KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);
-					am.dispatchMediaKeyEvent(downEvent);
-
-					eventtime++;
-					KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);         
-					am.dispatchMediaKeyEvent(upEvent);
-					
-					/*Intent intent = new Intent("com.android.music.musicservicecommand");
-					intent.putExtra("command", "togglepause");
-					mContext.sendBroadcast(intent);*/
-				}
-			});
-
-			button_next.setOnClickListener(new OnClickListener() 
-			{
-				@Override
-				public void onClick(View v) 
-				{
-					AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
-
-					long eventtime = SystemClock.uptimeMillis() - 1;
-					KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT, 0);
-					am.dispatchMediaKeyEvent(downEvent);
-
-					eventtime++;
-					KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_NEXT, 0);         
-					am.dispatchMediaKeyEvent(upEvent);
-
-					/*Intent intent = new Intent("com.android.music.musicservicecommand");
-					intent.putExtra("command", "next");
-					mContext.sendBroadcast(intent);*/
-				}
-			});
-
+				localView.setOnTouchListener(null);
+			}
 		} else {
+			button_app.setVisibility(View.GONE);
 			button_previous.setVisibility(View.GONE);
 			button_play_pause.setVisibility(View.GONE);
 			button_next.setVisibility(View.GONE);
