@@ -1,8 +1,12 @@
 package es.carlosrolindez.kbfinder;
 
+import java.util.List;
+
 import android.app.Activity;
+import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -190,7 +194,29 @@ public class KBfinder extends Activity  {
 		A2dpService.startA2dp(this);
 
 	}
+	BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+            if (profile == BluetoothProfile.A2DP) {
+                BluetoothA2dp btA2dp = (BluetoothA2dp) proxy;
+                List<BluetoothDevice> a2dpConnectedDevices = btA2dp.getConnectedDevices();
+                if (a2dpConnectedDevices.size() != 0) {
+                    for (BluetoothDevice a2dpDevice : a2dpConnectedDevices) {
+                        KBdevice.connectDeviceInArray(a2dpDevice.getAddress(),A2dpService.deviceList);
+         				deviceListAdapter.notifyDataSetChanged();
+                        Log.e(TAG,a2dpDevice.getName() + "A2dp detected");
+                    }
+                }
+                mBluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, btA2dp);
+            }
+        }
+
+        public void onServiceDisconnected(int profile) {
+        }
+    };
+
+
 	
+
 	private final BroadcastReceiver mBtReceiver = new BroadcastReceiver() {
 
 		@Override
@@ -221,6 +247,7 @@ public class KBfinder extends Activity  {
 				deviceListAdapter = new KBdeviceListAdapter(context, A2dpService.deviceList , list);
 				list.setAdapter(deviceListAdapter);
 				list.setOnItemClickListener(onItemClickListener);  
+				mBluetoothAdapter.getProfileProxy(context, mProfileListener, BluetoothProfile.A2DP);
 			} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);    
                 KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
@@ -259,7 +286,7 @@ public class KBfinder extends Activity  {
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
                 if (device.getBondState()==BluetoothDevice.BOND_BONDED) {
-                	connectBluetoothA2dp(device.getAddress());
+                	connectBluetoothA2dp(device.getAddress());         	
                 }
             }
 		}

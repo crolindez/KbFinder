@@ -204,19 +204,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 					@Override
 					public void onClick(View v) 
 					{
-						AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
-	
-						long eventtime = SystemClock.uptimeMillis() - 1;
-						KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);
-						am.dispatchMediaKeyEvent(downEvent);
-	
-						eventtime++;
-						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);         
-						am.dispatchMediaKeyEvent(upEvent);
-	
-						/*Intent intent = new Intent("com.android.music.musicservicecommand");
-						intent.putExtra("command", "next");
-						mContext.sendBroadcast(intent);*/
+
 					}
 				});
 

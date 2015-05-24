@@ -1,10 +1,13 @@
 package es.carlosrolindez.kbfinder;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
+import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.IBluetooth;
 import android.bluetooth.IBluetoothA2dp;
 import android.content.ComponentName;
@@ -13,6 +16,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.widget.Toast;
 
 
 public class A2dpService {
@@ -58,6 +62,12 @@ public class A2dpService {
 		}
 
 	};
+	
+	
+	
+	
+
+	
 
 	private static void sendNames() {
 		BluetoothAdapter mBTA = BluetoothAdapter.getDefaultAdapter();
@@ -79,6 +89,7 @@ public class A2dpService {
 					if (currentName == null)
 						currentName = device.getName();
 					KBdevice kbdevice = new KBdevice(currentName,device);
+
 					if (kbdevice.deviceType != KBdevice.OTHER)
 						deviceList.add(kbdevice);
 								
