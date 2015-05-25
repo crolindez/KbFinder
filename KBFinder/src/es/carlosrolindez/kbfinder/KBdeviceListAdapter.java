@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import android.content.Context;
 import android.media.AudioManager;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -130,6 +129,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		deviceMAC.setText(device.deviceMAC);
 
 		if (device.connected) {
+//			localView.findViewById(R.id.device_type).setBackground(mContext.getResources().getDrawable(R.drawable.grill));
 			if ( (device.deviceType == KBdevice.IN_WALL) || (device.deviceType == KBdevice.ISELECT)) {
 				
 				button_previous.setVisibility(View.VISIBLE);
@@ -204,7 +204,13 @@ public class KBdeviceListAdapter extends BaseAdapter {
 					@Override
 					public void onClick(View v) 
 					{
-
+	/*			    	Intent intent = new Intent (view.getContext(), InfoActivity.class);
+				        Product product = (Product)parent.getItemAtPosition(position);
+			        	intent.putExtra(NavisionTool.LAUNCH_REFERENCE, product.reference);        	
+			        	intent.putExtra(NavisionTool.LAUNCH_DESCRIPTION, product.description);  
+			        	intent.putExtra(NavisionTool.LAUNCH_INFO_MODE, NavisionTool.INFO_MODE_SUMMARY);
+			        	startActivity(intent);
+			        	*/
 					}
 				});
 
@@ -215,6 +221,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 			button_previous.setVisibility(View.GONE);
 			button_play_pause.setVisibility(View.GONE);
 			button_next.setVisibility(View.GONE);
+//			localView.findViewById(R.id.device_type).setBackground(mContext.getResources().getDrawable(R.drawable.notconnected_selector));
 			
 			if (device.deviceType == KBdevice.SELECTBT)
 				localView.setOnTouchListener(new SwipeView(new KBfinderHolder(localView), position,listView));
