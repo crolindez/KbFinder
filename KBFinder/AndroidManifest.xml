@@ -14,7 +14,7 @@
 		android:label="@string/app_name"
 		android:theme="@style/AppTheme" >
 		<activity
-			android:name=".KBfinder"
+			android:name=".KBfinderActivity"
 			android:label="@string/app_name"
 			android:screenOrientation="portrait" >
 			<intent-filter>
@@ -22,5 +22,11 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+		<activity
+            android:name=".SelectBtActivity"
+            android:parentActivityName=".KBfinderActivity"
+            android:label="@string/app_name" >
+        </activity>
+		
 	</application>
 </manifest>

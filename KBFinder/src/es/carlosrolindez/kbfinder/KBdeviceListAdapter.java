@@ -4,6 +4,7 @@ package es.carlosrolindez.kbfinder;
 import java.util.ArrayList;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.os.SystemClock;
 import android.view.KeyEvent;
@@ -200,19 +201,15 @@ public class KBdeviceListAdapter extends BaseAdapter {
 				});
 			} else {
 				button_app.setVisibility(View.VISIBLE);
-				button_app.setOnClickListener(new OnClickListener() {
+/*				button_app.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) 
 					{
-	/*			    	Intent intent = new Intent (view.getContext(), InfoActivity.class);
-				        Product product = (Product)parent.getItemAtPosition(position);
-			        	intent.putExtra(NavisionTool.LAUNCH_REFERENCE, product.reference);        	
-			        	intent.putExtra(NavisionTool.LAUNCH_DESCRIPTION, product.description);  
-			        	intent.putExtra(NavisionTool.LAUNCH_INFO_MODE, NavisionTool.INFO_MODE_SUMMARY);
-			        	startActivity(intent);
-			        	*/
+				    	Intent intent = new Intent (v.getContext(), SelectBtActivity.class);
+			        	intent.putExtra(SelectBtActivity.LAUNCH_MAC, device.deviceMAC);        	
+			        	v.getContext().startActivity(intent);
 					}
-				});
+				});*/
 
 				localView.setOnTouchListener(null);
 			}
@@ -287,8 +284,10 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	        			listView.requestDisallowInterceptTouchEvent(false);
 	        			motionInterceptDisallowed = false;
 	        		} else {
-	        			//TODO
-	        			
+	        			TextView deviceMAC = (TextView)view.findViewById(R.id.device_mac);
+				    	Intent intent = new Intent (mContext, SelectBtActivity.class);
+			        	intent.putExtra(SelectBtActivity.LAUNCH_MAC, deviceMAC.getText().toString());        	
+			        	mContext.startActivity(intent);	        			
 	        		}
 
 		            return true;          
