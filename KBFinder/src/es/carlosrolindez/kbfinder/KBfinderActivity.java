@@ -15,7 +15,6 @@ import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -182,7 +181,6 @@ public class KBfinderActivity extends Activity  {
                     for (BluetoothDevice a2dpDevice : a2dpConnectedDevices) {
                         KBdevice.connectDeviceInArray(a2dpDevice.getAddress(),A2dpService.deviceList);
          				deviceListAdapter.notifyDataSetChanged();
-                        Log.e(TAG,a2dpDevice.getName() + "A2dp detected");
                     }
                 }
                 mBluetoothAdapter.closeProfileProxy(BluetoothProfile.A2DP, btA2dp);

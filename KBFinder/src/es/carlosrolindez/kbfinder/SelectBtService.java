@@ -3,10 +3,8 @@ package es.carlosrolindez.kbfinder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.UUID;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
@@ -97,6 +95,11 @@ public class SelectBtService {
         setState(STATE_DISCONNECTED);
     }
 
+    public synchronized void write(byte[] out) {
+    	if (mConnectedThread == null) return;
+    	mConnectedThread.write(out);
+    }
+
 	/**
      * This thread runs while attempting to make an outgoing connection
      * with a device. It runs straight through; the connection either
@@ -115,7 +118,7 @@ public class SelectBtService {
         }
 
         public void run() {
-            Log.i(TAG, "BEGIN mConnectingThread");
+            Log.d(TAG, "BEGIN mConnectingThread");
             setName("ConnectingThread");
 
             // Make a connection to the BluetoothSocket
@@ -139,7 +142,7 @@ public class SelectBtService {
             // Start the thread to manage the connection and perform transmissions
             mConnectedThread = new ConnectedThread();
             mConnectedThread.start();
-            setState(STATE_CONNECTED);
+ //           setState(STATE_CONNECTED);
 
         }
     }
@@ -167,9 +170,10 @@ public class SelectBtService {
         }
 
         public void run() {
-            Log.i(TAG, "BEGIN mConnectedThread");
-            byte[] buffer = new byte[64];
+            Log.d(TAG, "BEGIN mConnectedThread");
+            byte[] buffer = new byte[255];
             int bytes;
+            setState(STATE_CONNECTED);
 
             // Keep listening to the InputStream while connected
             while (true) {
@@ -197,7 +201,7 @@ public class SelectBtService {
         public void write(byte[] buffer) {
             try {
                 mmOutStream.write(buffer);
-
+                mmOutStream.write(0x13);
                 // Share the sent message back to the UI Activity
                 mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
                         .sendToTarget();

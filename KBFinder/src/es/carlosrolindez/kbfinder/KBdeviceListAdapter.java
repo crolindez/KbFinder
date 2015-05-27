@@ -197,10 +197,9 @@ public class KBdeviceListAdapter extends BaseAdapter {
 					public void onClick(View v) 
 					{
 	            		BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
-	        			String deviceMAC = ((TextView) v.findViewById(R.id.device_mac)).getText().toString();
 	        			
 	                   	Intent localIntent = new Intent (mContext, SelectBtActivity.class);
-	                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, deviceMAC);        	
+	                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, device.deviceMAC);        	
 	                   	mContext.startActivity(localIntent);
 					}
 				});
