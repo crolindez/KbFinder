@@ -1,10 +1,13 @@
 package es.carlosrolindez.kbfinder;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.widget.TextView;
 
 public class SelectBtActivity extends Activity {
 	
@@ -18,7 +21,7 @@ public class SelectBtActivity extends Activity {
 		Intent myIntent = getIntent();
     	
 	    String deviceMAC = myIntent.getStringExtra(SelectBtActivity.LAUNCH_MAC);	
-		
+
 		SelectBtHandler handler = new SelectBtHandler();
 		service = new SelectBtService(this, handler, deviceMAC);
 		service.start();		

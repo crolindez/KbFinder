@@ -23,7 +23,6 @@ import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class KBfinderActivity extends Activity  {
@@ -61,9 +60,8 @@ public class KBfinderActivity extends Activity  {
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
-        } /*else if (mChatService == null) {
-            setupChat();
-        }*/
+        };
+
     }
     
     @Override
@@ -107,24 +105,6 @@ public class KBfinderActivity extends Activity  {
                 }
         }
     }
-    
-    public void onClickSelectBT(View view)
-    {
-		BluetoothDevice device;
-		
-		mBluetoothAdapter.cancelDiscovery();
-		String deviceMAC = ((TextView) view.findViewById(R.id.device_mac)).getText().toString();
-
-		if   ((device = KBdevice.deviceInArray(A2dpService.deviceList, deviceMAC)) == null) 
-			return;
-			
-		Log.e("clave"," "+KBdevice.password(deviceMAC));
-	
-		if (device.getBondState() != BluetoothDevice.BOND_BONDED)
-			device.createBond();
-
-		connectBluetoothA2dp(deviceMAC);
-	}
 
 	OnItemClickListener onItemClickListener = new OnItemClickListener() 
 	{
@@ -166,9 +146,7 @@ public class KBfinderActivity extends Activity  {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
+
 		switch (item.getItemId())
 		{
 	        case R.id.bt_scan: 
@@ -194,6 +172,7 @@ public class KBfinderActivity extends Activity  {
 		A2dpService.startA2dp(this);
 
 	}
+	
 	BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
         public void onServiceConnected(int profile, BluetoothProfile proxy) {
             if (profile == BluetoothProfile.A2DP) {
@@ -228,16 +207,12 @@ public class KBfinderActivity extends Activity  {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 
-//                device.fetchUuidsWithSdp();
-                // TODO
-                {
-					KBdevice kbdevice = new KBdevice(device.getName(), device);
-                	if (KBdevice.deviceInArray(A2dpService.deviceList, device.getAddress())!=null) return;
-					if (kbdevice.deviceType == KBdevice.OTHER) return;
-					A2dpService.deviceList.add(kbdevice);
-					deviceListAdapter.notifyDataSetChanged();
+				KBdevice kbdevice = new KBdevice(device.getName(), device);
+            	if (KBdevice.deviceInArray(A2dpService.deviceList, device.getAddress())!=null) return;
+				if (kbdevice.deviceType == KBdevice.OTHER) return;
+				A2dpService.deviceList.add(kbdevice);
+				deviceListAdapter.notifyDataSetChanged();
 					
-                }
             // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 setProgressBarIndeterminateVisibility(false);
@@ -248,18 +223,19 @@ public class KBfinderActivity extends Activity  {
 				list.setAdapter(deviceListAdapter);
 				list.setOnItemClickListener(onItemClickListener);  
 				mBluetoothAdapter.getProfileProxy(context, mProfileListener, BluetoothProfile.A2DP);
+				
 			} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);    
                 KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
- 				deviceListAdapter.notifyDataSetChanged();
-                Toast.makeText(getApplicationContext(), device.getName() + " A2dp Connected", Toast.LENGTH_SHORT).show();
+                deviceListAdapter.notifyDataSetChanged();
+                Toast.makeText(getApplicationContext(), device.getName() + " Connected", Toast.LENGTH_SHORT).show();
 
                 if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.IN_WALL) {
 	                new CountDownTimer(2000, 1000) {
 	                	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 	    				@Override
 	    				public void onFinish() {
-	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) *0.5),	AudioManager.FLAG_SHOW_UI);
+	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) *0.6),	AudioManager.FLAG_SHOW_UI);
 	    				}
 	    				@Override
 	    				public void onTick(long millisUntilFinished) {
@@ -270,7 +246,7 @@ public class KBfinderActivity extends Activity  {
 	                	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 	    				@Override
 	    				public void onFinish() {
-	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * 0.8), AudioManager.FLAG_SHOW_UI);
+	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * 0.9), AudioManager.FLAG_SHOW_UI);
 	    				}
 	    				@Override
 	    				public void onTick(long millisUntilFinished) {
@@ -284,9 +260,15 @@ public class KBfinderActivity extends Activity  {
                 Toast.makeText(getApplicationContext(), device.getName() + " A2dp Disconnected", Toast.LENGTH_SHORT).show();
 				deviceListAdapter.notifyDataSetChanged();
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 if (device.getBondState()==BluetoothDevice.BOND_BONDED) {
-                	connectBluetoothA2dp(device.getAddress());         	
+                	if ((KBdevice.getDeviceType(device.getAddress()) == KBdevice.IN_WALL) || (KBdevice.getDeviceType(device.getAddress()) == KBdevice.ISELECT)) {
+                    	connectBluetoothA2dp(device.getAddress());  
+	            	} else if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.SELECTBT) {
+	                   	Intent localIntent = new Intent (context, SelectBtActivity.class);
+	                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, device.getAddress());        	
+	                   	context.startActivity(localIntent);
+	                }
                 }
             }
 		}
@@ -318,7 +300,6 @@ public class KBfinderActivity extends Activity  {
 		protected Boolean doInBackground(String... arg0) {
 			
 			BluetoothDevice device;
-//	        BluetoothSocket socket;
 
 			BluetoothAdapter mBTA = BluetoothAdapter.getDefaultAdapter();
 			if (mBTA == null || !mBTA.isEnabled())

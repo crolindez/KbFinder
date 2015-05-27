@@ -3,6 +3,8 @@ package es.carlosrolindez.kbfinder;
 
 import java.util.ArrayList;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -28,7 +30,6 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	private ArrayList<KBdevice> mKBdeviceList;
 	private Context mContext;
 	private ListView listView;
-//	private SwipeListViewTouchListener.OnClickCallBack mCallBack;
 	
 	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList,ListView list)
 	{
@@ -130,7 +131,6 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		deviceMAC.setText(device.deviceMAC);
 
 		if (device.connected) {
-//			localView.findViewById(R.id.device_type).setBackground(mContext.getResources().getDrawable(R.drawable.grill));
 			if ( (device.deviceType == KBdevice.IN_WALL) || (device.deviceType == KBdevice.ISELECT)) {
 				
 				button_previous.setVisibility(View.VISIBLE);
@@ -151,10 +151,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 						eventtime++;
 						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0);         
 						am.dispatchMediaKeyEvent(upEvent);
-						
-						/*Intent intent = new Intent("com.android.music.musicservicecommand");
-						intent.putExtra("command", "previous");
-						mContext.sendBroadcast(intent);*/
+
 					}
 				});
 	
@@ -172,10 +169,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 						eventtime++;
 						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, 0);         
 						am.dispatchMediaKeyEvent(upEvent);
-						
-						/*Intent intent = new Intent("com.android.music.musicservicecommand");
-						intent.putExtra("command", "togglepause");
-						mContext.sendBroadcast(intent);*/
+
 					}
 				});
 	
@@ -194,31 +188,34 @@ public class KBdeviceListAdapter extends BaseAdapter {
 						KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_NEXT, 0);         
 						am.dispatchMediaKeyEvent(upEvent);
 	
-						/*Intent intent = new Intent("com.android.music.musicservicecommand");
-						intent.putExtra("command", "next");
-						mContext.sendBroadcast(intent);*/
 					}
 				});
 			} else {
 				button_app.setVisibility(View.VISIBLE);
-/*				button_app.setOnClickListener(new OnClickListener() {
+				button_app.setOnClickListener(new OnClickListener() {
 					@Override
 					public void onClick(View v) 
 					{
-				    	Intent intent = new Intent (v.getContext(), SelectBtActivity.class);
-			        	intent.putExtra(SelectBtActivity.LAUNCH_MAC, device.deviceMAC);        	
-			        	v.getContext().startActivity(intent);
+	            		BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+	        			String deviceMAC = ((TextView) v.findViewById(R.id.device_mac)).getText().toString();
+	        			
+	                   	Intent localIntent = new Intent (mContext, SelectBtActivity.class);
+	                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, deviceMAC);        	
+	                   	mContext.startActivity(localIntent);
 					}
-				});*/
+				});
+				if (device.deviceType == KBdevice.SELECTBT)
+					localView.setOnTouchListener(new SwipeView(new KBfinderHolder(localView), position,listView));
+				else 
+					localView.setOnTouchListener(null);				
 
 				localView.setOnTouchListener(null);
 			}
-		} else {
+		} else {  // not connected
 			button_app.setVisibility(View.GONE);
 			button_previous.setVisibility(View.GONE);
 			button_play_pause.setVisibility(View.GONE);
 			button_next.setVisibility(View.GONE);
-//			localView.findViewById(R.id.device_type).setBackground(mContext.getResources().getDrawable(R.drawable.notconnected_selector));
 			
 			if (device.deviceType == KBdevice.SELECTBT)
 				localView.setOnTouchListener(new SwipeView(new KBfinderHolder(localView), position,listView));
@@ -284,10 +281,23 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	        			listView.requestDisallowInterceptTouchEvent(false);
 	        			motionInterceptDisallowed = false;
 	        		} else {
-	        			TextView deviceMAC = (TextView)view.findViewById(R.id.device_mac);
-				    	Intent intent = new Intent (mContext, SelectBtActivity.class);
-			        	intent.putExtra(SelectBtActivity.LAUNCH_MAC, deviceMAC.getText().toString());        	
-			        	mContext.startActivity(intent);	        			
+	        		    BluetoothDevice device;
+
+	        		    String deviceMAC = ((TextView) view.findViewById(R.id.device_mac)).getText().toString();
+	            		BluetoothAdapter.getDefaultAdapter().cancelDiscovery();
+	        			
+	            		if   ((device = KBdevice.deviceInArray(A2dpService.deviceList, deviceMAC)) != null) {
+	        				if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
+	        					device.createBond();
+	        				} else {
+			                   	Intent localIntent = new Intent (mContext, SelectBtActivity.class);
+			                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, deviceMAC);        	
+			                   	mContext.startActivity(localIntent);
+        					}
+	            		}
+	        			
+	        			
+			        			
 	        		}
 
 		            return true;          
@@ -319,8 +329,6 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	    
 
 	}
-
-
 
 
 	public  void showResultSet(  ArrayList<KBdevice> deviceList)
