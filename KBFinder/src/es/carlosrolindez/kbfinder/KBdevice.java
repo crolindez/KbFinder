@@ -121,4 +121,14 @@ public class KBdevice  {
 				
 	}
 	
+	public static String findConnectedDevice(ArrayList<KBdevice> deviceList) {
+		for (KBdevice device : deviceList)
+		{
+			if (device.connected) {
+				return device.deviceMAC;
+			}
+		}
+		return null;
+	}
+	
 }

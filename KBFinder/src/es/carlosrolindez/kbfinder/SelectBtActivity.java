@@ -22,6 +22,8 @@ public class SelectBtActivity extends Activity {
 	private final SelectBtHandler  handler = new SelectBtHandler();
 	
 	private static int answerPending = 0;
+	
+	private static String message;
 
 	private static final int NO_QUESTION = 0;
 	private static final int QUESTION_ALL = 1;
@@ -65,36 +67,50 @@ public class SelectBtActivity extends Activity {
     }
 	
 
-	private static String getString(String message) {
+	private static String getStringFromMessage() {
 		if (message.isEmpty()) return "";
 		String arr[] = message.split(" ", 2);
-		message = arr[1]; 
+		message = arr[1].trim(); 
 		return arr[0];		
 	}
-	public static void interpreter(String message) {
-		String header = getString(message);
+	
+	private static String getIdentifierFromMessage() {
+		if (message.isEmpty()) return "";   // first "
+		String arr[] = message.split("\"", 2);
+		message = arr[1]; 
+		if (message.isEmpty()) return "";	// second "
+		arr = message.split("\"", 2);
+		message = arr[1].trim(); 			// remove space after "
+		return arr[0];		
+
+	
+	}
+	
+	public static void interpreter(String m) {
+
+		message = m;
 
 		switch (answerPending) {
-		case QUESTION_ALL:
-			String password = getString(message);
-			String identifier = getString(message);
-			String standByState = getString(message);
-			String standByMasterSettings = getString(message);
-			String standBySlaveSettings = getString(message);
-			String autoPowerMaster = getString(message);
-			String autoPowerSlave = getString(message);
-			String autoPowerVolume = getString(message);
-			String autoPowerFM = getString(message);
-			String autoPowerEQ = getString(message);
-			String channel = getString(message);
-			String stationFM = getString(message);
-			String infoRDS = getString(message);
-			String tunerSensitivity = getString(message);
-			String equalizationMode = getString(message);
-			String volumeFM = getString(message);	
-			String keepFmOn = getString(message);
-			Log.e("Password",password);
-			break;
+			case QUESTION_ALL:
+				String password = getStringFromMessage();						Log.e("Password",password);
+				String identifier = getIdentifierFromMessage();					Log.e("identifier",identifier);
+				String standByState = getStringFromMessage();					Log.e("standByState",standByState);
+				String standByMasterSettings = getStringFromMessage();			Log.e("standByMasterSettings",standByMasterSettings);
+				String standBySlaveSettings = getStringFromMessage();			Log.e("standBySlaveSettings",standBySlaveSettings);
+				String autoPowerMaster = getStringFromMessage();				Log.e("autoPowerMaster",autoPowerMaster);
+				String autoPowerSlave = getStringFromMessage();					Log.e("autoPowerSlave",autoPowerSlave);
+				String autoPowerVolume = getStringFromMessage();				Log.e("autoPowerVolume",autoPowerVolume);
+				String autoPowerFM = getStringFromMessage();					Log.e("autoPowerFM",autoPowerFM);
+				String autoPowerEQ = getStringFromMessage();					Log.e("autoPowerEQ",autoPowerEQ);
+				String channel = getStringFromMessage();						Log.e("channel",channel);
+				String stationFM = getStringFromMessage();						Log.e("stationFM",stationFM);
+				String infoRDS = getStringFromMessage();						Log.e("infoRDS",infoRDS);
+				String tunerSensitivity = getStringFromMessage();				Log.e("tunerSensitivity",tunerSensitivity);
+				String equalizationMode = getStringFromMessage();				Log.e("equalizationMode",equalizationMode);
+				String volumeFM = getStringFromMessage();						Log.e("volumeFM",volumeFM);
+				String keepFmOn = message;										Log.e("keepFmOn",keepFmOn);
+	
+				break;
 			
 		} 
 		answerPending = NO_QUESTION;
@@ -118,7 +134,12 @@ public class SelectBtActivity extends Activity {
 	            case MESSAGE_STATE_CHANGE:
 	                switch (msg.arg1) {
                     	case SelectBtService.STATE_CONNECTED:
-                    		askAll();
+                    		new Handler().postDelayed(new Runnable() {
+                    		    @Override
+                    		    public void run() {
+                    		    	askAll();               
+                    		    }
+                    		}, 300);
                     		break;
 	                    case SelectBtService.STATE_CONNECTING:
 	                    case SelectBtService.STATE_DISCONNECTED:

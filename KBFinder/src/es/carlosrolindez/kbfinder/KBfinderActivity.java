@@ -24,7 +24,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class KBfinderActivity extends Activity  {
+public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.ConnectOnClick {
 	private static String TAG = "KBfinder";
 	
 	private boolean namesReceiverRegistered = false;
@@ -35,7 +35,7 @@ public class KBfinderActivity extends Activity  {
     private KBdeviceListAdapter deviceListAdapter = null;
     
     private String connectingMAC;
-    
+ 
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -160,7 +160,7 @@ public class KBfinderActivity extends Activity  {
 		return super.onOptionsItemSelected(item);
 	}
 	
-	private void connectBluetoothA2dp(String deviceMAC) {
+	public void connectBluetoothA2dp(String deviceMAC) {
 		connectingMAC = deviceMAC;
 		
 		if (!a2dpReceiverRegistered) {
@@ -217,7 +217,7 @@ public class KBfinderActivity extends Activity  {
             
             } else if (Constants.NameFilter.equals(action)) {
 				ListView list = (ListView)findViewById(R.id.list);  
-				deviceListAdapter = new KBdeviceListAdapter(context, A2dpService.deviceList , list);
+				deviceListAdapter = new KBdeviceListAdapter(context, A2dpService.deviceList , list, (KBfinderActivity)context);
 				list.setAdapter(deviceListAdapter);
 				list.setOnItemClickListener(onItemClickListener);  
 				mBluetoothAdapter.getProfileProxy(context, mProfileListener, BluetoothProfile.A2DP);
@@ -263,6 +263,11 @@ public class KBfinderActivity extends Activity  {
                 	if ((KBdevice.getDeviceType(device.getAddress()) == KBdevice.IN_WALL) || (KBdevice.getDeviceType(device.getAddress()) == KBdevice.ISELECT)) {
                     	connectBluetoothA2dp(device.getAddress());  
 	            	} else if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.SELECTBT) {
+	            		//disconnect current A2dp connection (if different to current device)
+	        			String MAC = KBdevice.findConnectedDevice(A2dpService.deviceList);
+	        			if ( (MAC!=null) && (!MAC.equals(device.getAddress())) )
+	        				connectBluetoothA2dp(MAC);
+	        			
 	                   	Intent localIntent = new Intent (context, SelectBtActivity.class);
 	                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, device.getAddress());        	
 	                   	context.startActivity(localIntent);
@@ -307,7 +312,7 @@ public class KBfinderActivity extends Activity  {
 			}
 
 			try {
-				if ( (A2dpService.iBtA2dp != null) && (A2dpService.iBtA2dp.getConnectionState(device) == 0)  && (device.getBondState() == BluetoothDevice.BOND_BONDED) ) {
+				if ( (A2dpService.iBtA2dp != null) && (A2dpService.iBtA2dp.getConnectionState(device) == 0) ) {
 					A2dpService.iBtA2dp.connect(device);
 				} else {
 					A2dpService.iBtA2dp.disconnect(device);
