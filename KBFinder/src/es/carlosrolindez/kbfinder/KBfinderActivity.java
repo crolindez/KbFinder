@@ -233,7 +233,7 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 	                	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 	    				@Override
 	    				public void onFinish() {
-	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) *0.6),	AudioManager.FLAG_SHOW_UI);
+	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) *0.6),	0);
 	    				}
 	    				@Override
 	    				public void onTick(long millisUntilFinished) {
@@ -244,7 +244,7 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 	                	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 	    				@Override
 	    				public void onFinish() {
-	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * 0.9), AudioManager.FLAG_SHOW_UI);
+	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * 0.9), 0);
 	    				}
 	    				@Override
 	    				public void onTick(long millisUntilFinished) {
