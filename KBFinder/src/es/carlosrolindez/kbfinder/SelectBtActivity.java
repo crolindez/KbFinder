@@ -1,19 +1,22 @@
 package es.carlosrolindez.kbfinder;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-public class SelectBtActivity extends Activity {
+public class SelectBtActivity extends FragmentActivity {
 	
 	public static final String LAUNCH_MAC = "Launcher MAC intent";
 	private static SelectBtService service;
@@ -25,8 +28,11 @@ public class SelectBtActivity extends Activity {
 
 	private static final int NO_QUESTION = 0;
 	private static final int QUESTION_ALL = 1;
-	
-	private static Context context;
+
+	// swipe fragments
+    private static final int NUM_PAGES = 2;
+    private ViewPager mPager;
+ //   private PagerAdapter mPagerAdapter;
 	
 	// animation
 	private	static AnimationDrawable frameAnimation;
@@ -46,7 +52,10 @@ public class SelectBtActivity extends Activity {
 		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
 		
-		
+        // Instantiate a ViewPager and a PagerAdapter.
+        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager.setAdapter(new ScreenSlidePagerAdapter(getSupportFragmentManager()));
+ 		
         splashImageView.post(new Runnable(){
 		            @Override
 		            public void run() {
@@ -226,5 +235,25 @@ public class SelectBtActivity extends Activity {
 	        }
 	    }
 	}
+
+    private class ScreenSlidePagerAdapter extends FragmentPagerAdapter {
+        public ScreenSlidePagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+        	if (position == 1)
+        		return new BtFragment("1");
+        	else
+        		return new BtFragment("0");       		
+        }
+
+        @Override
+        public int getCount() {
+            return NUM_PAGES;
+        }
+    }
+	
 
 }
