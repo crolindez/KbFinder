@@ -9,37 +9,52 @@
 	tools:context="es.carlosrolindez.kbfinder.KBfinderActivity"
 	android:background="@drawable/grill">
     <RelativeLayout
-    	android:id="@+id/SplashLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#ff000000"
-        android:orientation="horizontal" >       
-		<ImageView
-	 		android:id="@+id/SplashImageView"
-	 		android:layout_width="150dp"
-	 		android:layout_height="150dp"
-	 		android:layout_centerHorizontal="true"
-	 		android:layout_centerVertical="true" />
-	</RelativeLayout>    
-    <RelativeLayout
-    	android:id="@+id/ControlLoyaut"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#ff000000"
-        android:visibility="invisible" >
- 		 <ImageButton
- 			android:id="@+id/AuxPower"
- 			android:layout_width="48dp"
- 			android:layout_height="48dp"
- 			android:layout_alignParentRight="true"
- 			android:layout_alignParentTop="true"
- 			android:background="@drawable/ic_launcher" />
-		<ImageButton
-			android:id="@+id/MainPower"
-			android:layout_width="48dp"
-			android:layout_height="48dp"
-			android:layout_alignParentTop="true"
-			android:layout_toLeftOf="@+id/AuxPower"
-			android:background="@drawable/ic_launcher" />
+        android:layout_height="match_parent"  
+        android:padding="3dp"
+        android:background="@drawable/windows" >       
+		<RelativeLayout
+	    	android:id="@+id/SplashLayout"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:background="@drawable/window_gradient"
+	        android:orientation="horizontal" >       
+			<ImageView
+		 		android:id="@+id/SplashImageView"
+		 		android:layout_width="150dp"
+		 		android:layout_height="150dp"
+		 		android:layout_centerHorizontal="true"
+		 		android:layout_centerVertical="true" />
+		</RelativeLayout>    
+	    <RelativeLayout
+	    	android:id="@+id/ControlLoyaut"
+	        android:layout_width="match_parent"
+	        android:layout_height="match_parent"
+	        android:background="@drawable/window_gradient"
+	        android:visibility="invisible" >
+			<ImageButton
+				android:id="@+id/MainPower"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:layout_margin="10dp"
+				android:layout_alignParentTop="true"
+				android:layout_alignParentRight="true"
+				android:background="@drawable/ic_launcher" />
+			<ImageButton
+				android:id="@+id/volumeControl"
+				android:layout_width="match_parent"
+				android:layout_height="48dp"
+				android:layout_margin="10dp"
+				android:layout_alignParentBottom="true"
+				android:background="@drawable/ic_launcher" />
+			<RelativeLayout
+				android:id="@+id/sourceLayout"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:layout_above="@+id/volumeControl"
+				android:layout_below="@+id/MainPower"
+				android:background="@drawable/windows" >
+			</RelativeLayout>        		
+		</RelativeLayout>        
 	</RelativeLayout>        
 </RelativeLayout>  

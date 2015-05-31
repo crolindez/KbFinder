@@ -1,6 +1,7 @@
 package es.carlosrolindez.kbfinder;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 public class SelectBtActivity extends Activity {
 	
@@ -18,10 +20,13 @@ public class SelectBtActivity extends Activity {
 	private final SelectBtHandler  handler = new SelectBtHandler();
 	
 	private static boolean bootPending;
+	private static boolean closeWhenPossible;
 	private static int answerPending = 0;
 
 	private static final int NO_QUESTION = 0;
 	private static final int QUESTION_ALL = 1;
+	
+	private static Context context;
 	
 	// animation
 	private	static AnimationDrawable frameAnimation;
@@ -41,6 +46,7 @@ public class SelectBtActivity extends Activity {
 		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
 		
+		
         splashImageView.post(new Runnable(){
 		            @Override
 		            public void run() {
@@ -49,6 +55,7 @@ public class SelectBtActivity extends Activity {
 		        }); 
 		
 		bootPending = true;
+		closeWhenPossible = false;
           
 		new Handler().postDelayed(new Runnable() {
 		    @Override
@@ -67,16 +74,14 @@ public class SelectBtActivity extends Activity {
     }
 
 	
-	@Override
-	protected void onDestroy() {
-		service.stop();
-		super.onDestroy();
-	}
 
 	public void closeIfNotBooted() {
-		if (bootPending) finish();
+		if (bootPending) {
+		    Toast.makeText(this, getString(R.string.device_not_availabe), Toast.LENGTH_LONG).show();
+			finish();
+		}
 	}
-	
+		
 	public static void askAll() {
 		service.write(("ALL ? \r").getBytes());
 		answerPending = QUESTION_ALL;
@@ -123,7 +128,13 @@ public class SelectBtActivity extends Activity {
 		bootPending = false;
 
 	}
-	
+
+	@Override
+	protected void onDestroy() {
+		service.stop();
+		super.onDestroy();
+	}
+		
 	public static void interpreter(String m) {
 
 		MessageExtractor messageExtractor = new MessageExtractor(m);
@@ -157,7 +168,7 @@ public class SelectBtActivity extends Activity {
 		answerPending = NO_QUESTION;
 		
 	}
-	
+
 
 	
 
@@ -186,9 +197,11 @@ public class SelectBtActivity extends Activity {
                     		    }
                     		}, 300);
                     		break;
-	                    case SelectBtService.STATE_CONNECTING:
+
 	                    case SelectBtService.STATE_DISCONNECTED:
-	                    	
+	                    	closeWhenPossible = true;
+	                    	break;
+	                    case SelectBtService.STATE_CONNECTING:
 	                    case SelectBtService.STATE_NONE:
 
 

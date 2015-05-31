@@ -6,4 +6,5 @@
 	<string name="bt_not_enabled">Bluetooth is not enabled</string>
 	<string name="a2dp_connected">A2dp Connected</string>
 	<string name="a2dp_disconnected">A2dp Disconnected</string>
+	<string name="device_not_availabe">Device not available</string>	
 </resources>
