@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 
 public class BtFragment extends Fragment {
-	private String fragmentName;
+	public String fragmentName;
 	
 	public BtFragment(String name) {
 		fragmentName =  name;

@@ -1,5 +1,6 @@
 package es.carlosrolindez.kbfinder;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -28,10 +30,15 @@ public class SelectBtActivity extends FragmentActivity {
 
 	private static final int NO_QUESTION = 0;
 	private static final int QUESTION_ALL = 1;
+	
+	private static SelectBtState selectBtState;
+	
+	private static ImageButton mainButton;
 
 	// swipe fragments
     private static final int NUM_PAGES = 2;
     private ViewPager mPager;
+    private ScreenSlidePagerAdapter mAdapter;
  //   private PagerAdapter mPagerAdapter;
 	
 	// animation
@@ -46,15 +53,19 @@ public class SelectBtActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_selectbt);
 		
+		selectBtState = new SelectBtState();
+		
 		splashImageView = (ImageView) findViewById(R.id.SplashImageView);
 		splashImageView.setBackgroundResource(R.drawable.on_animation);
 		frameAnimation = (AnimationDrawable)splashImageView.getBackground(); 
 		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
+		mainButton = (ImageButton) findViewById(R.id.MainPower);
 		
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) findViewById(R.id.pager);
-        mPager.setAdapter(new ScreenSlidePagerAdapter(getSupportFragmentManager()));
+        mAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
+        mPager.setAdapter(mAdapter);
  		
         splashImageView.post(new Runnable(){
 		            @Override
@@ -73,6 +84,13 @@ public class SelectBtActivity extends FragmentActivity {
 		    }
 		}, 10000);
 
+		mainButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				switchOnOffState();				
+			}
+		});
 		
 		Intent myIntent = getIntent();
     	
@@ -94,6 +112,11 @@ public class SelectBtActivity extends FragmentActivity {
 	public static void askAll() {
 		service.write(("ALL ? \r").getBytes());
 		answerPending = QUESTION_ALL;
+    }
+	
+	public static void writeOnOffState(boolean onOff) {
+		if (onOff) 	service.write(("STB OFF \r").getBytes());
+		else 		service.write(("STB ON \r").getBytes());
     }
 	
 	
@@ -144,6 +167,17 @@ public class SelectBtActivity extends FragmentActivity {
 		super.onDestroy();
 	}
 		
+	public static void updateOnState(String OnOffString) {
+		selectBtState.updateOnOffState(OnOffString);
+		//mainButton.setBackgroundDrawable(background);
+	}
+	
+	public static void switchOnOffState() {
+		selectBtState.OnOff = !selectBtState.OnOff;
+		writeOnOffState(selectBtState.OnOff);
+		//mainButton.setBackgroundDrawable(background);	
+	}
+
 	public static void interpreter(String m) {
 
 		MessageExtractor messageExtractor = new MessageExtractor(m);
@@ -153,10 +187,12 @@ public class SelectBtActivity extends FragmentActivity {
 
 				String password = messageExtractor.getStringFromMessage();						Log.e("Password",password);
 				String identifier = messageExtractor.getIdentifierFromMessage();				Log.e("identifier",identifier);
-				String standByState = messageExtractor.getStringFromMessage();					Log.e("standByState",standByState);
+
+
+				updateOnState(messageExtractor.getStringFromMessage());
+				
 				String standByMasterSettings = messageExtractor.getStringFromMessage();			Log.e("standByMasterSettings",standByMasterSettings);
 				String standBySlaveSettings = messageExtractor.getStringFromMessage();			Log.e("standBySlaveSettings",standBySlaveSettings);
-//				updateOnState(standByState,standByMasterSettings,standBySlaveSettings);
 				
 				String autoPowerMaster = messageExtractor.getStringFromMessage();				Log.e("autoPowerMaster",autoPowerMaster);
 				String autoPowerSlave = messageExtractor.getStringFromMessage();				Log.e("autoPowerSlave",autoPowerSlave);
@@ -244,9 +280,9 @@ public class SelectBtActivity extends FragmentActivity {
         @Override
         public Fragment getItem(int position) {
         	if (position == 1)
-        		return new BtFragment("1");
+        		return new BtFragment("BT");
         	else
-        		return new BtFragment("0");       		
+        		return new BtFragment("FM");       		
         }
 
         @Override
@@ -255,5 +291,23 @@ public class SelectBtActivity extends FragmentActivity {
         }
     }
 	
+    
+    private class SelectBtState {
+    	boolean OnOff;
+    	String channel;
+    	
+    	
+    	public SelectBtState() {
+    		OnOff = false;
+    		channel = "BT"; 
+    	}
+    	
+    	public void updateOnOffState(String onOffString) {
+    		if (onOffString.equals("OFF"))
+    			OnOff = true;
+    		else
+    			OnOff = false;
+    	}
+    }
 
 }
