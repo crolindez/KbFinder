@@ -24,17 +24,18 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.ConnectOnClick {
+public class KBfinderActivity extends Activity  /*implements KBdeviceListAdapter.ConnectOnClick */{
 	private static String TAG = "KBfinder";
 	
-	private boolean namesReceiverRegistered = false;
-	private boolean a2dpReceiverRegistered = false;
+//	private boolean namesReceiverRegistered = false;
+//	private boolean a2dpReceiverRegistered = false;
 
     private BluetoothAdapter mBluetoothAdapter = null;
     
-    private KBdeviceListAdapter deviceListAdapter = null;
+ //   private KBdeviceListAdapter deviceListAdapter = null;
+   
     
-    private String connectingMAC;
+//    private String connectingMAC;
  
 	
 	@Override
@@ -59,15 +60,16 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
         if (!mBluetoothAdapter.isEnabled()) {
             Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableIntent, Constants.REQUEST_ENABLE_BT);
-        };
+        }
+        else
+    		new A2dpService(this, (ListView)findViewById(R.id.list));
 
     }
     
     @Override
     public void onResume() {
         super.onResume();
-
-		if (!namesReceiverRegistered) {
+/*		if (!namesReceiverRegistered) {
 			IntentFilter filter1 = new IntentFilter(Constants.NameFilter);
 			IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);			
 			IntentFilter filter3 = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);			
@@ -86,7 +88,7 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 	        namesReceiverRegistered = true;
 			
 	        A2dpService.searchBtPairedNames(this);
-		}
+		}*/
 		
     }
 
@@ -97,7 +99,7 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
             case Constants.REQUEST_ENABLE_BT:
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
-
+                		new A2dpService(this, (ListView)findViewById(R.id.list));
                 } else {
                     Toast.makeText(this, R.string.bt_not_enabled,Toast.LENGTH_SHORT).show();
                     finish();
@@ -105,7 +107,9 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
         }
     }
 
-	OnItemClickListener onItemClickListener = new OnItemClickListener() 
+/*
+  	OnItemClickListener onItemClickListener = new OnItemClickListener() 
+
 	{
 		@Override
     	public void onItemClick(AdapterView<?> parent, View view, int position, long id) 
@@ -116,21 +120,22 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 			if (device.mDevice.getBondState() != BluetoothDevice.BOND_BONDED)
 				device.mDevice.createBond();
 			else
-				connectBluetoothA2dp(device.deviceMAC);
+				A2dpService.connectBluetoothA2dp(view.getContext(), device.deviceMAC);
 				
     	}
 	};
-  
+ */ 
 		
 	@Override
 	protected void onDestroy() {
-		a2dpDone();
+		A2dpService.closeService();
+//		a2dpDone();
 		
-		if (namesReceiverRegistered) {
+/*		if (namesReceiverRegistered) {
 			unregisterReceiver(mBtReceiver);
 			namesReceiverRegistered = false;
 		}
-		A2dpService.doUnbindServiceBt();
+		A2dpService.doUnbindServiceBt();*/
 		super.onDestroy();
 	}
 		
@@ -160,7 +165,7 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 		return super.onOptionsItemSelected(item);
 	}
 	
-	public void connectBluetoothA2dp(String deviceMAC) {
+/*	public void connectBluetoothA2dp(String deviceMAC) {
 		connectingMAC = deviceMAC;
 		
 		if (!a2dpReceiverRegistered) {
@@ -171,8 +176,8 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 		A2dpService.startA2dp(this);
 
 	}
-	
-	BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
+*/	
+/*	BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
         public void onServiceConnected(int profile, BluetoothProfile proxy) {
             if (profile == BluetoothProfile.A2DP) {
                 BluetoothA2dp btA2dp = (BluetoothA2dp) proxy;
@@ -191,9 +196,9 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
         }
     };
 
-
+*/
 	
-
+/*
 	private final BroadcastReceiver mBtReceiver = new BroadcastReceiver() {
 
 		@Override
@@ -277,17 +282,17 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 		}
 
 	};
-	
-	private final BroadcastReceiver mA2dpReceiver = new BroadcastReceiver() {
+	*/
+/*	private final BroadcastReceiver mA2dpReceiver = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(Context arg0, Intent arg1) {
 			new connectA2dpTask().execute(connectingMAC);
 		}
 
-	};
+	};*/
 
-	private class connectA2dpTask extends AsyncTask<String, Void, Boolean> {
+/*	private class connectA2dpTask extends AsyncTask<String, Void, Boolean> {
 
 
 		@Override
@@ -324,7 +329,7 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
 		}
 
 	}	
-
+*/
 	
 	/**
      * Start device discover with the BluetoothAdapter
@@ -338,14 +343,14 @@ public class KBfinderActivity extends Activity  implements KBdeviceListAdapter.C
         mBluetoothAdapter.startDiscovery();
     }
     
-	private void a2dpDone() {
+/*	private void a2dpDone() {
 		if (a2dpReceiverRegistered) {
 			unregisterReceiver(mA2dpReceiver);
 			a2dpReceiverRegistered = false;
 		}
 		A2dpService.doUnbindServiceBtA2dp();
 
-	}
+	}*/
 
 
 

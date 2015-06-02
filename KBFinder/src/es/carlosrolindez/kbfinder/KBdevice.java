@@ -87,6 +87,16 @@ public class KBdevice  {
 		}	
 	}
 
+	public static boolean isDeviceConnected(String MAC,ArrayList<KBdevice> deviceList) {
+		for (KBdevice device : deviceList)
+		{
+			if (MAC.equals(device.deviceMAC)) {
+				return device.connected;
+			}
+		}	
+		return false;
+	}
+
 	public static long password(String MAC) {
 
 		String[] macAddressParts = MAC.split(":");

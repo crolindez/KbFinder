@@ -13,6 +13,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -21,8 +22,14 @@ import android.widget.Toast;
 public class SelectBtActivity extends FragmentActivity {
 	
 	public static final String LAUNCH_MAC = "Launcher MAC intent";
+	private static final int FM_CHANNEL = 0;
+	private static final int BT_CHANNEL = 1;
+	
 	private static SelectBtService service;
 	private final SelectBtHandler  handler = new SelectBtHandler();
+	private static Context mContext;
+	
+	private static String deviceMAC;
 	
 	private static boolean bootPending;
 	private static boolean closeWhenPossible;
@@ -53,20 +60,42 @@ public class SelectBtActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_selectbt);
 		
+		mContext = this;
 		selectBtState = new SelectBtState();
-		
+				
 		splashImageView = (ImageView) findViewById(R.id.SplashImageView);
 		splashImageView.setBackgroundResource(R.drawable.on_animation);
 		frameAnimation = (AnimationDrawable)splashImageView.getBackground(); 
 		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
 		mainButton = (ImageButton) findViewById(R.id.MainPower);
+	
+		Intent myIntent = getIntent();
+    	
+	    deviceMAC = myIntent.getStringExtra(SelectBtActivity.LAUNCH_MAC);	
+
+		service = new SelectBtService(this, handler, deviceMAC);
+		service.start();			
 		
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (ViewPager) findViewById(R.id.pager);
         mAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mAdapter);
- 		
+        mPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) 
+            {     
+            }
+            @Override
+            public void onPageScrollStateChanged(int state)
+            {
+            }
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
+            {
+            }
+       });
+        
         splashImageView.post(new Runnable(){
 		            @Override
 		            public void run() {
@@ -88,16 +117,11 @@ public class SelectBtActivity extends FragmentActivity {
 			
 			@Override
 			public void onClick(View v) {
-				switchOnOffState();				
+				selectBtState.switchOnOff();				
 			}
 		});
 		
-		Intent myIntent = getIntent();
-    	
-	    String deviceMAC = myIntent.getStringExtra(SelectBtActivity.LAUNCH_MAC);	
 
-		service = new SelectBtService(this, handler, deviceMAC);
-		service.start();	
     }
 
 	
@@ -117,6 +141,11 @@ public class SelectBtActivity extends FragmentActivity {
 	public static void writeOnOffState(boolean onOff) {
 		if (onOff) 	service.write(("STB OFF \r").getBytes());
 		else 		service.write(("STB ON \r").getBytes());
+    }
+	
+	public static void writeChannelState(int channel) {
+		if (channel == BT_CHANNEL) 	service.write(("CHN BT \r").getBytes());
+		else 		service.write(("CHN FM \r").getBytes());
     }
 	
 	
@@ -167,17 +196,6 @@ public class SelectBtActivity extends FragmentActivity {
 		super.onDestroy();
 	}
 		
-	public static void updateOnState(String OnOffString) {
-		selectBtState.updateOnOffState(OnOffString);
-		//mainButton.setBackgroundDrawable(background);
-	}
-	
-	public static void switchOnOffState() {
-		selectBtState.OnOff = !selectBtState.OnOff;
-		writeOnOffState(selectBtState.OnOff);
-		//mainButton.setBackgroundDrawable(background);	
-	}
-
 	public static void interpreter(String m) {
 
 		MessageExtractor messageExtractor = new MessageExtractor(m);
@@ -189,7 +207,7 @@ public class SelectBtActivity extends FragmentActivity {
 				String identifier = messageExtractor.getIdentifierFromMessage();				Log.e("identifier",identifier);
 
 
-				updateOnState(messageExtractor.getStringFromMessage());
+				selectBtState.updateOnOff(messageExtractor.getStringFromMessage());
 				
 				String standByMasterSettings = messageExtractor.getStringFromMessage();			Log.e("standByMasterSettings",standByMasterSettings);
 				String standBySlaveSettings = messageExtractor.getStringFromMessage();			Log.e("standBySlaveSettings",standBySlaveSettings);
@@ -199,7 +217,9 @@ public class SelectBtActivity extends FragmentActivity {
 				String autoPowerVolume = messageExtractor.getStringFromMessage();				Log.e("autoPowerVolume",autoPowerVolume);
 				String autoPowerFM = messageExtractor.getStringFromMessage();					Log.e("autoPowerFM",autoPowerFM);
 				String autoPowerEQ = messageExtractor.getStringFromMessage();					Log.e("autoPowerEQ",autoPowerEQ);
-				String channel = messageExtractor.getStringFromMessage();						Log.e("channel",channel);
+				
+				selectBtState.updateChannel(messageExtractor.getStringFromMessage());
+				
 				String stationFM = messageExtractor.getStringFromMessage();						Log.e("stationFM",stationFM);
 				String infoRDS = messageExtractor.getRDSFromMessage();							Log.e("infoRDS",infoRDS);
 				String tunerSensitivity = messageExtractor.getStringFromMessage();				Log.e("tunerSensitivity",tunerSensitivity);
@@ -279,7 +299,7 @@ public class SelectBtActivity extends FragmentActivity {
 
         @Override
         public Fragment getItem(int position) {
-        	if (position == 1)
+        	if (position == BT_CHANNEL)
         		return new BtFragment("BT");
         	else
         		return new BtFragment("FM");       		
@@ -289,25 +309,73 @@ public class SelectBtActivity extends FragmentActivity {
         public int getCount() {
             return NUM_PAGES;
         }
+        
+        @Override
+        public void finishUpdate(ViewGroup container) {
+        	super.finishUpdate(container);
+        }
     }
 	
     
     private class SelectBtState {
-    	boolean OnOff;
-    	String channel;
+    	boolean onOff;
+    	int channel;
     	
     	
     	public SelectBtState() {
-    		OnOff = false;
-    		channel = "BT"; 
+    		onOff = false;
+    		channel = BT_CHANNEL; 
     	}
     	
-    	public void updateOnOffState(String onOffString) {
+    	public void updateOnOff(String onOffString) {
     		if (onOffString.equals("OFF"))
-    			OnOff = true;
+    			onOff = true;
     		else
-    			OnOff = false;
+    			onOff = false;
+    		//mainButton.setBackgroundDrawable(background);	
     	}
+    	   	
+    	public void switchOnOff() {
+    		setOnOff(!onOff);	
+    	}
+
+    	public void setOnOff(boolean on) {
+    		onOff = on;
+    		writeOnOffState(onOff);
+    		//mainButton.setBackgroundDrawable(background);	
+    	}
+
+ 
+    	public void updateChannel(String channelString) {
+    		if (channelString.equals("BT")) {
+    			channel = BT_CHANNEL; 
+       			if (!KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
+    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+    		} else {
+    			channel = FM_CHANNEL;
+       			if (KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
+    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+    		}
+    		//view.setBackgroundDrawable(background);
+    	}
+    	   	
+    	public void setChannel(int numChannel) {
+    		writeChannelState(numChannel);	
+			channel = numChannel;
+    		if (numChannel == BT_CHANNEL) {
+    			if (!KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
+    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+    			//View.selectBtState.OnOff = !selectBtState.OnOff;
+    		} else {
+       			if (KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
+    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+       			//View.selectBtState.OnOff = !selectBtState.OnOff;    			
+    		}
+
+
+    	}
+
+    	
     }
 
 }

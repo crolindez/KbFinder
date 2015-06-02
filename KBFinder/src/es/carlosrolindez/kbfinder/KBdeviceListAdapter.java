@@ -31,19 +31,19 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	private Context mContext;
 	private ListView listView;
 	
-	private ConnectOnClick mConnectOnClick;
+//	private ConnectOnClick mConnectOnClick;
 	
-    public interface ConnectOnClick {
+/*    public interface ConnectOnClick {
     	public void connectBluetoothA2dp(String deviceMAC);   	
-    }
+    }*/
 	
-	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList,ListView list, ConnectOnClick connectOnClick)
+	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList,ListView list/*, ConnectOnClick connectOnClick*/)
 	{
 		mContext = context;
 		mKBdeviceList = deviceList;
 		inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		listView = list;
-		mConnectOnClick = connectOnClick;
+	//	mConnectOnClick = connectOnClick;
 	}
 	
 	@Override
@@ -208,7 +208,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	            		//disconnect current A2dp connection (if different to current device)
 	        			String MAC = KBdevice.findConnectedDevice(mKBdeviceList);
 	        			if ( (MAC!=null) && (!MAC.equals(device.deviceMAC)) )
-	        				mConnectOnClick.connectBluetoothA2dp(MAC);
+	        				A2dpService.connectBluetoothA2dp(mContext, MAC);
 	            		
 	                   	Intent localIntent = new Intent (mContext, SelectBtActivity.class);
 	                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, device.deviceMAC);        	
@@ -304,7 +304,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	    	            		//disconnect current A2dp connection (if different to current device)
 	    	        			String MAC = KBdevice.findConnectedDevice(mKBdeviceList);
 	    	        			if ( (MAC!=null) && (!MAC.equals(deviceMAC)) )
-	    	        				mConnectOnClick.connectBluetoothA2dp(MAC);
+	    	        				A2dpService.connectBluetoothA2dp(mContext, MAC);
 	    	        			
 			                   	Intent localIntent = new Intent (mContext, SelectBtActivity.class);
 			                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, deviceMAC);        	

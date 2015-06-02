@@ -21,7 +21,9 @@ public class BtFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.bt_fragment, container, false);
       	((TextView) rootView.findViewById(R.id.fragment_text)).setText(fragmentName);
         return rootView;	
-
+        
+        
     }
+    
 
 }
