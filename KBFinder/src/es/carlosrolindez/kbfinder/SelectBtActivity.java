@@ -3,6 +3,7 @@ package es.carlosrolindez.kbfinder;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -18,6 +19,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
+
+
+
+
 
 public class SelectBtActivity extends FragmentActivity {
 	
@@ -85,6 +90,8 @@ public class SelectBtActivity extends FragmentActivity {
             @Override
             public void onPageSelected(int position) 
             {     
+            	if (position == 1) selectBtState.setChannel(BT_CHANNEL);
+            	else  selectBtState.setChannel(FM_CHANNEL);
             }
             @Override
             public void onPageScrollStateChanged(int state)
@@ -310,10 +317,10 @@ public class SelectBtActivity extends FragmentActivity {
             return NUM_PAGES;
         }
         
-        @Override
+/*        @Override
         public void finishUpdate(ViewGroup container) {
         	super.finishUpdate(container);
-        }
+        }*/
     }
 	
     
@@ -349,12 +356,14 @@ public class SelectBtActivity extends FragmentActivity {
     	public void updateChannel(String channelString) {
     		if (channelString.equals("BT")) {
     			channel = BT_CHANNEL; 
-       			if (!KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
-    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+          		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+        		}
     		} else {
     			channel = FM_CHANNEL;
-       			if (KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
-    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+           		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+        		}
     		}
     		//view.setBackgroundDrawable(background);
     	}
@@ -363,15 +372,15 @@ public class SelectBtActivity extends FragmentActivity {
     		writeChannelState(numChannel);	
 			channel = numChannel;
     		if (numChannel == BT_CHANNEL) {
-    			if (!KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
-    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-    			//View.selectBtState.OnOff = !selectBtState.OnOff;
+        		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+        		}
     		} else {
-       			if (KBdevice.isDeviceConnected(deviceMAC,A2dpService.deviceList))
-    				A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-       			//View.selectBtState.OnOff = !selectBtState.OnOff;    			
+        		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+        		}
     		}
-
+   			//View.selectBtState.OnOff = !selectBtState.OnOff;    			
 
     	}
 

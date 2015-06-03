@@ -1,6 +1,5 @@
 package es.carlosrolindez.kbfinder;
 
-
 import java.util.ArrayList;
 
 import android.bluetooth.BluetoothAdapter;
@@ -21,6 +20,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+
 
 
 public class KBdeviceListAdapter extends BaseAdapter {

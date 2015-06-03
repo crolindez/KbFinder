@@ -23,9 +23,9 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
 
 public class A2dpService {
@@ -257,7 +257,7 @@ public class A2dpService {
             	((KBfinderActivity)context).setProgressBarIndeterminateVisibility(false);
             
             } else if (Constants.NameFilter.equals(action)) {
-				deviceListAdapter = new KBdeviceListAdapter(context, deviceList , mListView);
+				deviceListAdapter = new KBdeviceListAdapter(mContextBt, deviceList , mListView);
 				mListView.setAdapter(deviceListAdapter);
 				mListView.setOnItemClickListener(new OnItemClickListener() 
 				{

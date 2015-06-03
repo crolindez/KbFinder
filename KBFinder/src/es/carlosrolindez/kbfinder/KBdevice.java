@@ -1,7 +1,6 @@
 package es.carlosrolindez.kbfinder;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import android.bluetooth.BluetoothDevice;
 
@@ -96,6 +95,7 @@ public class KBdevice  {
 		}	
 		return false;
 	}
+	
 
 	public static long password(String MAC) {
 
