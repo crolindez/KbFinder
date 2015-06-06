@@ -40,7 +40,7 @@
 				android:layout_marginRight="13dp"
 				android:layout_alignParentTop="true"
 				android:layout_alignParentRight="true"
-				android:background="@drawable/ic_launcher" />
+				android:background="@drawable/power_on_selector" />
 			<ImageButton
 				android:id="@+id/volumeControl"
 				android:layout_width="match_parent"

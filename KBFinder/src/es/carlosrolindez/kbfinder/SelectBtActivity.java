@@ -141,18 +141,18 @@ public class SelectBtActivity extends FragmentActivity {
 	}
 		
 	public static void askAll() {
-		service.write(("ALL ? \r").getBytes());
+		service.write(("ALL ?\r").getBytes());
 		answerPending = QUESTION_ALL;
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	service.write(("STB OFF \r").getBytes());
-		else 		service.write(("STB ON \r").getBytes());
+		if (onOff) 	service.write(("STB OFF\r").getBytes());
+		else 		service.write(("STB ON\r").getBytes());
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	service.write(("CHN BT \r").getBytes());
-		else 		service.write(("CHN FM \r").getBytes());
+		if (channel == BT_CHANNEL) 	service.write(("CHN BT\r").getBytes());
+		else 		service.write(("CHN FM\r").getBytes());
     }
 	
 	
@@ -331,15 +331,19 @@ public class SelectBtActivity extends FragmentActivity {
     	
     	public SelectBtState() {
     		onOff = false;
-    		channel = BT_CHANNEL; 
+    		channel = BT_CHANNEL; 	
     	}
     	
     	public void updateOnOff(String onOffString) {
-    		if (onOffString.equals("OFF"))
+    		if (onOffString.equals("OFF")) {
     			onOff = true;
-    		else
+        		mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));	
+        	}
+    		else {
     			onOff = false;
-    		//mainButton.setBackgroundDrawable(background);	
+        		mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));	
+        	}
+
     	}
     	   	
     	public void switchOnOff() {
@@ -349,7 +353,8 @@ public class SelectBtActivity extends FragmentActivity {
     	public void setOnOff(boolean on) {
     		onOff = on;
     		writeOnOffState(onOff);
-    		//mainButton.setBackgroundDrawable(background);	
+    		if (onOff) mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));
+    		else mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));
     	}
 
  
