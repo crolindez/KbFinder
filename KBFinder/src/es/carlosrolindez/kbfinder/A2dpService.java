@@ -48,11 +48,14 @@ public class A2dpService {
 	private static KBdeviceListAdapter deviceListAdapter = null;
 	private static ListView mListView = null;
 	
+	public static int volumeBT;
+	
 	
 	public A2dpService(Context context, ListView listView) {
 		
 		mContextBt = context;
 		mListView = listView;
+		volumeBT = 0;
 		
 		IntentFilter filter1 = new IntentFilter(Constants.NameFilter);
 		IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);			
@@ -284,10 +287,12 @@ public class A2dpService {
                 KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
                 deviceListAdapter.notifyDataSetChanged();
                 Toast.makeText(context, device.getName() + " Connected", Toast.LENGTH_SHORT).show();
+            	final AudioManager am = (AudioManager) mContextBt.getSystemService(Context.AUDIO_SERVICE);                
 
+            	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+            	
                 if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.IN_WALL) {
 	                new CountDownTimer(2000, 1000) {
-	                	AudioManager am = (AudioManager) mContextBt.getSystemService(Context.AUDIO_SERVICE);
 	    				@Override
 	    				public void onFinish() {
 	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) *0.6),	0);
@@ -298,7 +303,6 @@ public class A2dpService {
 	    			}.start();
                 } else if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.ISELECT) {
 	                new CountDownTimer(2000, 1000) {
-	                	AudioManager am = (AudioManager) mContextBt.getSystemService(Context.AUDIO_SERVICE);
 	    				@Override
 	    				public void onFinish() {
 	    					am.setStreamVolume(AudioManager.STREAM_MUSIC, (int)(am.getStreamMaxVolume(AudioManager.STREAM_MUSIC) * 0.9), 0);

@@ -13,11 +13,13 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
 
 
@@ -46,6 +48,7 @@ public class SelectBtActivity extends FragmentActivity {
 	private static SelectBtState selectBtState;
 	
 	private static ImageButton mainButton;
+	private static SeekBar volumeSeekBar;
 
 	// swipe fragments
     private static final int NUM_PAGES = 2;
@@ -74,6 +77,8 @@ public class SelectBtActivity extends FragmentActivity {
 		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
 		mainButton = (ImageButton) findViewById(R.id.MainPower);
+		  
+		volumeSeekBar = (SeekBar) findViewById(R.id.volumeControl);
 	
 		Intent myIntent = getIntent();
     	
@@ -90,8 +95,13 @@ public class SelectBtActivity extends FragmentActivity {
             @Override
             public void onPageSelected(int position) 
             {     
-            	if (position == 1) selectBtState.setChannel(BT_CHANNEL);
-            	else  selectBtState.setChannel(FM_CHANNEL);
+            	if (position == 1) {
+            		selectBtState.setChannel(BT_CHANNEL);
+            		volumeSeekBar.setProgress(A2dpService.volumeBT);
+            	} else {
+            		selectBtState.setChannel(FM_CHANNEL);
+            		volumeSeekBar.setProgress(selectBtState.volumeFM);
+            	}
             }
             @Override
             public void onPageScrollStateChanged(int state)
@@ -101,15 +111,40 @@ public class SelectBtActivity extends FragmentActivity {
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
             }
-       });
+        });
+        
+        volumeSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+        	int progress = 0;
+        
+        	@Override
+        	public void onProgressChanged(SeekBar seekBar,int progresValue, boolean fromUser) {
+        	}
+
+        	@Override
+        	public void onStartTrackingTouch(SeekBar seekBar) {
+        	}
+
+        	@Override
+        	public void onStopTrackingTouch(SeekBar seekBar) {
+        		if (selectBtState.channel==FM_CHANNEL) {
+        			selectBtState.setVolumeFM(volumeSeekBar.getProgress());
+        		} else {
+                   	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
+                   	A2dpService.volumeBT = volumeSeekBar.getProgress();
+                   	am.setStreamVolume(AudioManager.STREAM_MUSIC, A2dpService.volumeBT,	0);  			
+        		}
+        	}
+        });
+
+
         
         splashImageView.post(new Runnable(){
-		            @Override
-		            public void run() {
-		                frameAnimation.start();                
-		            }            
-		        }); 
-		
+            @Override
+            public void run() {
+                frameAnimation.start();                
+            }            
+        }); 
+	
 		bootPending = true;
 		closeWhenPossible = false;
           
@@ -151,6 +186,10 @@ public class SelectBtActivity extends FragmentActivity {
 	public static void writeChannelState(int channel) {
 		if (channel == BT_CHANNEL) 	service.write(("CHN BT\r").getBytes());
 		else 		service.write(("CHN FM\r").getBytes());
+    }
+		
+	public static void writeVolumeFMState(int volumeFM) {
+		service.write(("VOL " + String.valueOf(volumeFM) +"\r").getBytes());
     }
 		
 	public static class MessageExtractor {
@@ -230,7 +269,7 @@ public class SelectBtActivity extends FragmentActivity {
 				String equalizationMode = messageExtractor.getStringFromMessage();				Log.e("equalizationMode",equalizationMode);
 //				String volumeFM = messageExtractor.getStringFromMessage();						Log.e("volumeFM",volumeFM);
 				
-				selectBtState.updateVolume(messageExtractor.getStringFromMessage());
+				selectBtState.updateVolumeFM(messageExtractor.getStringFromMessage());
 				String keepFmOn = messageExtractor.message;										Log.e("keepFmOn",keepFmOn);
 	
 				break;
@@ -320,6 +359,50 @@ public class SelectBtActivity extends FragmentActivity {
         	super.finishUpdate(container);
         }*/
     }
+    
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) 
+    {
+       	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
+       	int volume;
+        if (event.getAction() == KeyEvent.ACTION_DOWN)
+        {
+            switch (event.getKeyCode()) 
+            {
+                case KeyEvent.KEYCODE_VOLUME_UP:
+                	if (selectBtState.channel==BT_CHANNEL) {
+                		volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                       	if  (A2dpService.volumeBT < am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)) {
+                       		A2dpService.volumeBT = volume+1;
+                       		am.setStreamVolume(AudioManager.STREAM_MUSIC, A2dpService.volumeBT,	0);
+                        	volumeSeekBar.setProgress(A2dpService.volumeBT);
+                       	}		
+                	} else {
+                      	if  (selectBtState.volumeFM < selectBtState.MAX_VOLUME_FM) {
+                      		selectBtState.setVolumeFM(selectBtState.volumeFM+1);
+                       	}		              		
+                	}
+                    return true;
+                case KeyEvent.KEYCODE_VOLUME_DOWN:
+                	if (selectBtState.channel==BT_CHANNEL) {
+                		volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                       	if  (volume > 0) {
+                       		A2dpService.volumeBT = volume-1;
+                       		am.setStreamVolume(AudioManager.STREAM_MUSIC, A2dpService.volumeBT,	0);
+                        	volumeSeekBar.setProgress(A2dpService.volumeBT);
+                        }		
+                	} else {
+                      	if  (selectBtState.volumeFM > 0) {
+                      		selectBtState.setVolumeFM(selectBtState.volumeFM-1);
+                       	}		              		
+                	}
+  
+                    return true;
+            }
+        }
+
+        return super.dispatchKeyEvent(event);
+    }
 	
     
     private class SelectBtState {
@@ -327,6 +410,8 @@ public class SelectBtActivity extends FragmentActivity {
     	int channel;
     	int volumeFM;
     	int volumeBT;
+    	
+    	public static final int MAX_VOLUME_FM = 15;
     	
     	
     	public SelectBtState() {
@@ -390,9 +475,15 @@ public class SelectBtActivity extends FragmentActivity {
    			//View.selectBtState.OnOff = !selectBtState.OnOff;    			
     	}
     	
-    	public void updateVolume(String volumeString) {
+    	public void updateVolumeFM(String volumeString) {
     		volumeFM = Integer.parseInt(volumeString);
-    		
-    	}    	
+        	volumeSeekBar.setProgress(volumeFM);   
+    	}   
+    	
+    	public void setVolumeFM(int volume) {
+    		volumeFM = volume;
+    		writeVolumeFMState(volumeFM);				
+    	}
+    	
     }
 }
