@@ -127,8 +127,6 @@ public class SelectBtActivity extends FragmentActivity {
 				selectBtState.switchOnOff();				
 			}
 		});
-		
-
     }
 
 	
@@ -154,8 +152,7 @@ public class SelectBtActivity extends FragmentActivity {
 		if (channel == BT_CHANNEL) 	service.write(("CHN BT\r").getBytes());
 		else 		service.write(("CHN FM\r").getBytes());
     }
-	
-	
+		
 	public static class MessageExtractor {
 		private String message;
 		
@@ -231,14 +228,15 @@ public class SelectBtActivity extends FragmentActivity {
 				String infoRDS = messageExtractor.getRDSFromMessage();							Log.e("infoRDS",infoRDS);
 				String tunerSensitivity = messageExtractor.getStringFromMessage();				Log.e("tunerSensitivity",tunerSensitivity);
 				String equalizationMode = messageExtractor.getStringFromMessage();				Log.e("equalizationMode",equalizationMode);
-				String volumeFM = messageExtractor.getStringFromMessage();						Log.e("volumeFM",volumeFM);
+//				String volumeFM = messageExtractor.getStringFromMessage();						Log.e("volumeFM",volumeFM);
+				
+				selectBtState.updateVolume(messageExtractor.getStringFromMessage());
 				String keepFmOn = messageExtractor.message;										Log.e("keepFmOn",keepFmOn);
 	
 				break;
 			
 		} 
-		answerPending = NO_QUESTION;
-		
+		answerPending = NO_QUESTION;		
 	}
 
 
@@ -327,11 +325,15 @@ public class SelectBtActivity extends FragmentActivity {
     private class SelectBtState {
     	boolean onOff;
     	int channel;
+    	int volumeFM;
+    	int volumeBT;
     	
     	
     	public SelectBtState() {
     		onOff = false;
     		channel = BT_CHANNEL; 	
+    		volumeBT = 0;
+    		volumeFM = 0;
     	}
     	
     	public void updateOnOff(String onOffString) {
@@ -356,21 +358,21 @@ public class SelectBtActivity extends FragmentActivity {
     		if (onOff) mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));
     		else mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));
     	}
-
  
     	public void updateChannel(String channelString) {
     		if (channelString.equals("BT")) {
     			channel = BT_CHANNEL; 
+        		mPager.setCurrentItem(1, false);
           		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
         		}
     		} else {
     			channel = FM_CHANNEL;
+        		mPager.setCurrentItem(0, false);
            		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
         		}
     		}
-    		//view.setBackgroundDrawable(background);
     	}
     	   	
     	public void setChannel(int numChannel) {
@@ -386,10 +388,11 @@ public class SelectBtActivity extends FragmentActivity {
         		}
     		}
    			//View.selectBtState.OnOff = !selectBtState.OnOff;    			
-
     	}
-
     	
+    	public void updateVolume(String volumeString) {
+    		volumeFM = Integer.parseInt(volumeString);
+    		
+    	}    	
     }
-
 }
