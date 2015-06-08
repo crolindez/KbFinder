@@ -1,5 +1,6 @@
 package es.carlosrolindez.kbfinder;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -11,8 +12,10 @@ import android.widget.TextView;
 
 public class FmFragment extends Fragment {
 	public String fragmentName;
+	private final Context mContext;
 	
-	public FmFragment() {
+	public FmFragment(Context context) {
+		mContext = context;
 		fragmentName =  "FM";
 	}
 	

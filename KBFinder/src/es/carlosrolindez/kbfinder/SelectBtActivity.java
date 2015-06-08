@@ -21,13 +21,12 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
-import es.carlosrolindez.kbfinder.A2dpService.OnConnectRefresh;
 
 
 
 
 
-public class SelectBtActivity extends FragmentActivity implements OnConnectRefresh {
+public class SelectBtActivity extends FragmentActivity {
 	
 	public static final String LAUNCH_MAC = "Launcher MAC intent";
 	private static final int FM_CHANNEL = 0;
@@ -64,13 +63,6 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
 	private	static RelativeLayout splashLayout;
 	private	static RelativeLayout controlLayout;	
 	
-	public void refreshVolume() {
-		if (selectBtState.channel == BT_CHANNEL) {
-			Log.e("a2dpVolume",""+A2dpService.volumeBT);
-        	volumeSeekBar.setProgress(A2dpService.volumeBT);     	
-		}
-	}
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -88,7 +80,6 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
 		  
 		volumeSeekBar = (SeekBar) findViewById(R.id.volumeControl);
 		
-		A2dpService.setOnConnectRefresh(this);
 	
 		Intent myIntent = getIntent();
     	
@@ -107,7 +98,7 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
             {     
             	if (position == 1) {
             		selectBtState.setChannel(BT_CHANNEL);
-            		volumeSeekBar.setProgress(A2dpService.volumeBT);
+            		volumeSeekBar.setProgress(selectBtState.volumeBT);
             	} else {
             		selectBtState.setChannel(FM_CHANNEL);
             		volumeSeekBar.setProgress(selectBtState.volumeFM);
@@ -140,8 +131,8 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
         			selectBtState.setVolumeFM(volumeSeekBar.getProgress());
         		} else {
                    	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
-                   	A2dpService.volumeBT = volumeSeekBar.getProgress();
-                   	am.setStreamVolume(AudioManager.STREAM_MUSIC, A2dpService.volumeBT,	0);  			
+                   	selectBtState.volumeBT = volumeSeekBar.getProgress();
+                   	am.setStreamVolume(AudioManager.STREAM_MUSIC, selectBtState.volumeBT,	0);  			
         		}
         	}
         });
@@ -246,7 +237,6 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
 	@Override
 	protected void onDestroy() {
 		service.stop();
-		A2dpService.setOnConnectRefresh(null);
 		super.onDestroy();
 	}
 		
@@ -355,9 +345,9 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
         @Override
         public Fragment getItem(int position) {
         	if (position == BT_CHANNEL)
-        		return new BtFragment();
+        		return new BtFragment(mContext);
         	else
-        		return new FmFragment();       		
+        		return new FmFragment(mContext);       		
         }
 
         @Override
@@ -384,10 +374,10 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
                 case KeyEvent.KEYCODE_VOLUME_UP:
                 	if (selectBtState.channel==BT_CHANNEL) {
                 		volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                       	if  (A2dpService.volumeBT < am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)) {
-                       		A2dpService.volumeBT = volume+1;
-                       		am.setStreamVolume(AudioManager.STREAM_MUSIC, A2dpService.volumeBT,	0);
-                        	volumeSeekBar.setProgress(A2dpService.volumeBT);
+                       	if  (selectBtState.volumeBT < am.getStreamMaxVolume(AudioManager.STREAM_MUSIC)) {
+                       		selectBtState.volumeBT = volume+1;
+                       		am.setStreamVolume(AudioManager.STREAM_MUSIC, selectBtState.volumeBT,	0);
+                        	volumeSeekBar.setProgress(selectBtState.volumeBT);
                        	}		
                 	} else {
                       	if  (selectBtState.volumeFM < selectBtState.MAX_VOLUME_FM) {
@@ -401,9 +391,9 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
                 	if (selectBtState.channel==BT_CHANNEL) {
                 		volume = am.getStreamVolume(AudioManager.STREAM_MUSIC);
                        	if  (volume > 0) {
-                       		A2dpService.volumeBT = volume-1;
-                       		am.setStreamVolume(AudioManager.STREAM_MUSIC, A2dpService.volumeBT,	0);
-                        	volumeSeekBar.setProgress(A2dpService.volumeBT);
+                       		selectBtState.volumeBT = volume-1;
+                       		am.setStreamVolume(AudioManager.STREAM_MUSIC, selectBtState.volumeBT,	0);
+                        	volumeSeekBar.setProgress(selectBtState.volumeBT);
                         }		
                 	} else {
                       	if  (selectBtState.volumeFM > 0) {
@@ -468,11 +458,22 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
     	}
  
     	public void updateChannel(String channelString) {
+           	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
     		if (channelString.equals("BT")) {
     			channel = BT_CHANNEL; 
         		mPager.setCurrentItem(1, false);
           		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
-        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC); 
+              		new Handler().postDelayed(new Runnable() {
+            		    @Override
+            		    public void run() {
+            		    	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                			volumeSeekBar.setProgress(volumeBT);               
+            		    }
+            		}, 300);
+        		} else {
+        			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        			volumeSeekBar.setProgress(volumeBT);   
         		}
     		} else {
     			channel = FM_CHANNEL;
@@ -484,11 +485,22 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
     	}
     	   	
     	public void setChannel(int numChannel) {
-    		writeChannelState(numChannel);	
+           	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
+           	writeChannelState(numChannel);	
 			channel = numChannel;
     		if (numChannel == BT_CHANNEL) {
         		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+              		new Handler().postDelayed(new Runnable() {
+            		    @Override
+            		    public void run() {
+            		    	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                			volumeSeekBar.setProgress(volumeBT);               
+            		    }
+            		}, 300);
+            	} else {
+        			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        			volumeSeekBar.setProgress(volumeBT);
         		}
     		} else {
         		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
@@ -499,10 +511,10 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
     	}
     	
     	public void updateVolumeFM(String volumeString) {
+//           	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
     		volumeFM = Integer.parseInt(volumeString);
-    		if (channel == BT_CHANNEL) {
-            	volumeSeekBar.setProgress(A2dpService.volumeBT);     		  			
-    		} else {
+    		if (channel == FM_CHANNEL) {
+
             	volumeSeekBar.setProgress(volumeFM);     			
     		} 
     	}   

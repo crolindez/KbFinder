@@ -48,25 +48,12 @@ public class A2dpService {
 	private static KBdeviceListAdapter deviceListAdapter = null;
 	private static ListView mListView = null;
 	
-	public static int volumeBT;
-	
-	public interface OnConnectRefresh {
-		public void refreshVolume();   	
-	
-	}
-	
-	private static OnConnectRefresh mOnConnectRefresh = null;
-	
-	public static void setOnConnectRefresh(OnConnectRefresh onConnectRefresh) {
-		mOnConnectRefresh = onConnectRefresh;
-	}
-	
-	
+
 	public A2dpService(Context context, ListView listView) {
 		
 		mContextBt = context;
 		mListView = listView;
-		volumeBT = 0;
+
 		
 		IntentFilter filter1 = new IntentFilter(Constants.NameFilter);
 		IntentFilter filter2 = new IntentFilter(BluetoothDevice.ACTION_FOUND);			
@@ -322,24 +309,12 @@ public class A2dpService {
 	    				public void onTick(long millisUntilFinished) {
 	    				}
 	    			}.start();
-                } else {
-                	new CountDownTimer(2000, 1000) {
-                		@Override
-                		public void onFinish() {
-                			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                			if (mOnConnectRefresh!=null) mOnConnectRefresh.refreshVolume();
-                		}
-                		@Override
-                		public void onTick(long millisUntilFinished) {
-                		}
-                	}.start();
-
                 }
-	
+                
             } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
                 KBdevice.disconnectDevices(device.getAddress(),A2dpService.deviceList);
-                Toast.makeText(context, device.getName() + " A2dp Disconnected", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, device.getName() + " Disconnected", Toast.LENGTH_SHORT).show();
 				deviceListAdapter.notifyDataSetChanged();
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
