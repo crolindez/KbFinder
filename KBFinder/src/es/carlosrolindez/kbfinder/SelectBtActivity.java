@@ -427,14 +427,14 @@ public class SelectBtActivity extends FragmentActivity {
     	
     	public void updateOnOff(String onOffString) {
     		if (onOffString.equals("OFF")) {
+        		mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));	
+        		volumeSeekBar.setVisibility(View.INVISIBLE);        	
+    			onOff = false;
+        	}
+    		else {
     			onOff = true;
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));	
         		volumeSeekBar.setVisibility(View.VISIBLE);
-        	}
-    		else {
-    			onOff = false;
-        		mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));	
-        		volumeSeekBar.setVisibility(View.INVISIBLE);        	
         	}
 
     	}
