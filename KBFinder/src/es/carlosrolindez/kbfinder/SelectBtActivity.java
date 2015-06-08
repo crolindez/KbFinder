@@ -22,7 +22,13 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
 
-
+// TODO Improve buttons
+// TODO fix hungs up
+// TODO present device name
+// TODO improve frames drawing
+// TODO FM dial
+// TODO FM controls: forced mono; keypad; memories
+// TODO avoid commands too close
 
 
 
@@ -405,8 +411,8 @@ public class SelectBtActivity extends FragmentActivity {
                     return true;
             }
         }
-
-        return super.dispatchKeyEvent(event);
+        return true;
+//        return super.dispatchKeyEvent(event);
     }
 	
     
@@ -458,7 +464,7 @@ public class SelectBtActivity extends FragmentActivity {
     	}
  
     	public void updateChannel(String channelString) {
-           	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
+
     		if (channelString.equals("BT")) {
     			channel = BT_CHANNEL; 
         		mPager.setCurrentItem(1, false);
@@ -467,11 +473,13 @@ public class SelectBtActivity extends FragmentActivity {
               		new Handler().postDelayed(new Runnable() {
             		    @Override
             		    public void run() {
+            	           	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
             		    	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
                 			volumeSeekBar.setProgress(volumeBT);               
             		    }
-            		}, 300);
+            		}, 1000);
         		} else {
+    	           	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
         			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         			volumeSeekBar.setProgress(volumeBT);   
         		}
@@ -485,7 +493,6 @@ public class SelectBtActivity extends FragmentActivity {
     	}
     	   	
     	public void setChannel(int numChannel) {
-           	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
            	writeChannelState(numChannel);	
 			channel = numChannel;
     		if (numChannel == BT_CHANNEL) {
@@ -494,11 +501,13 @@ public class SelectBtActivity extends FragmentActivity {
               		new Handler().postDelayed(new Runnable() {
             		    @Override
             		    public void run() {
+            		    	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             		    	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
                 			volumeSeekBar.setProgress(volumeBT);               
             		    }
-            		}, 300);
+            		}, 1000);
             	} else {
+            		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         			volumeSeekBar.setProgress(volumeBT);
         		}
