@@ -201,7 +201,6 @@ public class SelectBtService {
         public void write(byte[] buffer) {
             try {
                 mmOutStream.write(buffer);
-                mmOutStream.write(0x13);
                 // Share the sent message back to the UI Activity
                 mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
                         .sendToTarget();
