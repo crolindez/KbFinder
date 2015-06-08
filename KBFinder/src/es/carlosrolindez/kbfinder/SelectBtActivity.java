@@ -355,9 +355,9 @@ public class SelectBtActivity extends FragmentActivity implements OnConnectRefre
         @Override
         public Fragment getItem(int position) {
         	if (position == BT_CHANNEL)
-        		return new BtFragment("BT");
+        		return new BtFragment();
         	else
-        		return new BtFragment("FM");       		
+        		return new FmFragment();       		
         }
 
         @Override

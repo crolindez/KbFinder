@@ -32,10 +32,19 @@
 	        android:layout_height="match_parent"
 	        android:background="@drawable/window_gradient"
 	        android:visibility="invisible" >
+			<TextView
+				android:id="@+id/SelectBtName"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_margin="10dp"
+				android:layout_marginLeft="13dp"
+				android:layout_alignParentTop="true"
+				android:layout_alignParentLeft="true" 
+				android:text="HOLA" />
 			<ImageButton
 				android:id="@+id/MainPower"
-				android:layout_width="48dp"
-				android:layout_height="48dp"
+				android:layout_width="64dp"
+				android:layout_height="64dp"
 				android:layout_margin="10dp"
 				android:layout_marginRight="13dp"
 				android:layout_alignParentTop="true"

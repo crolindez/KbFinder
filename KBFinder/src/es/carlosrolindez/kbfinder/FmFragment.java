@@ -9,16 +9,16 @@ import android.widget.TextView;
 
 
 
-public class BtFragment extends Fragment {
+public class FmFragment extends Fragment {
 	public String fragmentName;
 	
-	public BtFragment() {
-		fragmentName =  "BT";
+	public FmFragment() {
+		fragmentName =  "FM";
 	}
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.bt_fragment, container, false);
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fm_fragment, container, false);
       	((TextView) rootView.findViewById(R.id.fragment_text)).setText(fragmentName);
         return rootView;	
         

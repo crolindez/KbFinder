@@ -10,4 +10,29 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="" />	
+	<ImageButton
+		android:id="@+id/play_pause_BT"
+		android:layout_width="64dp"
+		android:layout_height="64dp"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="10dp"	
+		android:layout_marginBottom="10dp"		
+		android:background="@drawable/play_pause_selector"  />		
+   	<ImageButton
+        android:id="@+id/previous_BT"
+		android:layout_toLeftOf="@id/play_pause_BT"
+		android:layout_marginTop="10dp"	
+        android:layout_width="64dp" 
+        android:layout_height="64dp" 
+		android:layout_marginBottom="10dp"		
+        android:background="@drawable/previous_selector" /> 
+	<ImageButton
+		android:id="@+id/next_BT"
+		android:layout_width="64dp"
+		android:layout_height="64dp"
+		android:layout_toRightOf="@id/play_pause_BT"
+		android:layout_marginTop="10dp"	
+		android:layout_marginBottom="10dp"		
+		android:background="@drawable/next_selector" />
+    
 </RelativeLayout>
