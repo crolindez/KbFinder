@@ -365,6 +365,7 @@ public class SelectBtActivity extends FragmentActivity {
     {
        	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
        	int volume;
+       	if (!selectBtState.onOff) return true;
         if (event.getAction() == KeyEvent.ACTION_DOWN)
         {
             switch (event.getKeyCode()) 
@@ -379,7 +380,9 @@ public class SelectBtActivity extends FragmentActivity {
                        	}		
                 	} else {
                       	if  (selectBtState.volumeFM < selectBtState.MAX_VOLUME_FM) {
+                        	volumeSeekBar.setProgress(selectBtState.volumeFM+1);
                       		selectBtState.setVolumeFM(selectBtState.volumeFM+1);
+
                        	}		              		
                 	}
                     return true;
@@ -393,6 +396,7 @@ public class SelectBtActivity extends FragmentActivity {
                         }		
                 	} else {
                       	if  (selectBtState.volumeFM > 0) {
+                        	volumeSeekBar.setProgress(selectBtState.volumeFM-1);
                       		selectBtState.setVolumeFM(selectBtState.volumeFM-1);
                        	}		              		
                 	}
@@ -425,10 +429,12 @@ public class SelectBtActivity extends FragmentActivity {
     		if (onOffString.equals("OFF")) {
     			onOff = true;
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));	
+        		volumeSeekBar.setVisibility(View.VISIBLE);
         	}
     		else {
     			onOff = false;
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));	
+        		volumeSeekBar.setVisibility(View.INVISIBLE);        	
         	}
 
     	}
@@ -440,8 +446,13 @@ public class SelectBtActivity extends FragmentActivity {
     	public void setOnOff(boolean on) {
     		onOff = on;
     		writeOnOffState(onOff);
-    		if (onOff) mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));
-    		else mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));
+    		if (onOff){
+    			mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));
+        		volumeSeekBar.setVisibility(View.VISIBLE);
+    		} else  {
+    			mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));
+        		volumeSeekBar.setVisibility(View.INVISIBLE);
+    		}
     	}
  
     	public void updateChannel(String channelString) {
