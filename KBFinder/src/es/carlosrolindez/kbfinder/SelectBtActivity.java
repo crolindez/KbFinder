@@ -21,12 +21,13 @@ import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.Toast;
+import es.carlosrolindez.kbfinder.A2dpService.OnConnectRefresh;
 
 
 
 
 
-public class SelectBtActivity extends FragmentActivity {
+public class SelectBtActivity extends FragmentActivity implements OnConnectRefresh {
 	
 	public static final String LAUNCH_MAC = "Launcher MAC intent";
 	private static final int FM_CHANNEL = 0;
@@ -63,6 +64,13 @@ public class SelectBtActivity extends FragmentActivity {
 	private	static RelativeLayout splashLayout;
 	private	static RelativeLayout controlLayout;	
 	
+	public void refreshVolume() {
+		if (selectBtState.channel == BT_CHANNEL) {
+			Log.e("a2dpVolume",""+A2dpService.volumeBT);
+        	volumeSeekBar.setProgress(A2dpService.volumeBT);     	
+		}
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -79,6 +87,8 @@ public class SelectBtActivity extends FragmentActivity {
 		mainButton = (ImageButton) findViewById(R.id.MainPower);
 		  
 		volumeSeekBar = (SeekBar) findViewById(R.id.volumeControl);
+		
+		A2dpService.setOnConnectRefresh(this);
 	
 		Intent myIntent = getIntent();
     	
@@ -179,8 +189,8 @@ public class SelectBtActivity extends FragmentActivity {
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	service.write(("STB OFF\r").getBytes());
-		else 		service.write(("STB ON\r").getBytes());
+		if (onOff) 	service.write(("STB ON\r").getBytes());
+		else 		service.write(("STB OFF\r").getBytes());
     }
 	
 	public static void writeChannelState(int channel) {
@@ -236,6 +246,7 @@ public class SelectBtActivity extends FragmentActivity {
 	@Override
 	protected void onDestroy() {
 		service.stop();
+		A2dpService.setOnConnectRefresh(null);
 		super.onDestroy();
 	}
 		
@@ -319,7 +330,7 @@ public class SelectBtActivity extends FragmentActivity {
 	            case MESSAGE_WRITE:
 	                byte[] writeBuf = (byte[]) msg.obj;
 	                String writeMessage = new String(writeBuf);
-	                Log.e("message written",writeMessage+"-");
+	                Log.e("message written",writeMessage);
 	                break;
 	            case MESSAGE_READ:
 	                byte[] readBuf = (byte[]) msg.obj;
@@ -426,6 +437,7 @@ public class SelectBtActivity extends FragmentActivity {
     	}
     	
     	public void updateOnOff(String onOffString) {
+    		Log.e("onoff",onOffString);
     		if (onOffString.equals("OFF")) {
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));	
         		volumeSeekBar.setVisibility(View.INVISIBLE);        	
@@ -488,7 +500,11 @@ public class SelectBtActivity extends FragmentActivity {
     	
     	public void updateVolumeFM(String volumeString) {
     		volumeFM = Integer.parseInt(volumeString);
-        	volumeSeekBar.setProgress(volumeFM);   
+    		if (channel == BT_CHANNEL) {
+            	volumeSeekBar.setProgress(A2dpService.volumeBT);     		  			
+    		} else {
+            	volumeSeekBar.setProgress(volumeFM);     			
+    		} 
     	}   
     	
     	public void setVolumeFM(int volume) {

@@ -50,6 +50,17 @@ public class A2dpService {
 	
 	public static int volumeBT;
 	
+	public interface OnConnectRefresh {
+		public void refreshVolume();   	
+	
+	}
+	
+	private static OnConnectRefresh mOnConnectRefresh = null;
+	
+	public static void setOnConnectRefresh(OnConnectRefresh onConnectRefresh) {
+		mOnConnectRefresh = onConnectRefresh;
+	}
+	
 	
 	public A2dpService(Context context, ListView listView) {
 		
@@ -289,7 +300,7 @@ public class A2dpService {
                 Toast.makeText(context, device.getName() + " Connected", Toast.LENGTH_SHORT).show();
             	final AudioManager am = (AudioManager) mContextBt.getSystemService(Context.AUDIO_SERVICE);                
 
-            	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+
             	
                 if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.IN_WALL) {
 	                new CountDownTimer(2000, 1000) {
@@ -311,6 +322,18 @@ public class A2dpService {
 	    				public void onTick(long millisUntilFinished) {
 	    				}
 	    			}.start();
+                } else {
+                	new CountDownTimer(2000, 1000) {
+                		@Override
+                		public void onFinish() {
+                			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                			if (mOnConnectRefresh!=null) mOnConnectRefresh.refreshVolume();
+                		}
+                		@Override
+                		public void onTick(long millisUntilFinished) {
+                		}
+                	}.start();
+
                 }
 	
             } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
