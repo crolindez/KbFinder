@@ -3,6 +3,8 @@ package es.carlosrolindez.kbfinder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothDevice;
@@ -32,6 +34,7 @@ public class SelectBtService {
     public static final int STATE_CONNECTING = 1; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 2;  // now connected to a remote device
     public static final int STATE_DISCONNECTED = 3;  // now connected to a remote device
+   
     /**
      * Constructor. Prepares a new BluetoothChat session.
      *
@@ -95,7 +98,7 @@ public class SelectBtService {
         setState(STATE_DISCONNECTED);
     }
 
-    public synchronized void write(byte[] out) {
+    public synchronized void write(String out) {
     	if (mConnectedThread == null) return;
     	mConnectedThread.write(out);
     }
@@ -156,6 +159,8 @@ public class SelectBtService {
     private class ConnectedThread extends Thread {
         private InputStream mmInStream;
         private OutputStream mmOutStream;
+        
+        private List<String> outBuffer;
 
         public ConnectedThread() {
             Log.d(TAG, "create ConnectedThread");
@@ -164,6 +169,7 @@ public class SelectBtService {
             try {
             	mmInStream = mSocket.getInputStream();
             	mmOutStream = mSocket.getOutputStream();
+            	outBuffer = new ArrayList<String>();	
             } catch (IOException e) {
                 Log.e(TAG, "temp sockets not created", e);
             }
@@ -198,11 +204,12 @@ public class SelectBtService {
          *
          * @param buffer The bytes to write
          */
-        public void write(byte[] buffer) {
+        public void write(String out) {
             try {
-                mmOutStream.write(buffer);
+            	outBuffer.add(out);         	
+                mmOutStream.write(out.getBytes());
                 // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
+                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, out.getBytes())
                         .sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);

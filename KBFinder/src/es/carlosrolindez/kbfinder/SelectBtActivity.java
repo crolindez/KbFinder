@@ -26,7 +26,7 @@ import android.widget.Toast;
 // TODO fix hungs up
 // TODO FM dial
 // TODO FM controls: forced mono; keypad; memories
-// TODO avoid commands too close
+// TODO avoid commands too close (add thread writeout)
 
 
 
@@ -196,22 +196,22 @@ public class SelectBtActivity extends FragmentActivity {
 	}
 		
 	public static void askAll() {
-		service.write(("ALL ?\r").getBytes());
+		service.write(("ALL ?\r"));
 		answerPending = QUESTION_ALL;
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	service.write(("STB ON\r").getBytes());
-		else 		service.write(("STB OFF\r").getBytes());
+		if (onOff) 	service.write(("STB ON\r"));
+		else 		service.write(("STB OFF\r"));
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	service.write(("CHN BT\r").getBytes());
-		else 		service.write(("CHN FM\r").getBytes());
+		if (channel == BT_CHANNEL) 	service.write(("CHN BT\r"));
+		else 		service.write(("CHN FM\r"));
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {
-		service.write(("VOL " + String.valueOf(volumeFM) +"\r").getBytes());
+		service.write(("VOL " + String.valueOf(volumeFM) +"\r"));
     }
 		
 	public static class MessageExtractor {
