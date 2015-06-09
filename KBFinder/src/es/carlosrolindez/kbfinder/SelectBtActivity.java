@@ -20,12 +20,10 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 import android.widget.Toast;
 
-// TODO Improve buttons
 // TODO fix hungs up
-// TODO present device name
-// TODO improve frames drawing
 // TODO FM dial
 // TODO FM controls: forced mono; keypad; memories
 // TODO avoid commands too close
@@ -55,6 +53,7 @@ public class SelectBtActivity extends FragmentActivity {
 	
 	private static ImageButton mainButton;
 	private static SeekBar volumeSeekBar;
+	private static TextView nameView;
 
 	// swipe fragments
     private static final int NUM_PAGES = 2;
@@ -83,6 +82,7 @@ public class SelectBtActivity extends FragmentActivity {
 		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
 		mainButton = (ImageButton) findViewById(R.id.MainPower);
+		nameView = (TextView) findViewById(R.id.SelectBtName); 
 		  
 		volumeSeekBar = (SeekBar) findViewById(R.id.volumeControl);
 		
@@ -171,6 +171,21 @@ public class SelectBtActivity extends FragmentActivity {
 		});
     }
 
+	@Override	
+	protected void onResume() {
+		super.onResume();
+		
+		// in case BT volume was modified when activity out of focus
+  		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+           	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
+	    	selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+	    	if (selectBtState.onOff) {
+	    		if (selectBtState.channel == BT_CHANNEL) 
+	    			volumeSeekBar.setProgress(selectBtState.volumeBT); 	    			
+	    	}
+  		}
+	}
+
 	
 
 	public void closeIfNotBooted() {
@@ -254,8 +269,7 @@ public class SelectBtActivity extends FragmentActivity {
 			case QUESTION_ALL:
 
 				String password = messageExtractor.getStringFromMessage();						Log.e("Password",password);
-				String identifier = messageExtractor.getIdentifierFromMessage();				Log.e("identifier",identifier);
-
+				selectBtState.updateName(messageExtractor.getIdentifierFromMessage());
 
 				selectBtState.updateOnOff(messageExtractor.getStringFromMessage());
 				
@@ -421,6 +435,7 @@ public class SelectBtActivity extends FragmentActivity {
     	int channel;
     	int volumeFM;
     	int volumeBT;
+    	String name;
     	
     	public static final int MAX_VOLUME_FM = 15;
     	
@@ -431,6 +446,12 @@ public class SelectBtActivity extends FragmentActivity {
     		volumeBT = 0;
     		volumeFM = 0;
     	}
+  
+    	public void updateName(String name) {
+    		this.name = name;
+    		nameView.setText(name);
+    	}
+  
     	
     	public void updateOnOff(String onOffString) {
     		Log.e("onoff",onOffString);
