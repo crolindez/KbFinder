@@ -100,7 +100,6 @@ public class KBdevice  {
 	public static long password(String MAC) {
 
 		String[] macAddressParts = MAC.split(":");
-		Byte[] macAddressBytes = new Byte[6];
 		long littleMac = 0;
 		int rotation;
 		long code = 0;

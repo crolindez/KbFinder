@@ -22,15 +22,16 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 
-// TODO fix hungs up
+// TODO disconnect BT a2dp when of
 // TODO FM dial
 // TODO FM controls: forced mono; keypad; memories
-// TODO avoid commands too close (add thread writeout)
+// TODO check when not allowed BT engine
 
 
 
-public class SelectBtActivity extends FragmentActivity {
+public class SelectBtActivity extends FragmentActivity implements DisconnectActivity {
 	
 	public static final String LAUNCH_MAC = "Launcher MAC intent";
 	private static final int FM_CHANNEL = 0;
@@ -43,7 +44,6 @@ public class SelectBtActivity extends FragmentActivity {
 	private static String deviceMAC;
 	
 	private static boolean bootPending;
-	private static boolean closeWhenPossible;
 	private static int answerPending = 0;
 
 	private static final int NO_QUESTION = 0;
@@ -124,7 +124,6 @@ public class SelectBtActivity extends FragmentActivity {
         });
         
         volumeSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-        	int progress = 0;
         
         	@Override
         	public void onProgressChanged(SeekBar seekBar,int progresValue, boolean fromUser) {
@@ -156,7 +155,6 @@ public class SelectBtActivity extends FragmentActivity {
         }); 
 	
 		bootPending = true;
-		closeWhenPossible = false;
           
 		new Handler().postDelayed(new Runnable() {
 		    @Override
@@ -190,7 +188,10 @@ public class SelectBtActivity extends FragmentActivity {
 	}
 
 	
-
+	public void disconnect() {
+		finish();
+	}
+	
 	public void closeIfNotBooted() {
 		if (bootPending) {
 		    Toast.makeText(this, getString(R.string.device_not_availabe), Toast.LENGTH_LONG).show();
@@ -333,8 +334,6 @@ public class SelectBtActivity extends FragmentActivity {
                     		break;
 
 	                    case SelectBtService.STATE_DISCONNECTED:
-	                    	closeWhenPossible = true;
-	                    	break;
 	                    case SelectBtService.STATE_CONNECTING:
 	                    case SelectBtService.STATE_NONE:
 
@@ -406,7 +405,7 @@ public class SelectBtActivity extends FragmentActivity {
                         	volumeSeekBar.setProgress(selectBtState.volumeBT);
                        	}		
                 	} else {
-                      	if  (selectBtState.volumeFM < selectBtState.MAX_VOLUME_FM) {
+                      	if  (selectBtState.volumeFM < SelectBtState.MAX_VOLUME_FM) {
                         	volumeSeekBar.setProgress(selectBtState.volumeFM+1);
                       		selectBtState.setVolumeFM(selectBtState.volumeFM+1);
 
@@ -457,8 +456,8 @@ public class SelectBtActivity extends FragmentActivity {
     		volumeFM = 0;
     	}
   
-    	public void updateName(String name) {
-    		this.name = name;
+    	public void updateName(String n) {
+    		name = n;
     		nameView.setText(name);
     	}
   
