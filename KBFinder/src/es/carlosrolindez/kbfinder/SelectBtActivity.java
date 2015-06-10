@@ -54,7 +54,10 @@ public class SelectBtActivity extends FragmentActivity {
 	private static ImageButton mainButton;
 	private static SeekBar volumeSeekBar;
 	private static TextView nameView;
-
+	private	static RelativeLayout splashLayout;
+	private	static RelativeLayout controlLayout;	
+	private	static RelativeLayout windowLayout;
+	
 	// swipe fragments
     private static final int NUM_PAGES = 2;
     private ViewPager mPager;
@@ -65,8 +68,7 @@ public class SelectBtActivity extends FragmentActivity {
 	private	static AnimationDrawable frameAnimation;
 	private static ImageView splashImageView;
 	
-	private	static RelativeLayout splashLayout;
-	private	static RelativeLayout controlLayout;	
+
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +83,7 @@ public class SelectBtActivity extends FragmentActivity {
 		frameAnimation = (AnimationDrawable)splashImageView.getBackground(); 
 		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
+		windowLayout = (RelativeLayout) findViewById(R.id.WindowLayout);
 		mainButton = (ImageButton) findViewById(R.id.MainPower);
 		nameView = (TextView) findViewById(R.id.SelectBtName); 
 		  
@@ -196,22 +199,22 @@ public class SelectBtActivity extends FragmentActivity {
 	}
 		
 	public static void askAll() {
-		service.write(("ALL ?\r"));
+		service.write("ALL ?\r",false);
 		answerPending = QUESTION_ALL;
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	service.write(("STB ON\r"));
-		else 		service.write(("STB OFF\r"));
+		if (onOff) 	service.write("STB ON\r",false);
+		else 		service.write("STB OFF\r",false);
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	service.write(("CHN BT\r"));
-		else 		service.write(("CHN FM\r"));
+		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",true);
+		else 		service.write("CHN FM\r",true);
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {
-		service.write(("VOL " + String.valueOf(volumeFM) +"\r"));
+		service.write("VOL " + String.valueOf(volumeFM) +"\r",false);
     }
 		
 	public static class MessageExtractor {
@@ -251,6 +254,7 @@ public class SelectBtActivity extends FragmentActivity {
 		splashImageView.setVisibility(View.INVISIBLE);
 		splashLayout.setVisibility(View.INVISIBLE);
 		controlLayout.setVisibility(View.VISIBLE);
+		windowLayout.setVisibility(View.VISIBLE);
 		bootPending = false;
 
 	}
@@ -386,7 +390,9 @@ public class SelectBtActivity extends FragmentActivity {
     {
        	final AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
        	int volume;
-       	if (!selectBtState.onOff) return true;
+       	if (!selectBtState.onOff) 
+       		if (event.getKeyCode()==KeyEvent.KEYCODE_BACK) 
+       			return super.dispatchKeyEvent(event);
         if (event.getAction() == KeyEvent.ACTION_DOWN)
         {
             switch (event.getKeyCode()) 
@@ -423,7 +429,11 @@ public class SelectBtActivity extends FragmentActivity {
                 	}
   
                     return true;
+                case KeyEvent.KEYCODE_BACK:
+                	return super.dispatchKeyEvent(event);
             }
+        } else {
+        	if (event.getKeyCode()==KeyEvent.KEYCODE_BACK) return super.dispatchKeyEvent(event);
         }
         return true;
 //        return super.dispatchKeyEvent(event);
@@ -457,13 +467,15 @@ public class SelectBtActivity extends FragmentActivity {
     		Log.e("onoff",onOffString);
     		if (onOffString.equals("OFF")) {
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));	
-        		volumeSeekBar.setVisibility(View.INVISIBLE);        	
+        		volumeSeekBar.setVisibility(View.INVISIBLE);   
+        		windowLayout.setVisibility(View.INVISIBLE);
     			onOff = false;
         	}
     		else {
     			onOff = true;
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));	
         		volumeSeekBar.setVisibility(View.VISIBLE);
+        		windowLayout.setVisibility(View.VISIBLE);
         	}
 
     	}
@@ -478,9 +490,11 @@ public class SelectBtActivity extends FragmentActivity {
     		if (onOff){
     			mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));
         		volumeSeekBar.setVisibility(View.VISIBLE);
+        		windowLayout.setVisibility(View.VISIBLE);
     		} else  {
     			mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));
         		volumeSeekBar.setVisibility(View.INVISIBLE);
+        		windowLayout.setVisibility(View.INVISIBLE);
     		}
     	}
  

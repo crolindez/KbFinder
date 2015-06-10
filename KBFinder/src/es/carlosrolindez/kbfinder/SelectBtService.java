@@ -24,8 +24,12 @@ public class SelectBtService {
     private final BluetoothDevice mDevice;
 
     private ConnectingThread mConnectingThread;
-    private ConnectedThread mConnectedThread;
+    private ConnectedThreadInput mConnectedThreadInput;
+    private ConnectedThreadOutput mConnectedThreadOutput;
     private int mState;
+    
+    private List<MessageDelayed> mListOut;
+    private boolean longWait;
     
     private BluetoothSocket mSocket;
 
@@ -34,6 +38,18 @@ public class SelectBtService {
     public static final int STATE_CONNECTING = 1; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 2;  // now connected to a remote device
     public static final int STATE_DISCONNECTED = 3;  // now connected to a remote device
+    
+    public class MessageDelayed {
+   
+    	public String message;
+    	public boolean delayed;
+    	
+    	public MessageDelayed(String message, boolean delayed) {
+    		this.message = message;
+    		this.delayed = delayed;
+    	}
+
+    }
    
     /**
      * Constructor. Prepares a new BluetoothChat session.
@@ -46,6 +62,7 @@ public class SelectBtService {
         mHandler = handler;
         mDevice = KBdevice.deviceInArray(A2dpService.deviceList, deviceMAC);
         mSocket = null;
+        mListOut = new ArrayList<MessageDelayed>();
     }
     
     /**
@@ -87,7 +104,8 @@ public class SelectBtService {
 
         mConnectingThread = null;
 
-        mConnectedThread = null;
+        mConnectedThreadInput = null;
+        mConnectedThreadOutput = null;
 
         try {
             mSocket.close();
@@ -98,9 +116,11 @@ public class SelectBtService {
         setState(STATE_DISCONNECTED);
     }
 
-    public synchronized void write(String out) {
-    	if (mConnectedThread == null) return;
-    	mConnectedThread.write(out);
+    public  void write(String out,boolean waitLonger) {
+    	synchronized (mListOut) {
+    		MessageDelayed message = new MessageDelayed(out,waitLonger);
+    		mListOut.add(message);
+    	}
     }
 
 	/**
@@ -143,9 +163,10 @@ public class SelectBtService {
             mConnectingThread = null;
 
             // Start the thread to manage the connection and perform transmissions
-            mConnectedThread = new ConnectedThread();
-            mConnectedThread.start();
- //           setState(STATE_CONNECTED);
+            mConnectedThreadInput = new ConnectedThreadInput();
+            mConnectedThreadOutput = new ConnectedThreadOutput();
+            mConnectedThreadInput.start();
+            mConnectedThreadOutput.start();//           setState(STATE_CONNECTED);
 
         }
     }
@@ -156,27 +177,23 @@ public class SelectBtService {
      * This thread runs during a connection with a remote device.
      * It handles all incoming and outgoing transmissions.
      */
-    private class ConnectedThread extends Thread {
+    private class ConnectedThreadInput extends Thread {
         private InputStream mmInStream;
-        private OutputStream mmOutStream;
-        
-        private List<String> outBuffer;
+      
 
-        public ConnectedThread() {
-            Log.d(TAG, "create ConnectedThread");
+        public ConnectedThreadInput() {
+            Log.d(TAG, "create ConnectedThreadInput");
 
             // Get the BluetoothSocket input and output streams
             try {
             	mmInStream = mSocket.getInputStream();
-            	mmOutStream = mSocket.getOutputStream();
-            	outBuffer = new ArrayList<String>();	
             } catch (IOException e) {
                 Log.e(TAG, "temp sockets not created", e);
             }
         }
 
         public void run() {
-            Log.d(TAG, "BEGIN mConnectedThread");
+            Log.d(TAG, "BEGIN mConnectedThreadInput");
             byte[] buffer = new byte[255];
             int bytes;
             setState(STATE_CONNECTED);
@@ -193,29 +210,74 @@ public class SelectBtService {
                 } catch (IOException e) {
                     Log.e(TAG, "Exception during read", e);
                     mHandler.obtainMessage(SelectBtHandler.MESSAGE_READING_FAILURE).sendToTarget();
-                    mConnectedThread = null;
+                    mConnectedThreadInput = null;
                     return;
                 }
             }
         }
 
-        /**
-         * Write to the connected OutStream.
-         *
-         * @param buffer The bytes to write
-         */
-        public void write(String out) {
+    }
+    /**
+     * This thread runs during a connection with a remote device.
+     * It handles all incoming and outgoing transmissions.
+     */	
+    private class ConnectedThreadOutput extends Thread {
+        private OutputStream mmOutStream;
+        private boolean paused;
+        private boolean waitLonger;
+
+
+        public ConnectedThreadOutput() {
+            Log.d(TAG, "create ConnectedThreadOutput");
+            
+            paused = false;
+            // Get the BluetoothSocket input and output streams
             try {
-            	outBuffer.add(out);         	
-                mmOutStream.write(out.getBytes());
-                // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, out.getBytes())
-                        .sendToTarget();
+            	mmOutStream = mSocket.getOutputStream();
             } catch (IOException e) {
-                Log.e(TAG, "Exception during write", e);
-                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
-                mConnectedThread = null;
-                return;
+                Log.e(TAG, "temp sockets not created", e);
+            }
+        }
+
+        public void run() {
+            Log.d(TAG, "BEGIN mConnectedThreadOutput");
+            byte[] buffer;
+            setState(STATE_CONNECTED);
+            
+
+            // Keep listening to the InputStream while connected
+            while (true) {
+            	synchronized (mListOut) {
+            		if (!mListOut.isEmpty() && !paused) {
+            			paused = true;
+            			waitLonger =  mListOut.get(0).delayed;
+                        buffer = mListOut.get(0).message.getBytes();
+                        mListOut.remove(0);
+                        try {       	
+        	                mmOutStream.write(buffer);
+        	                // Share the sent message back to the UI Activity
+        	                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
+        	                        .sendToTarget();
+        	            } catch (IOException e) {
+        	                Log.e(TAG, "Exception during write", e);
+        	                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
+        	                mConnectedThreadOutput = null;
+        	                return;
+        	            }          			
+            		}
+            	}
+            	
+            	if (paused) {
+            	    try {  
+            	    	if (waitLonger)
+            	    		sleep(2500);
+            	    	else
+            	    		sleep(300);
+            	    } catch (InterruptedException e) {
+    	                Log.e(TAG, "Interrupted Exception during write", e);      	    	
+            	    }
+            		paused = false;
+            	}
             }
         }
     }

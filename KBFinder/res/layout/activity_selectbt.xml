@@ -40,7 +40,7 @@
 				android:layout_alignParentLeft="true" 
 				android:text="" 
 				android:typeface="monospace"
-				android:textSize="40sp"
+				android:textSize="25sp"
         		android:textStyle="bold" />
 			<ImageButton
 				android:id="@+id/MainPower"
@@ -60,6 +60,7 @@
 				android:progressDrawable="@drawable/volume_progress_seekbar"
         		android:thumb="@drawable/thumb" />
 			<RelativeLayout
+				android:id="@+id/WindowLayout"
 	       	 	android:layout_width="match_parent"
 	        	android:layout_height="match_parent"
 	        	android:layout_margin="20dp"
