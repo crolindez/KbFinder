@@ -53,7 +53,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	private static ImageButton mainButton;
 	private static SeekBar volumeSeekBar;
-	private static TextView nameView;
+	private static TextView nameText;
 	private	static RelativeLayout splashLayout;
 	private	static RelativeLayout controlLayout;	
 	private	static RelativeLayout windowLayout;
@@ -85,7 +85,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
 		windowLayout = (RelativeLayout) findViewById(R.id.WindowLayout);
 		mainButton = (ImageButton) findViewById(R.id.MainPower);
-		nameView = (TextView) findViewById(R.id.SelectBtName); 
+		nameText = (TextView) findViewById(R.id.SelectBtName); 
+
 		  
 		volumeSeekBar = (SeekBar) findViewById(R.id.volumeControl);
 		
@@ -120,6 +121,44 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels)
             {
+            }
+        });
+        mPager.setPageTransformer(true, new ViewPager.PageTransformer() {
+            private static final float MIN_SCALE = 0.85f;
+            private static final float MIN_ALPHA = 0.5f;
+
+            public void transformPage(View view, float position) {
+                int pageWidth = view.getWidth();
+                int pageHeight = view.getHeight();
+
+                if (position < -1) { // [-Infinity,-1)
+                    // This page is way off-screen to the left.
+                    view.setAlpha(0);
+
+                } else if (position <= 1) { // [-1,1]
+                    // Modify the default slide transition to shrink the page as well
+                    float scaleFactor = Math.max(MIN_SCALE, 1 - Math.abs(position));
+                    float vertMargin = pageHeight * (1 - scaleFactor) / 2;
+                    float horzMargin = pageWidth * (1 - scaleFactor) / 2;
+                    if (position < 0) {
+                        view.setTranslationX(horzMargin - vertMargin / 2);
+                    } else {
+                        view.setTranslationX(-horzMargin + vertMargin / 2);
+                    }
+
+                    // Scale the page down (between MIN_SCALE and 1)
+                    view.setScaleX(scaleFactor);
+                    view.setScaleY(scaleFactor);
+
+                    // Fade the page relative to its size.
+                    view.setAlpha(MIN_ALPHA +
+                            (scaleFactor - MIN_SCALE) /
+                            (1 - MIN_SCALE) * (1 - MIN_ALPHA));
+
+                } else { // (1,+Infinity]
+                    // This page is way off-screen to the right.
+                    view.setAlpha(0);
+                }
             }
         });
         
@@ -289,7 +328,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				
 				selectBtState.updateChannel(messageExtractor.getStringFromMessage());
 				
-				String stationFM = messageExtractor.getStringFromMessage();						Log.e("stationFM",stationFM);
+				selectBtState.updateFrequency(messageExtractor.getStringFromMessage());
+				
 				String infoRDS = messageExtractor.getRDSFromMessage();							Log.e("infoRDS",infoRDS);
 				String tunerSensitivity = messageExtractor.getStringFromMessage();				Log.e("tunerSensitivity",tunerSensitivity);
 				String equalizationMode = messageExtractor.getStringFromMessage();				Log.e("equalizationMode",equalizationMode);
@@ -440,11 +480,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
     
     private class SelectBtState {
-    	boolean onOff;
-    	int channel;
-    	int volumeFM;
-    	int volumeBT;
-    	String name;
+    	public boolean onOff;
+    	public int channel;
+    	public int volumeFM;
+    	public int volumeBT;
+    	public String name;
+    	public String frequency;
     	
     	public static final int MAX_VOLUME_FM = 15;
     	
@@ -454,11 +495,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     		channel = BT_CHANNEL; 	
     		volumeBT = 0;
     		volumeFM = 0;
+    		frequency = "87.5";
     	}
   
     	public void updateName(String n) {
     		name = n;
-    		nameView.setText(name);
+    		nameText.setText(name);
     	}
   
     	
@@ -469,12 +511,18 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         		volumeSeekBar.setVisibility(View.INVISIBLE);   
         		windowLayout.setVisibility(View.INVISIBLE);
     			onOff = false;
+           		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+        		}
         	}
     		else {
     			onOff = true;
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));	
         		volumeSeekBar.setVisibility(View.VISIBLE);
         		windowLayout.setVisibility(View.VISIBLE);
+           		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+        		}
         	}
 
     	}
@@ -490,11 +538,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));
         		volumeSeekBar.setVisibility(View.VISIBLE);
         		windowLayout.setVisibility(View.VISIBLE);
-    		} else  {
+     		} else  {
     			mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));
         		volumeSeekBar.setVisibility(View.INVISIBLE);
         		windowLayout.setVisibility(View.INVISIBLE);
-    		}
+     		}
     	}
  
     	public void updateChannel(String channelString) {
@@ -520,6 +568,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     		} else {
     			channel = FM_CHANNEL;
         		mPager.setCurrentItem(0, false);
+    			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
            		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
         		}
@@ -546,6 +595,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         			volumeSeekBar.setProgress(volumeBT);
         		}
     		} else {
+    			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
         		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
         		}
@@ -567,5 +617,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     		writeVolumeFMState(volumeFM);				
     	}
     	
+    	public void updateFrequency(String frequencyString) {
+    		frequency = frequencyString;
+    		if (mPager.getCurrentItem()==0) {
+    			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
+    		}			
+		}   
+		
     }
 }
