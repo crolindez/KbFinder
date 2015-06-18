@@ -211,16 +211,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				selectBtState.switchOnOff();				
 			}
 		});
-		
-		IntentFilter iF = new IntentFilter();
-		iF.addAction("com.spotify.music.playbackstatechanged");
-		iF.addAction("com.spotify.music.metadatachanged");
-		iF.addAction("com.spotify.music.queuechanged");
-
-		registerReceiver(spotifyBroadcastReceiver, iF);
-		
-
-		
     }
 
 	@Override	
@@ -236,8 +226,21 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	    			volumeSeekBar.setProgress(selectBtState.volumeBT); 	    			
 	    	}
   		}
-	}
+		IntentFilter iF = new IntentFilter();
+		iF.addAction("com.spotify.music.playbackstatechanged");
+		iF.addAction("com.spotify.music.metadatachanged");
+		iF.addAction("com.spotify.music.queuechanged");
 
+		registerReceiver(spotifyBroadcastReceiver, iF);
+
+	}
+	
+	@Override	
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(spotifyBroadcastReceiver);
+	}
+	
 	
 	public void disconnect() {
 		finish();
