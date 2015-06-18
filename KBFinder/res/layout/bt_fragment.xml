@@ -41,5 +41,14 @@
 		android:layout_marginTop="10dp"	
 		android:layout_marginBottom="10dp"		
 		android:background="@drawable/next_selector" />
+
+   <TextView
+       android:id="@+id/song_name"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_above="@+id/play_pause_BT"
+       android:layout_centerHorizontal="true"
+       android:textColor="#00ff00"
+       android:textSize="20sp" />
     
 </RelativeLayout>

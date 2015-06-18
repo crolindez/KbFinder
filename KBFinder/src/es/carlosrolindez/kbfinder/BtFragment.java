@@ -19,6 +19,8 @@ public class BtFragment extends Fragment {
 	public String fragmentName;
 	private final Context mContext;
 	
+	private static TextView songName;
+	
 	public BtFragment(Context context) {
 		fragmentName =  "BT";
 		mContext = context;
@@ -26,9 +28,9 @@ public class BtFragment extends Fragment {
 	
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.bt_fragment, container, false);
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.bt_fragment, container, false);    
       	((TextView) rootView.findViewById(R.id.fragment_text)).setText(fragmentName);
- 
+      	songName = (TextView)rootView.findViewById(R.id.song_name);
 		
 		ImageView button_previous_BT = (ImageView)rootView.findViewById(R.id.previous_BT);
 		ImageView button_play_pause_BT = (ImageView)rootView.findViewById(R.id.play_pause_BT);
@@ -95,7 +97,9 @@ public class BtFragment extends Fragment {
         
     }
     
-    
+    public void setSongName(String name) {
+        songName.setText(name);    	
+    }    
     
 
 }
