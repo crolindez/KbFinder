@@ -306,9 +306,17 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		}
 		
 		public String getRDSFromMessage() {
-			if (message.length()<8) return "";
-			String RDS = message.substring(0, 8);
-			message = message.substring(8, message.length());
+			int len = message.length();
+			String RDS;
+			if (len == 0) return "";
+			if (len>8) {
+				RDS = message.substring(0, 8);
+				message = message.substring(8, message.length());			
+			} else {
+				RDS = message;
+				message="";						
+			}
+
 			return RDS;			
 		}
 		
