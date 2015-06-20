@@ -50,6 +50,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
 	private static final int NO_QUESTION = 0;
 	private static final int QUESTION_ALL = 1;
+	private static final int RDS = 2;
 	
 	private static SelectBtState selectBtState;
 	
@@ -227,9 +228,17 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	    	}
   		}
 		IntentFilter iF = new IntentFilter();
-		iF.addAction("com.spotify.music.playbackstatechanged");
+//		iF.addAction("com.spotify.music.playbackstatechanged");
 		iF.addAction("com.spotify.music.metadatachanged");
-		iF.addAction("com.spotify.music.queuechanged");
+//		iF.addAction("com.spotify.music.queuechanged");
+		
+		iF.addAction("com.android.music.metachanged");
+		
+		iF.addAction("com.htc.music.metachanged");
+		
+//		iF.addAction("com.android.music.playstatechanged");
+//		iF.addAction("com.android.music.playbackcomplete");
+// 		iF.addAction("com.android.music.queuechanged");
 
 		registerReceiver(spotifyBroadcastReceiver, iF);
 
@@ -325,6 +334,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		MessageExtractor messageExtractor = new MessageExtractor(m);
 
 		switch (answerPending) {
+			case NO_QUESTION:
+				String header = messageExtractor.getStringFromMessage();
+				if (header.equals("RDS"))
+					selectBtState.updateRds(messageExtractor.getRDSFromMessage());
+				break;
 			case QUESTION_ALL:
 
 				String password = messageExtractor.getStringFromMessage();						Log.e("Password",password);
@@ -345,7 +359,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				
 				selectBtState.updateFrequency(messageExtractor.getStringFromMessage());
 				
-				String infoRDS = messageExtractor.getRDSFromMessage();							Log.e("infoRDS",infoRDS);
+				selectBtState.updateRds(messageExtractor.getRDSFromMessage());
+
 				String tunerSensitivity = messageExtractor.getStringFromMessage();				Log.e("tunerSensitivity",tunerSensitivity);
 				String equalizationMode = messageExtractor.getStringFromMessage();				Log.e("equalizationMode",equalizationMode);
 //				String volumeFM = messageExtractor.getStringFromMessage();						Log.e("volumeFM",volumeFM);
@@ -501,6 +516,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     	public int volumeBT;
     	public String name;
     	public String frequency;
+    	public String rds;
     	public String songName;
     	
     	public static final int MAX_VOLUME_FM = 15;
@@ -513,6 +529,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     		volumeFM = 0;
     		frequency = "87.5";
     		songName = "";
+    		rds = "";
     	}
   
     	public void updateName(String n) {
@@ -587,6 +604,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			channel = FM_CHANNEL;
         		mPager.setCurrentItem(0, false);
     			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
+    			((FmFragment)mAdapter.getItem(0)).setRDS(rds);
            		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
         		}
@@ -615,6 +633,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         		}
     		} else {
     			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
+    			((FmFragment)mAdapter.getItem(0)).setRDS(rds);
         		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
         		}
@@ -643,7 +662,14 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     		}			
 		}   
 		
-    	public void updateTrackName(String name) {
+    	public void updateRds(String rdsString) {
+    		rds = rdsString;
+    		if (mPager.getCurrentItem()==0) {
+    			((FmFragment)mAdapter.getItem(0)).setRDS(rds);
+    		}			
+		}   
+		
+     	public void updateTrackName(String name) {
     		songName = name;
     		if (mPager.getCurrentItem()==1) {
     			((BtFragment)mAdapter.getItem(1)).setSongName(songName);
@@ -654,12 +680,20 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     }
     
     public BroadcastReceiver spotifyBroadcastReceiver = new BroadcastReceiver() {
-        final class BroadcastTypes {
+    	/*       final class BroadcastTypes {
             static final String SPOTIFY_PACKAGE = "com.spotify.music";
-            static final String PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged";
-            static final String QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";
-            static final String METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
-        }
+            static final String ANDROID_PACKAGE = "com.android.music";
+            static final String HTC_PACKAGE = "com.htc.music";
+            static final String ANDROID_METADATA_CHANGED = ANDROID_PACKAGE + ".metachanged";
+            static final String SPOTIFY_METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
+            static final String HTC_METADATA_CHANGED = SPOTIFY_PACKAGE + ".metachanged";
+            static final String SPOTIFY_PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged";
+            static final String SPOTIFY_QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";
+            static final String ANDROID_SPOTIFY_PLAYBACK_STATE_CHANGED = ANDROID_PACKAGE + ".playstatechanged";
+            static final String ANDROID_QUEUE_CHANGED = ANDROID_PACKAGE + ".queuechanged";
+            static final String ANDROID_PLAYBACK_COMPLETE = ANDROID_PACKAGE + ".playbackcomplete";
+            }*/
+
 
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -669,27 +703,33 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
   //          long timeSentInMs = intent.getLongExtra("timeSent", 0L);
 
             String action = intent.getAction();
+            
+            Log.e("FILTER",action);
 
-            if (action.equals(BroadcastTypes.METADATA_CHANGED)) {
- /*               String trackId = intent.getStringExtra("id");
+ //           if ( (action.equals(BroadcastTypes.SPOTIFY_METADATA_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_METADATA_CHANGED)) ){
+   /*             String trackId = intent.getStringExtra("id");
                 String artistName = intent.getStringExtra("artist");
                 String albumName = intent.getStringExtra("album");
-                int trackLengthInSec = intent.getIntExtra("length", 0);*/
+               int trackLengthInSec = intent.getIntExtra("length", 0);*/
                 
                 String trackName = intent.getStringExtra("track");
                 if (selectBtState!=null)
                 	selectBtState.updateTrackName(trackName);
                 Log.e("CHANGED",trackName);
                 // Do something with extracted information...
-            } else if (action.equals(BroadcastTypes.PLAYBACK_STATE_CHANGED)) {
+  //          }
+                /* else if ( (action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_SPOTIFY_PLAYBACK_STATE_CHANGED)) ) {
                 Log.e("PLAY","STATE");
 //                boolean playing = intent.getBooleanExtra("playing", false);
  //               int positionInMs = intent.getIntExtra("playbackPosition", 0);
                 // Do something with extracted information
-            } else if (action.equals(BroadcastTypes.QUEUE_CHANGED)) {
+            } else if ( (action.equals(BroadcastTypes.SPOTIFY_QUEUE_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_QUEUE_CHANGED)) ) {
                 Log.e("CHANGED","QUEUE");
                 // Sent only as a notification, your app may want to respond accordingly.
-            }
+            } else if (action.equals(BroadcastTypes.ANDROID_PLAYBACK_COMPLETE)) {
+                Log.e("PLAYBACK","COMPLETE");
+                // Sent only as a notification, your app may want to respond accordingly.
+            }*/
         }
     };
 }

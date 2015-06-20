@@ -16,6 +16,7 @@ public class FmFragment extends Fragment {
 	private final Context mContext;
 	
 	private static TextView frequencyText;
+	private static TextView RDSText;
 	
 	
 	
@@ -31,6 +32,7 @@ public class FmFragment extends Fragment {
         Typeface myTypeface = Typeface.createFromAsset(mContext.getAssets(), "seven_segments.ttf");
         frequencyText = (TextView)rootView.findViewById(R.id.frequency);
         frequencyText.setTypeface(myTypeface);
+        RDSText = (TextView)rootView.findViewById(R.id.RDS);
         
         return rootView;	        
     }
@@ -39,5 +41,8 @@ public class FmFragment extends Fragment {
         frequencyText.setText(frequency);    	
     }
     
+    public void setRDS(String RDS) {
+    	RDSText.setText(RDS);    	
+    }    
 
 }

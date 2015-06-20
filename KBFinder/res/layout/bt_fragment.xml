@@ -14,19 +14,27 @@
         android:textStyle="bold" 
         android:textColor="#eeeeee"
         android:text="" />	
+	<TextView
+       android:id="@+id/song_name"
+       android:layout_width="wrap_content"
+       android:layout_height="wrap_content"
+       android:layout_centerVertical="true"
+       android:layout_centerHorizontal="true"
+       android:textColor="#00ff00"
+       android:textSize="30sp" />        
 	<ImageButton
 		android:id="@+id/play_pause_BT"
 		android:layout_width="64dp"
 		android:layout_height="64dp"
 		android:layout_centerHorizontal="true"
-		android:layout_centerVertical="true"
+        android:layout_below="@id/song_name"
 		android:layout_marginTop="10dp"	
 		android:layout_marginBottom="10dp"		
 		android:background="@drawable/play_pause_selector"  />		
    	<ImageButton
         android:id="@+id/previous_BT"
 		android:layout_toLeftOf="@id/play_pause_BT"
-		android:layout_centerVertical="true"
+        android:layout_below="@id/song_name"
 		android:layout_marginTop="10dp"	
         android:layout_width="64dp" 
         android:layout_height="64dp" 
@@ -37,18 +45,10 @@
 		android:layout_width="64dp"
 		android:layout_height="64dp"
 		android:layout_toRightOf="@id/play_pause_BT"
-		android:layout_centerVertical="true"		
+        android:layout_below="@id/song_name"	
 		android:layout_marginTop="10dp"	
 		android:layout_marginBottom="10dp"		
 		android:background="@drawable/next_selector" />
 
-   <TextView
-       android:id="@+id/song_name"
-       android:layout_width="wrap_content"
-       android:layout_height="wrap_content"
-       android:layout_above="@+id/play_pause_BT"
-       android:layout_centerHorizontal="true"
-       android:textColor="#00ff00"
-       android:textSize="20sp" />
     
 </RelativeLayout>
