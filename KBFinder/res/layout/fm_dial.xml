@@ -4,7 +4,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent" >	
 	<NumberPicker
-		android:id="@+id/hundred_fm"
+		android:id="@+id/megaherzs"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
@@ -13,32 +13,12 @@
 		android:showDividers="middle"
 		android:splitMotionEvents="true" />
 	<NumberPicker
-		android:id="@+id/ten_fm"
+		android:id="@+id/kiloherzs"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentTop="true"
 		android:layout_toRightOf="@+id/hundred_fm"
 		android:dividerPadding="2dp"
-		android:showDividers="middle"
-		android:splitMotionEvents="true" />
-	<NumberPicker
-		android:id="@+id/decimal_fm"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentTop="true"
-		android:layout_toRightOf="@+id/ten_fm"
-		android:dividerPadding="2dp"
-		android:orientation="vertical"
-		android:showDividers="middle"
-		android:splitMotionEvents="true" />
-	<NumberPicker
-		android:id="@+id/unit_fm"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_alignParentTop="true"
-		android:layout_toRightOf="@+id/decimal_fm"
-		android:dividerPadding="2dp"
-		android:orientation="vertical"
 		android:showDividers="middle"
 		android:splitMotionEvents="true" />
 </RelativeLayout>

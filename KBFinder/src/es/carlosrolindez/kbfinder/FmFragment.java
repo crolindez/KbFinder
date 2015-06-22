@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 
 
@@ -17,6 +18,8 @@ public class FmFragment extends Fragment {
 	
 	private static TextView frequencyText;
 	private static TextView RDSText;
+	private static FmPicker megaherzs;
+	private static FmPicker kiloherzs;
 	
 	
 	
@@ -33,6 +36,14 @@ public class FmFragment extends Fragment {
         frequencyText = (TextView)rootView.findViewById(R.id.frequency);
         frequencyText.setTypeface(myTypeface);
         RDSText = (TextView)rootView.findViewById(R.id.RDS);
+        megaherzs = (FmPicker)rootView.findViewById(R.id.megaherzs);
+        megaherzs.setMaxValue(108);
+        megaherzs.setMinValue(87);
+        megaherzs.setWrapSelectorWheel(false);
+        kiloherzs = (FmPicker)rootView.findViewById(R.id.kiloherzs);    
+        kiloherzs.setMaxValue(9);
+        kiloherzs.setMinValue(0);
+        kiloherzs.setWrapSelectorWheel(false);
         
         return rootView;	        
     }

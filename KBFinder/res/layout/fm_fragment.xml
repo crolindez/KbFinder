@@ -14,22 +14,49 @@
         android:textStyle="bold" 
         android:textColor="#eeeeee"
         android:text="" />
-    <TextView
-    	android:id="@+id/frequency"
-    	android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"
-    	android:layout_centerHorizontal="true"
-    	android:layout_centerVertical="true"
-    	android:text=""
-    	android:textColor="#00ff00"
-    	android:textSize="50sp" />
 	<TextView
     	android:id="@+id/RDS"
     	android:layout_width="wrap_content"
     	android:layout_height="wrap_content"
     	android:layout_centerHorizontal="true"
-        android:layout_below="@id/frequency"
+    	android:layout_centerVertical="true"    	
     	android:text=""
         android:textColor="#00ff00"
-        android:textSize="30sp" />    
+        android:textSize="30sp" />  
+    <TextView
+    	android:id="@+id/frequency"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:layout_centerHorizontal="true"
+        android:layout_above="@id/RDS"
+    	android:text=""
+    	android:textColor="#00ff00"
+    	android:textSize="50sp" />        
+	<es.carlosrolindez.kbfinder.FmPicker
+		android:id="@+id/megaherzs"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+    	android:layout_centerHorizontal="true"
+        android:layout_below="@id/RDS"
+		android:dividerPadding="2dp"
+		android:showDividers="none"
+		android:splitMotionEvents="true" />
+	<TextView
+    	android:id="@+id/point"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+        android:layout_below="@id/RDS"
+		android:layout_toRightOf="@id/megaherzs"
+    	android:text="."
+        android:textColor="#00ff00"
+        android:textSize="30sp" />  
+	<es.carlosrolindez.kbfinder.FmPicker
+		android:id="@+id/kiloherzs"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+        android:layout_below="@id/RDS"
+		android:layout_toRightOf="@id/point"
+		android:dividerPadding="2dp"
+		android:showDividers="none"
+		android:splitMotionEvents="true" />
 </RelativeLayout>
