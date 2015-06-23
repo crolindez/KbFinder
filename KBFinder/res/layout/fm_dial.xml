@@ -1,24 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent" >	
-	<NumberPicker
+	android:layout_width="200dp"
+	android:layout_height="wrap_content" 
+	android:paddingTop="20dp"
+	android:paddingBottom="30dp"
+	android:paddingLeft="30dp"
+	android:paddingRight="30dp"	>				
+    <TextView
+    	android:id="@+id/head_text"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:layout_centerHorizontal="true"
+		android:padding="20dp"
+    	android:text="@string/fm_dial"
+    	android:textColor="#00ff00"
+    	android:textSize="26sp"
+    	android:textStyle="bold"
+    	android:typeface="sans" 
+    	android:background="#555555"/>	
+	<es.carlosrolindez.kbfinder.FmPicker
 		android:id="@+id/megaherzs"
-		android:layout_width="wrap_content"
+		android:layout_width="100dp"
 		android:layout_height="wrap_content"
 		android:layout_alignParentLeft="true"
-		android:layout_alignParentTop="true"
-		android:dividerPadding="2dp"
+		android:layout_below="@id/head_text"
+		android:dividerPadding="20dp"
 		android:showDividers="middle"
 		android:splitMotionEvents="true" />
-	<NumberPicker
+	<es.carlosrolindez.kbfinder.FmPicker
 		android:id="@+id/kiloherzs"
-		android:layout_width="wrap_content"
+		android:layout_width="50dp"
 		android:layout_height="wrap_content"
-		android:layout_alignParentTop="true"
-		android:layout_toRightOf="@+id/hundred_fm"
-		android:dividerPadding="2dp"
-		android:showDividers="middle"
+		android:layout_alignParentRight="true"
+		android:layout_alignTop="@+id/megaherzs"
+		android:dividerPadding="20dp"
+		android:showDividers="none"
 		android:splitMotionEvents="true" />
 </RelativeLayout>

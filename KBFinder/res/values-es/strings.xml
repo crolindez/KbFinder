@@ -6,5 +6,6 @@
 	<string name="bt_not_enabled">Bluetooth no habilitado</string>
 	<string name="a2dp_connected">A2dp Conectado</string>
 	<string name="a2dp_disconnected">A2dp Desconectado</string>
-		<string name="device_not_availabe">Dispositivo no disponible</string>	
+	<string name="device_not_availabe">Dispositivo no disponible</string>	
+	<string name="fm_dial">FM Dial</string>	
 </resources>
