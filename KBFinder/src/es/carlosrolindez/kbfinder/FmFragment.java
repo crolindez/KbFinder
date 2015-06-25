@@ -21,11 +21,13 @@ public class FmFragment extends Fragment {
 	private static TextView frequencyText;
 	private static TextView RDSText;
 	
+	private final SelectBtService service;	
 	
 	
-	public FmFragment(Context context) {
+	public FmFragment(Context context,SelectBtService ser) {
 		mContext = context;
 		fragmentName =  "FM";
+		service = ser;
 	}
 	
     @Override
@@ -55,8 +57,9 @@ public class FmFragment extends Fragment {
 			@Override
 			public void onClick(View v) 
 			{
-
-
+				service.write("SCN DOWN\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+				setFrequency("___._");
+				setRDS("");				
 			}
 		});
 
@@ -74,7 +77,9 @@ public class FmFragment extends Fragment {
 			@Override
 			public void onClick(View v) 
 			{
-
+				service.write("SCN UP\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+				setFrequency("___._");
+				setRDS("");
 			}
 		});
            

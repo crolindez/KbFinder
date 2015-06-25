@@ -30,6 +30,8 @@ import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 // TODO FM dial
 // TODO FM controls: forced mono; keypad; memories
 // TODO check when not allowed BT engine
+// TODO improve re-connection
+// TODO improve communication procedure with questions
 
 
 
@@ -46,11 +48,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private static String deviceMAC;
 	
 	private static boolean bootPending;
-	private static int answerPending = 0;
+//	private static int answerPending = 0;
 
-	private static final int NO_QUESTION = 0;
-	private static final int QUESTION_ALL = 1;
-	private static final int RDS = 2;
+//	private static final int NO_QUESTION = 0;
+//	private static final int QUESTION_ALL = 1;
+//	private static final int RDS = 2;
 	
 	private static SelectBtState selectBtState;
 	
@@ -263,22 +265,21 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	}
 		
 	public static void askAll() {
-		service.write("ALL ?\r",false);
-		answerPending = QUESTION_ALL;
+		service.write("ALL ?\r",SelectBtService.MessageDelayed.QUESTION_ALL, false);
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	service.write("STB ON\r",false);
-		else 		service.write("STB OFF\r",false);
+		if (onOff) 	service.write("STB ON\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+		else 		service.write("STB OFF\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",true);
-		else 		service.write("CHN FM\r",true);
+		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
+		else 		service.write("CHN FM\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {
-		service.write("VOL " + String.valueOf(volumeFM) +"\r",false);
+		service.write("VOL " + String.valueOf(volumeFM) +"\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
     }
 		
 	public static class MessageExtractor {
@@ -291,7 +292,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		public String getStringFromMessage() {
 			if (message.isEmpty()) return "";
 			String arr[] = message.trim().split(" ", 2);
-			message = arr[1];
+			if(arr.length==1)
+				message="";
+			else
+				message = arr[1];
 			return arr[0];		
 		}
 		
@@ -337,17 +341,19 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		super.onDestroy();
 	}
 		
-	public static void interpreter(String m) {
+	public static void interpreter(String m,int question) {
 
 		MessageExtractor messageExtractor = new MessageExtractor(m);
 
-		switch (answerPending) {
-			case NO_QUESTION:
+		switch (question) {
+			case SelectBtService.MessageDelayed.NO_QUESTION:
 				String header = messageExtractor.getStringFromMessage();
 				if (header.equals("RDS"))
 					selectBtState.updateRds(messageExtractor.getRDSFromMessage());
+				else if (header.equals("FMS"))
+					selectBtState.updateFrequency(messageExtractor.getStringFromMessage());
 				break;
-			case QUESTION_ALL:
+			case SelectBtService.MessageDelayed.QUESTION_ALL:
 
 				String password = messageExtractor.getStringFromMessage();						Log.e("Password",password);
 				selectBtState.updateName(messageExtractor.getIdentifierFromMessage());
@@ -375,11 +381,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				
 				selectBtState.updateVolumeFM(messageExtractor.getStringFromMessage());
 				String keepFmOn = messageExtractor.message;										Log.e("keepFmOn",keepFmOn);
-	
+
+
 				break;
 			
 		} 
-		answerPending = NO_QUESTION;		
+	
 	}
 
 
@@ -428,7 +435,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	                String readMessage = new String(readBuf, 0, msg.arg1);
 	                Log.e("message received",readMessage);
 					if (bootPending) bootFinished();
-	                interpreter(readMessage);
+	                interpreter(readMessage,msg.arg2);
 	                break;
 	            case MESSAGE_CONNECTING_FAILURE:
 	            case MESSAGE_READING_FAILURE:
@@ -448,7 +455,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         	if (position == BT_CHANNEL)
         		return new BtFragment(mContext);
         	else
-        		return new FmFragment(mContext);       		
+        		return new FmFragment(mContext,service);       		
         }
 
         @Override

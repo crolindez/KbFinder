@@ -17,6 +17,8 @@ public class SelectBtService {
     private static final String TAG = "SelectBtService";
     
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
+    
+
 
     // Member fields
     private final SelectBtHandler mHandler;
@@ -38,13 +40,19 @@ public class SelectBtService {
     public static final int STATE_DISCONNECTED = 3;  // now connected to a remote device
     
     public class MessageDelayed {
-   
+  
+    	public static final int NO_QUESTION = 0;
+    	public static final int QUESTION_ALL = 1;
+    	public static final int RDS = 2;
+    	
     	public String message;
     	public boolean delayed;
+    	public int question;
     	
-    	public MessageDelayed(String message, boolean delayed) {
+    	public MessageDelayed(String message, int question, boolean delayed) {
     		this.message = message;
     		this.delayed = delayed;
+    		this.question = question;
     	}
     }
     
@@ -120,13 +128,12 @@ public class SelectBtService {
         setState(STATE_DISCONNECTED);
     }
 
-    public  void write(String out,boolean waitLonger) {
+    public  void write(String out,int question, boolean waitLonger) {
     	synchronized (mListOut) {
-    		MessageDelayed message = new MessageDelayed(out,waitLonger);
+    		MessageDelayed message = new MessageDelayed(out,question,waitLonger);
     		mListOut.add(message);
     	}
     }
-
 	/**
      * This thread runs while attempting to make an outgoing connection
      * with a device. It runs straight through; the connection either
@@ -201,6 +208,7 @@ public class SelectBtService {
             Log.d(TAG, "BEGIN mConnectedThreadInput");
             byte[] buffer = new byte[255];
             int bytes;
+            int question;
             setState(STATE_CONNECTED);
 
             // Keep listening to the InputStream while connected
@@ -208,9 +216,18 @@ public class SelectBtService {
                 try {
                     // Read from the InputStream
                     bytes = mmInStream.read(buffer);
+              		if (!mListOut.isEmpty()) {
+              			synchronized (mListOut) {                    
+              				question = mListOut.get(0).question;
+              				if (mListOut.get(0).question!=MessageDelayed.NO_QUESTION)
+              					mListOut.remove(0);
+              			}
+                   	}
+              		else 
+              			question = MessageDelayed.NO_QUESTION;
 
                     // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(SelectBtHandler.MESSAGE_READ, bytes, -1, buffer)
+                    mHandler.obtainMessage(SelectBtHandler.MESSAGE_READ, bytes, question, buffer)
                             .sendToTarget();
                 } catch (IOException e) {
                     Log.e(TAG, "Exception during read", e);
@@ -248,29 +265,30 @@ public class SelectBtService {
             Log.d(TAG, "BEGIN mConnectedThreadOutput");
             byte[] buffer;
             
-            // Keep listening to the InputStream while connected
+
             while (true) {
-            	synchronized (mListOut) {
-            		if (!mListOut.isEmpty() && !paused) {
-            			paused = true;
-            			waitLonger =  mListOut.get(0).delayed;
+           		if (!mListOut.isEmpty()) {
+            		paused = true;
+                    synchronized (mListOut) {
+                    	waitLonger =  mListOut.get(0).delayed;
                         buffer = mListOut.get(0).message.getBytes();
-                        mListOut.remove(0);
-                        try {       	
-        	                mmOutStream.write(buffer);
-        	                // Share the sent message back to the UI Activity
-        	                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
-        	                        .sendToTarget();
-        	            } catch (IOException e) {
-        	                Log.e(TAG, "Exception during write", e);
-        	                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
-        	                mConnectedThreadOutput = null;
-        	                mActivity.disconnect();
-        	                return;
-        	            }          			
+                        if (mListOut.get(0).question==MessageDelayed.NO_QUESTION)
+                        		mListOut.remove(0);
             		}
-            	}
-            	
+
+	                try {       	
+		                mmOutStream.write(buffer);
+		                // Share the sent message back to the UI Activity
+		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
+		                        .sendToTarget();
+		            } catch (IOException e) {
+		                Log.e(TAG, "Exception during write", e);
+		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
+		                mConnectedThreadOutput = null;
+		                mActivity.disconnect();
+		                return;
+		            }          			
+           		}
             	if (paused) {
             	    try {  
             	    	if (waitLonger)
