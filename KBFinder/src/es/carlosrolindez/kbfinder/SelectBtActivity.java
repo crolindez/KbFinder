@@ -48,11 +48,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private static String deviceMAC;
 	
 	private static boolean bootPending;
-//	private static int answerPending = 0;
-
-//	private static final int NO_QUESTION = 0;
-//	private static final int QUESTION_ALL = 1;
-//	private static final int RDS = 2;
 	
 	private static SelectBtState selectBtState;
 	
@@ -271,11 +266,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	public static void writeOnOffState(boolean onOff) {
 		if (onOff) 	service.write("STB ON\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
 		else 		service.write("STB OFF\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+		service.write("BID ?\r",SelectBtService.MessageDelayed.BTID, false);
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
+		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
 		else 		service.write("CHN FM\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
+		service.write("BID ?\r",SelectBtService.MessageDelayed.BTID, false);
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {

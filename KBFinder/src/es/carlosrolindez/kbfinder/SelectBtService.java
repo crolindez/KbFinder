@@ -44,6 +44,8 @@ public class SelectBtService {
     	public static final int NO_QUESTION = 0;
     	public static final int QUESTION_ALL = 1;
     	public static final int RDS = 2;
+    	public static final int BTID = 3;
+    	public static final int FREQUENCY = 4;
     	
     	public String message;
     	public boolean delayed;
