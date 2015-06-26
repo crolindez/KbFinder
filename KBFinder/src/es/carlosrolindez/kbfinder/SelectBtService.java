@@ -296,12 +296,12 @@ public class SelectBtService {
             	    	if (waitLonger)
             	    		sleep(2500);
             	    	else
-            	    		sleep(200);
-                		paused = false;
+            	    		sleep(500);
+
             	    } catch (InterruptedException e) {
     	                Log.e(TAG, "Interrupted Exception during write", e);      	    	
             	    }
-
+            		paused = false;
             	}
             }
         }

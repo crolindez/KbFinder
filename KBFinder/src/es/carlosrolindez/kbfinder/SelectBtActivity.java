@@ -265,13 +265,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	service.write("STB ON\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
-		else 		service.write("STB OFF\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+		if (onOff) 	service.write("STB ON\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
+		else 		service.write("STB OFF\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
 		service.write("BID ?\r",SelectBtService.MessageDelayed.BTID, false);
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
 		else 		service.write("CHN FM\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
 		service.write("BID ?\r",SelectBtService.MessageDelayed.BTID, false);
     }
