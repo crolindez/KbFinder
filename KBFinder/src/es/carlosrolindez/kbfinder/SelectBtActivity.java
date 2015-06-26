@@ -26,6 +26,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 
+
 // TODO disconnect BT a2dp when of
 // TODO FM dial
 // TODO FM controls: forced mono; keypad; memories
