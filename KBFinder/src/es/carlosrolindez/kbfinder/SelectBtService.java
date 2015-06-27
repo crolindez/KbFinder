@@ -296,7 +296,7 @@ public class SelectBtService {
             	    	if (waitLonger)
             	    		sleep(2500);
             	    	else
-            	    		sleep(500);
+            	    		sleep(200);
 
             	    } catch (InterruptedException e) {
     	                Log.e(TAG, "Interrupted Exception during write", e);      	    	

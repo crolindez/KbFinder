@@ -22,13 +22,17 @@ public class FmFragment extends Fragment {
 	private static TextView frequencyText;
 	private static TextView RDSText;
 	
-	private final SelectBtService service;	
+	private SppBridge spp;
+	
+	public static interface SppBridge {
+		public void sppMessage(String message,int question);
+	}
 	
 	
-	public FmFragment(Context context,SelectBtService ser) {
+	public FmFragment(Context context,SppBridge spp) {
 		mContext = context;
 		fragmentName =  "FM";
-		service = ser;
+		this.spp = spp;
 	}
 	
     @Override
@@ -58,7 +62,7 @@ public class FmFragment extends Fragment {
 			@Override
 			public void onClick(View v) 
 			{
-				service.write("SCN DOWN\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+				spp.sppMessage("SCN DOWN\r",SelectBtService.MessageDelayed.NO_QUESTION);
 				setFrequency("___._");
 				setRDS("");				
 			}
@@ -78,7 +82,7 @@ public class FmFragment extends Fragment {
 			@Override
 			public void onClick(View v) 
 			{
-				service.write("SCN UP\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+				spp.sppMessage("SCN UP\r",SelectBtService.MessageDelayed.NO_QUESTION);
 				setFrequency("___._");
 				setRDS("");
 			}

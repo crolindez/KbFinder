@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
@@ -24,6 +25,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
+import es.carlosrolindez.kbfinder.FmFragment.SppBridge;
 import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 
 
@@ -36,7 +38,7 @@ import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 
 
 
-public class SelectBtActivity extends FragmentActivity implements DisconnectActivity {
+public class SelectBtActivity extends FragmentActivity implements DisconnectActivity, SppBridge {
 	
 	public static final String LAUNCH_MAC = "Launcher MAC intent";
 	private static final int FM_CHANNEL = 0;
@@ -59,6 +61,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private	static RelativeLayout controlLayout;	
 	private	static RelativeLayout windowLayout;
 	
+	
+	private static CountDownTimer i2dpTimer;
+	private static boolean	i2dpTimerStarted;
+	public static boolean i2dpConnectionInProgress;
+	
+	
 	// swipe fragments
     private static final int NUM_PAGES = 2;
     private ViewPager mPager;
@@ -69,7 +77,27 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private	static AnimationDrawable frameAnimation;
 	private static ImageView splashImageView;
 	
-
+	public void changeStateI2dp(boolean state) {
+		i2dpTimer.cancel();
+		i2dpTimerStarted = false;
+		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == state) {
+	  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) && (state == true) ) {
+	  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+	  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+	  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
+	  		}
+		} else {
+			i2dpTimerStarted = true;
+			i2dpTimer.start();
+		}
+	}
+	
+	public static void resetI2dpCounter() {
+		if (i2dpTimerStarted) {
+			i2dpTimer.cancel();
+			i2dpTimer.start();
+		}
+	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +121,30 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		
 	
 		Intent myIntent = getIntent();
+		
+		i2dpTimerStarted = false;
+		i2dpTimer = new CountDownTimer(2500,2500){
+
+		     public void onTick(long millisUntilFinished) {
+		     }
+
+		     public void onFinish() {
+		 		A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+          		new Handler().postDelayed(new Runnable() {
+        		    @Override
+        		    public void run() {
+        				if ( (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == true)
+    			  			&& (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
+    			  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+    			  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+    			  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
+    			  		}
+        		    }
+        		}, 1000);
+		     }
+		  };
+
+		i2dpConnectionInProgress = false;
     	
 	    deviceMAC = myIntent.getStringExtra(SelectBtActivity.LAUNCH_MAC);	
 
@@ -259,25 +311,32 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 			finish();
 		}
 	}
+	
+	public void sppMessage(String message,int question) {
+		sendSppMessage(message,question);
+	}
+	
+	public static void sendSppMessage(String message,int question) {
+		service.write(message, question, false);
+		resetI2dpCounter();
+	}
 		
 	public static void askAll() {
-		service.write("ALL ?\r",SelectBtService.MessageDelayed.QUESTION_ALL, false);
+		sendSppMessage("ALL ?\r",SelectBtService.MessageDelayed.QUESTION_ALL); 
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	service.write("STB ON\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
-		else 		service.write("STB OFF\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
-		service.write("BID ?\r",SelectBtService.MessageDelayed.BTID, false);
+		if (onOff) 	sendSppMessage("STB ON\r",SelectBtService.MessageDelayed.NO_QUESTION);
+		else 		sendSppMessage("STB OFF\r",SelectBtService.MessageDelayed.NO_QUESTION);
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	service.write("CHN BT\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
-		else 		service.write("CHN FM\r",SelectBtService.MessageDelayed.NO_QUESTION,true);
-		service.write("BID ?\r",SelectBtService.MessageDelayed.BTID, false);
+		if (channel == BT_CHANNEL) 	sendSppMessage("CHN BT\r",SelectBtService.MessageDelayed.NO_QUESTION);
+		else 						sendSppMessage("CHN FM\r",SelectBtService.MessageDelayed.NO_QUESTION);
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {
-		service.write("VOL " + String.valueOf(volumeFM) +"\r",SelectBtService.MessageDelayed.NO_QUESTION,false);
+		sendSppMessage("VOL " + String.valueOf(volumeFM) +"\r",SelectBtService.MessageDelayed.NO_QUESTION);
     }
 		
 	public static class MessageExtractor {
@@ -453,7 +512,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         	if (position == BT_CHANNEL)
         		return new BtFragment(mContext);
         	else
-        		return new FmFragment(mContext,service);       		
+        		return new FmFragment(mContext,(SppBridge)this);       		
         }
 
         @Override
@@ -558,18 +617,17 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         		volumeSeekBar.setVisibility(View.INVISIBLE);   
         		windowLayout.setVisibility(View.INVISIBLE);
     			onOff = false;
-           		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
-        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-        		}
+    			changeStateI2dp(onOff);
         	}
     		else {
     			onOff = true;
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));	
         		volumeSeekBar.setVisibility(View.VISIBLE);
         		windowLayout.setVisibility(View.VISIBLE);
-           		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
-        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-        		}
+        		if (channel == BT_CHANNEL)
+        			changeStateI2dp(onOff);
+        		else
+        			changeStateI2dp(false);
         	}
 
     	}
@@ -598,7 +656,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			channel = BT_CHANNEL; 
         		mPager.setCurrentItem(1, false);
         		((BtFragment)mAdapter.getItem(1)).setSongName(songName);
-          		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+    			changeStateI2dp(true);
+/*          		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC); 
               		new Handler().postDelayed(new Runnable() {
             		    @Override
@@ -612,15 +672,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     	           	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
         			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         			volumeSeekBar.setProgress(volumeBT);   
-        		}
+        		}*/
     		} else {
     			channel = FM_CHANNEL;
         		mPager.setCurrentItem(0, false);
     			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
     			((FmFragment)mAdapter.getItem(0)).setRDS(rds);
-           		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
-        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-        		}
+    			changeStateI2dp(false);
     		}
     	}
     	   	
@@ -629,7 +687,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 			channel = numChannel;
     		if (numChannel == BT_CHANNEL) {
     			((BtFragment)mAdapter.getItem(1)).setSongName(songName);
-        		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
+    			changeStateI2dp(true);
+/*        		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
               		new Handler().postDelayed(new Runnable() {
             		    @Override
@@ -643,15 +702,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
         			volumeSeekBar.setProgress(volumeBT);
-        		}
+        		}*/
     		} else {
+    			changeStateI2dp(false);
     			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
     			((FmFragment)mAdapter.getItem(0)).setRDS(rds);
-        		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
-        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-        		}
-    		}
-   			//View.selectBtState.OnOff = !selectBtState.OnOff;    			
+    		}		
     	}
     	
     	public void updateVolumeFM(String volumeString) {
