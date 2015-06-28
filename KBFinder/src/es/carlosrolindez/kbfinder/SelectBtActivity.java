@@ -327,7 +327,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	
 	public void disconnect() {
-		allowDisconnect = true;
 		finish();
 	}
 	
@@ -421,6 +420,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
 	@Override
 	protected void onDestroy() {
+		allowDisconnect = true;
 		service.stop();
 		super.onDestroy();
 	}
