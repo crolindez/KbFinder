@@ -27,6 +27,8 @@ public class SelectBtService {
     private ConnectingThread mConnectingThread;
     private ConnectedThreadInput mConnectedThreadInput;
     private ConnectedThreadOutput mConnectedThreadOutput;
+    private boolean keepConnection;
+
     private int mState;
     
     private List<MessageDelayed> mListOut;
@@ -38,25 +40,21 @@ public class SelectBtService {
     public static final int STATE_CONNECTING = 1; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 2;  // now connected to a remote device
     public static final int STATE_DISCONNECTED = 3;  // now connected to a remote device
+    public static final int STATE_RECONNECTING = 4;  // re-connecting to a remote device
     
     public class MessageDelayed {
   
-    	public static final int NO_QUESTION = 0;
-    	public static final int QUESTION_ALL = 1;
-    	public static final int RDS = 2;
-    	public static final int BTID = 3;
-    	public static final int FREQUENCY = 4;
-    	
     	public String message;
     	public boolean delayed;
-    	public int question;
+
     	
-    	public MessageDelayed(String message, int question, boolean delayed) {
+    	public MessageDelayed(String message, boolean delayed) {
     		this.message = message;
     		this.delayed = delayed;
-    		this.question = question;
     	}
     }
+    
+
     
     public interface DisconnectActivity {
     	public void disconnect();
@@ -77,6 +75,7 @@ public class SelectBtService {
         mSocket = null;
         mListOut = new ArrayList<MessageDelayed>();
         mActivity = activity;
+        keepConnection = false;
     }
     
     /**
@@ -85,7 +84,7 @@ public class SelectBtService {
      * @param state An integer defining the current connection state
      */
     private synchronized void setState(int state) {
-        Log.d(TAG, "setState() " + mState + " -> " + state);
+        Log.e(TAG, "setState() " + mState + " -> " + state);
         mState = state;
         mHandler.obtainMessage(SelectBtHandler.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
@@ -102,37 +101,50 @@ public class SelectBtService {
      * Start the service.
      */
     public synchronized void start() {
-        Log.d(TAG, "start");
-
+        Log.e(TAG, "start");
         setState(STATE_CONNECTING);
 
-            mConnectingThread = new ConnectingThread();
-            mConnectingThread.start();
+        mConnectingThread = new ConnectingThread();
+        mConnectingThread.start();
+
+    }
+    
+    public void protectCom()
+    {
+        keepConnection = true;
+    }
+    
+    public void unprotectCom()
+    {
+        keepConnection = false;
     }
     
     /**
      * Stop all threads
      */
     public synchronized void stop() {
-        Log.d(TAG, "stop");
-
-        mConnectingThread = null;
-
-        mConnectedThreadInput = null;
-        mConnectedThreadOutput = null;
-
+        Log.e(TAG, "stop");
+        	
         try {
             mSocket.close();
         } catch (IOException e) {
             Log.e(TAG, "close() of connect socket failed", e);
         }
-        
+        mConnectingThread= null;
+
+
+ 
+        mConnectedThreadInput = null;
+        if (mConnectedThreadOutput != null)
+        	mConnectedThreadOutput.closeThread = true;      
+        mConnectedThreadOutput = null;
         setState(STATE_DISCONNECTED);
     }
 
-    public  void write(String out,int question, boolean waitLonger) {
+    public  void write(String out, boolean waitLonger) {
+    	Log.e(TAG,"write");
     	synchronized (mListOut) {
-    		MessageDelayed message = new MessageDelayed(out,question,waitLonger);
+    		MessageDelayed message = new MessageDelayed(out,waitLonger);
     		mListOut.add(message);
     	}
     }
@@ -194,9 +206,9 @@ public class SelectBtService {
     private class ConnectedThreadInput extends Thread {
         private InputStream mmInStream;
       
-
+        
         public ConnectedThreadInput() {
-            Log.d(TAG, "create ConnectedThreadInput");
+            Log.e(TAG, "create ConnectedThreadInput");
 
             // Get the BluetoothSocket input and output streams
             try {
@@ -207,35 +219,23 @@ public class SelectBtService {
         }
 
         public void run() {
-            Log.d(TAG, "BEGIN mConnectedThreadInput");
+            Log.e(TAG, "BEGIN mConnectedThreadInput");
             byte[] buffer = new byte[255];
             int bytes;
-            int question;
             setState(STATE_CONNECTED);
 
             // Keep listening to the InputStream while connected
             while (true) {
                 try {
-                    // Read from the InputStream
-                    bytes = mmInStream.read(buffer);
-              		if (!mListOut.isEmpty()) {
-              			synchronized (mListOut) {                    
-              				question = mListOut.get(0).question;
-              				if (mListOut.get(0).question!=MessageDelayed.NO_QUESTION)
-              					mListOut.remove(0);
-              			}
-                   	}
-              		else 
-              			question = MessageDelayed.NO_QUESTION;
-
-                    // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(SelectBtHandler.MESSAGE_READ, bytes, question, buffer)
-                            .sendToTarget();
+	                    // Read from the InputStream
+	                    bytes = mmInStream.read(buffer);
+	                    mHandler.obtainMessage(SelectBtHandler.MESSAGE_READ, bytes, -1, buffer).sendToTarget();              			
                 } catch (IOException e) {
                     Log.e(TAG, "Exception during read", e);
                     mHandler.obtainMessage(SelectBtHandler.MESSAGE_READING_FAILURE).sendToTarget();
                     mConnectedThreadInput = null;
-                    mActivity.disconnect();
+                    
+  //                  mActivity.disconnect();
                     return;
                 }
             }
@@ -250,11 +250,14 @@ public class SelectBtService {
         private OutputStream mmOutStream;
         private boolean paused;
         private boolean waitLonger;
+        public boolean closeThread;
+        private String empty = "VOID";
 
         public ConnectedThreadOutput() {
-            Log.d(TAG, "create ConnectedThreadOutput");
+            Log.e(TAG, "create ConnectedThreadOutput");
             
             paused = false;
+            closeThread = false;
             // Get the BluetoothSocket input and output streams
             try {
             	mmOutStream = mSocket.getOutputStream();
@@ -264,21 +267,44 @@ public class SelectBtService {
         }
 
         public void run() {
-            Log.d(TAG, "BEGIN mConnectedThreadOutput");
+            Log.e(TAG, "BEGIN mConnectedThreadOutput");
             byte[] buffer;
+            
+    	    try {  
+    	    		sleep(2500);
+    	    } catch (InterruptedException e) {
+                Log.e(TAG, "Interrupted Exception during write", e);      	    	
+    	    }
             
 
             while (true) {
-           		if (!mListOut.isEmpty()) {
+            	if (closeThread) {
+	                Log.e(TAG, "write thread ordered to close");
+            		return;
+            	}
+ /*           	if (keepConnection)
+            	{
+            		buffer = empty.getBytes();
+            		waitLonger = false;
+            		paused = true;
+                    try {       	
+ 		                mmOutStream.write(buffer);
+ 		                // Share the sent message back to the UI Activity
+ 		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
+ 		                        .sendToTarget();
+ 		            } catch (IOException e) {
+ 		                Log.e(TAG, "Exception during write", e);
+ 		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
+ 		                return;
+ 		            }          
+            	} else */if (!mListOut.isEmpty()) {
             		paused = true;
                     synchronized (mListOut) {
                     	waitLonger =  mListOut.get(0).delayed;
                         buffer = mListOut.get(0).message.getBytes();
-                        if (mListOut.get(0).question==MessageDelayed.NO_QUESTION)
-                        		mListOut.remove(0);
+                        	mListOut.remove(0);
             		}
-
-	                try {       	
+                    try {       	
 		                mmOutStream.write(buffer);
 		                // Share the sent message back to the UI Activity
 		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
@@ -286,17 +312,16 @@ public class SelectBtService {
 		            } catch (IOException e) {
 		                Log.e(TAG, "Exception during write", e);
 		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
-		                mConnectedThreadOutput = null;
-		                mActivity.disconnect();
 		                return;
-		            }          			
+		            }          
            		}
-            	if (paused) {
+
+                if (paused) {
             	    try {  
             	    	if (waitLonger)
             	    		sleep(2500);
             	    	else
-            	    		sleep(200);
+            	    		sleep(500);
 
             	    } catch (InterruptedException e) {
     	                Log.e(TAG, "Interrupted Exception during write", e);      	    	
@@ -305,6 +330,8 @@ public class SelectBtService {
             	}
             }
         }
+        
+ 
     }
 
 }
