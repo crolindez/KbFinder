@@ -27,7 +27,6 @@ public class SelectBtService {
     private ConnectingThread mConnectingThread;
     private ConnectedThreadInput mConnectedThreadInput;
     private ConnectedThreadOutput mConnectedThreadOutput;
-    private boolean keepConnection;
 
     private int mState;
     
@@ -75,7 +74,6 @@ public class SelectBtService {
         mSocket = null;
         mListOut = new ArrayList<MessageDelayed>();
         mActivity = activity;
-        keepConnection = false;
     }
     
     /**
@@ -108,16 +106,7 @@ public class SelectBtService {
         mConnectingThread.start();
 
     }
-    
-    public void protectCom()
-    {
-        keepConnection = true;
-    }
-    
-    public void unprotectCom()
-    {
-        keepConnection = false;
-    }
+
     
     /**
      * Stop all threads
@@ -269,14 +258,7 @@ public class SelectBtService {
         public void run() {
             Log.e(TAG, "BEGIN mConnectedThreadOutput");
             byte[] buffer;
-            
-    	    try {  
-    	    		sleep(2500);
-    	    } catch (InterruptedException e) {
-                Log.e(TAG, "Interrupted Exception during write", e);      	    	
-    	    }
-            
-
+    
             while (true) {
             	if (closeThread) {
 	                Log.e(TAG, "write thread ordered to close");
@@ -319,7 +301,7 @@ public class SelectBtService {
                 if (paused) {
             	    try {  
             	    	if (waitLonger)
-            	    		sleep(2500);
+            	    		sleep(1000);
             	    	else
             	    		sleep(500);
 

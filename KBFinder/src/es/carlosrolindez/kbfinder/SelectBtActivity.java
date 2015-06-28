@@ -60,6 +60,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	private static boolean bootPending;
 	private static int questionPending;
+	private static boolean allowDisconnect;
 	
 	private static SelectBtState selectBtState;
 	
@@ -162,21 +163,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		     }
 		     	
 		     public void onFinish() {
-//		    	service.protectCom();
- 		 		service.stop();
 		    	i2dpDisconnectionTimerStarted = false;
 				Log.e(TAG,"stop after i2dConnection");
 		 		A2dpService.connectBluetoothA2dp(mContext, deviceMAC);	
-  		 		service.start();
-   /*       		new Handler().postDelayed(new Runnable() {
-        		    @Override
-        		    public void run() {
- //       		    	service.unprotectCom();	
-
-        		 		service.start();
-        		    }
-        		}, 2000);*/
-
 		     }
 		  };
 
@@ -184,6 +173,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	    deviceMAC = myIntent.getStringExtra(SelectBtActivity.LAUNCH_MAC);	
 
 		service = new SelectBtService(this, handler, deviceMAC);
+		allowDisconnect = false;
 		service.start();			
 		
         // Instantiate a ViewPager and a PagerAdapter.
@@ -337,6 +327,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	
 	public void disconnect() {
+		allowDisconnect = true;
 		finish();
 	}
 	
@@ -347,32 +338,32 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		}
 	}
 	
-	public void sppMessage(String message) {
-		sendSppMessage(message);
+	public void sppMessage(String message, boolean delayed) {
+		sendSppMessage(message, delayed);
 	}
 	
-	public static void sendSppMessage(String message) {
-		service.write(message, false);
+	public static void sendSppMessage(String message,boolean delayed) {
+		service.write(message, delayed);
 		resetI2dpCounter();
 	}
 		
 	public static void askAll() {
-		sendSppMessage("ALL ?\r"); 
+		sendSppMessage("ALL ?\r", false); 
 		questionPending = QUESTION_ALL;
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	sendSppMessage("STB ON\r");
-		else 		sendSppMessage("STB OFF\r");
+		if (onOff) 	sendSppMessage("STB ON\r", true);
+		else 		sendSppMessage("STB OFF\r", true);
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	sendSppMessage("CHN BT\r");
-		else 						sendSppMessage("CHN FM\r");
+		if (channel == BT_CHANNEL) 	sendSppMessage("CHN BT\r",true);
+		else 						sendSppMessage("CHN FM\r",true);
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {
-		sendSppMessage("VOL " + String.valueOf(volumeFM) +"\r");
+		sendSppMessage("VOL " + String.valueOf(volumeFM) +"\r",false);
     }
 		
 	public static class MessageExtractor {
@@ -535,7 +526,17 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	                break;
 	            case MESSAGE_READING_FAILURE:
 	            	Log.e("Reading error","re-connecting");
-//	                service.start();
+	            	if (!allowDisconnect) {
+		                service.stop();
+		        		new CountDownTimer(500,500){
+				   		    public void onTick(long millisUntilFinished) {
+				   		    }
+				   		     	
+				   		    public void onFinish() {
+				            	service.start();
+				   		    }
+		        		}.start();
+	            	}
 	                break;     
 	            case MESSAGE_CONNECTING_FAILURE:
 	            	Log.e("Connecting error","re-connecting");
@@ -647,7 +648,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     	
     	public SelectBtState() {
     		onOff = false;
-    		channel = BT_CHANNEL; 	
+    		channel = FM_CHANNEL; 	
     		volumeBT = 0;
     		volumeFM = 0;
     		frequency = "87.5";
