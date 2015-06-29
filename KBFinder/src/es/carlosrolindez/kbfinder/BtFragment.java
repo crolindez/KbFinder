@@ -36,6 +36,7 @@ public class BtFragment extends Fragment {
 		ImageView button_previous_BT = (ImageView)rootView.findViewById(R.id.previous_BT);
 		ImageView button_play_pause_BT = (ImageView)rootView.findViewById(R.id.play_pause_BT);
 		ImageView button_next_BT = (ImageView)rootView.findViewById(R.id.next_BT);
+		songName.setSelected(true);
 		
 		
 		button_previous_BT.setOnClickListener(new OnClickListener() 

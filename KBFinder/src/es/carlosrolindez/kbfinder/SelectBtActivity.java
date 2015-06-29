@@ -29,12 +29,11 @@ import es.carlosrolindez.kbfinder.FmFragment.SppBridge;
 import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 
 
-// TODO disconnect BT a2dp when of
+
+// TODO take care of commands during BT re-connection 
 // TODO FM dial
 // TODO FM controls: forced mono; keypad; memories
-// TODO check when not allowed BT engine
-// TODO improve re-connection
-// TODO improve communication procedure with questions
+
 
 
 
@@ -714,7 +713,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			channel = BT_CHANNEL; 
         		mPager.setCurrentItem(1, false);
         		((BtFragment)mAdapter.getItem(1)).setSongName(songName);
-    			changeStateI2dp(true);
+        		changeStateI2dp(onOff);
 /*          		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
 
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC); 
@@ -745,7 +744,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 			channel = numChannel;
     		if (numChannel == BT_CHANNEL) {
     			((BtFragment)mAdapter.getItem(1)).setSongName(songName);
-    			changeStateI2dp(true);
+    			changeStateI2dp(onOff);
 /*        		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
         			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
               		new Handler().postDelayed(new Runnable() {

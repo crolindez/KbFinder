@@ -5,17 +5,22 @@ import android.content.Context;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 
 
 public class FmFragment extends Fragment {
+    private static final String TAG = "FmFragment";
+	
 	public String fragmentName;
 	private final Context mContext;
 	
@@ -107,12 +112,37 @@ public class FmFragment extends Fragment {
     	fmDialog.setContentView(R.layout.fm_dial);
         final FmPicker megaherzPicker = (FmPicker) fmDialog.findViewById(R.id.megaherzs);
         final FmPicker kiloherzPicker = (FmPicker) fmDialog.findViewById(R.id.kiloherzs);
+ 
+        String freq[] = frequencyText.getText().toString().trim().split(".", 2);
+        Log.e(TAG,frequencyText.getText().toString().trim());
+        
         megaherzPicker.setMaxValue(108);
         megaherzPicker.setMinValue(87);
         megaherzPicker.setWrapSelectorWheel(true); 
+        Log.e(TAG,"x"+freq[0]);
+        Log.e(TAG,"y"+freq[1]);
+        megaherzPicker.setValue(Integer.parseInt(freq[0]));
+        megaherzPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int i, int i2) {
+
+                Toast.makeText(mContext, "Value was: " + Integer.toString(i) + " is now: " + Integer.toString(i2), Toast.LENGTH_SHORT).show();
+
+            }
+        });
         kiloherzPicker.setMaxValue(9);
         kiloherzPicker.setMinValue(0);
         kiloherzPicker.setWrapSelectorWheel(true);
+        megaherzPicker.setValue(Integer.parseInt(freq[1]));
+        megaherzPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int i, int i2) {
+
+                Toast.makeText(mContext, "Value was: " + Integer.toString(i) + " is now: " + Integer.toString(i2), Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
         fmDialog.show();
 
     	

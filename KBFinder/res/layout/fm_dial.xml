@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="200dp"
+	android:layout_width="250dp"
 	android:layout_height="wrap_content" 
-	android:paddingTop="20dp"
 	android:paddingBottom="30dp"
 	android:paddingLeft="30dp"
-	android:paddingRight="30dp"	>				
+	android:paddingRight="30dp"	
+	android:background="#555555" >				
     <TextView
     	android:id="@+id/head_text"
-    	android:layout_width="wrap_content"
+    	android:layout_width="match_parent"
     	android:layout_height="wrap_content"
     	android:layout_centerHorizontal="true"
 		android:padding="20dp"
@@ -18,7 +18,7 @@
     	android:textSize="26sp"
     	android:textStyle="bold"
     	android:typeface="sans" 
-    	android:background="#555555"/>	
+		android:background="#555555"/>	
 	<es.carlosrolindez.kbfinder.FmPicker
 		android:id="@+id/megaherzs"
 		android:layout_width="100dp"

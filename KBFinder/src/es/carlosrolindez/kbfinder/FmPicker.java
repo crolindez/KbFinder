@@ -2,12 +2,12 @@ package es.carlosrolindez.kbfinder;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.NumberPicker;
 
-public class FmPicker extends android.widget.NumberPicker {
+public class FmPicker extends NumberPicker {
 	private final Context mContext;
 	public FmPicker(Context context, AttributeSet attrs) {
 		super(context, attrs);
