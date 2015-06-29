@@ -91,9 +91,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		Log.e(TAG,"changeStateI2dp");
 		i2dpDisconnectionTimer.cancel();
 		i2dpDisconnectionTimerStarted = false;
-		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == state) {
+		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == state) { // I2dp selected and already active or Not selected and not active
 			Log.e(TAG,"No change");
-	  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) && (state == true) ) {
+	  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
 				Log.e(TAG,"Read Volume");
 	  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 	  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
@@ -115,11 +115,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
     			  		}
         		    }
-        		}, 1000);
+        		}, 500);
 				
 				
 			} else {
-				Log.e(TAG,"Change to FM");
+				Log.e(TAG,"Change to Disconnected");
 				i2dpDisconnectionTimerStarted = true;
 				i2dpDisconnectionTimer.start();
 			}
@@ -180,7 +180,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         mPager = (ViewPager) findViewById(R.id.pager);
         mAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mAdapter);
-        mPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageSelected(int position) 
             {     
@@ -525,8 +525,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	                interpreter(readMessage);
 	                break;
 	            case MESSAGE_READING_FAILURE:
-	            	Log.e("Reading error","re-connecting");
+	            	Log.e(TAG,"Reading error");
 	            	if (!allowDisconnect) {
+		            	Log.e(TAG,"Re-connecting");
 		                service.stop();
 		        		new CountDownTimer(500,500){
 				   		    public void onTick(long millisUntilFinished) {
@@ -539,10 +540,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	            	}
 	                break;     
 	            case MESSAGE_CONNECTING_FAILURE:
-	            	Log.e("Connecting error","re-connecting");
+	            	Log.e(TAG,"Connecting error");
                 	break;     
 	            case MESSAGE_WRITING_FAILURE:
-	            	Log.e("Writing error","re-connecting");
+	            	Log.e(TAG,"Writing error");
 //	                service.start();
 	                break;            	
 
@@ -695,10 +696,15 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			mainButton.setBackground(getResources().getDrawable(R.drawable.power_on_selector));
         		volumeSeekBar.setVisibility(View.VISIBLE);
         		windowLayout.setVisibility(View.VISIBLE);
+        		if (channel == BT_CHANNEL)
+        			changeStateI2dp(onOff);
+        		else
+        			changeStateI2dp(false);
      		} else  {
     			mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));
         		volumeSeekBar.setVisibility(View.INVISIBLE);
         		windowLayout.setVisibility(View.INVISIBLE);
+       			changeStateI2dp(onOff);
      		}
     	}
  
