@@ -2,6 +2,7 @@ package es.carlosrolindez.kbfinder;
 
 import java.util.ArrayList;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -212,7 +213,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	        				A2dpService.connectBluetoothA2dp(mContext, MAC);
 	            		
 	                   	Intent localIntent = new Intent (mContext, SelectBtActivity.class);
-	                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, device.deviceMAC);        	
+	                   	localIntent.putExtra(Constants.LAUNCH_MAC, device.deviceMAC);        	
 	                   	mContext.startActivity(localIntent);
 					}
 				});
@@ -237,6 +238,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 		
 		return localView;
 	}
+	
 	
 	public class SwipeView implements View.OnTouchListener {
 		
@@ -308,7 +310,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	    	        				A2dpService.connectBluetoothA2dp(mContext, MAC);
 	    	        			
 			                   	Intent localIntent = new Intent (mContext, SelectBtActivity.class);
-			                   	localIntent.putExtra(SelectBtActivity.LAUNCH_MAC, deviceMAC);        	
+			                   	localIntent.putExtra(Constants.LAUNCH_MAC, deviceMAC);      
 			                   	mContext.startActivity(localIntent);
         					}
 	            		}

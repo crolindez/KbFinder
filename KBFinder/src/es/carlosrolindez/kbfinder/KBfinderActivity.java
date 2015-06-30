@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
@@ -80,9 +81,10 @@ public class KBfinderActivity extends Activity  /*implements KBdeviceListAdapter
 
     
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+    	Log.e(TAG,"result");
         switch (requestCode) {
             case Constants.REQUEST_ENABLE_BT:
+            	Log.e(TAG,"REQUEST_ENABLE_BT");
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
                 		new A2dpService(this, (ListView)findViewById(R.id.list));
@@ -90,6 +92,7 @@ public class KBfinderActivity extends Activity  /*implements KBdeviceListAdapter
                     Toast.makeText(this, R.string.bt_not_enabled,Toast.LENGTH_SHORT).show();
                     finish();
                 }
+                break;           
         }
     }
 

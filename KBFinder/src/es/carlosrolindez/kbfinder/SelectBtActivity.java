@@ -35,13 +35,17 @@ import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 // TODO FM controls: forced mono; keypad; memories
 
 
+mejorar detector de i2dp 
+esperar 5 segundos sin actividad y actuar sobre i2dp bloqueando pulsaciones mostrando estado pensando 
+eliminar resto pausas y delay extralargos.  Solo 200 mseg
+
+
 
 
 public class SelectBtActivity extends FragmentActivity implements DisconnectActivity, SppBridge {
 	
     private static final String TAG = "SelectBtActivity";
 	
-	public static final String LAUNCH_MAC = "Launcher MAC intent";
 	private static final int FM_CHANNEL = 0;
 	private static final int BT_CHANNEL = 1;
 	
@@ -73,14 +77,14 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	private static CountDownTimer i2dpDisconnectionTimer;
 	private static boolean	i2dpDisconnectionTimerStarted;
-//	public static boolean i2dpConnectionInProgress;
+
 	
 	
 	// swipe fragments
     private static final int NUM_PAGES = 2;
     private ViewPager mPager;
     private ScreenSlidePagerAdapter mAdapter;
- //   private PagerAdapter mPagerAdapter;
+
 	
 	// animation
 	private	static AnimationDrawable frameAnimation;
@@ -114,11 +118,14 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
     			  		}
         		    }
-        		}, 500);
+        		}, 1000);
 				
 				
 			} else {
 				Log.e(TAG,"Change to Disconnected");
+				i2dpDisconnectionTimerStarted = false;
+				//service.blockTemporally();
+		 		//A2dpService.connectBluetoothA2dp(mContext, deviceMAC);					
 				i2dpDisconnectionTimerStarted = true;
 				i2dpDisconnectionTimer.start();
 			}
@@ -136,6 +143,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Log.e("TAG","created");
 		setContentView(R.layout.activity_selectbt);
 		
 		mContext = this;
@@ -153,11 +161,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		  
 		volumeSeekBar = (SeekBar) findViewById(R.id.volumeControl);
 		
-	
-		Intent myIntent = getIntent();
-		
 		i2dpDisconnectionTimerStarted = false;
-		i2dpDisconnectionTimer = new CountDownTimer(5000,5000){
+		i2dpDisconnectionTimer = new CountDownTimer(1000,1000){
 		     public void onTick(long millisUntilFinished) {
 		     }
 		     	
@@ -168,8 +173,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		     }
 		  };
 
-    	
-	    deviceMAC = myIntent.getStringExtra(SelectBtActivity.LAUNCH_MAC);	
+		
+		Intent myIntent = getIntent();
+		deviceMAC = myIntent.getStringExtra(Constants.LAUNCH_MAC);	
 
 		service = new SelectBtService(this, handler, deviceMAC);
 		allowDisconnect = false;
@@ -291,6 +297,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	@Override	
 	protected void onResume() {
 		super.onResume();
+		Log.e(TAG,"resumed");
 		
 		// in case BT volume was modified when activity out of focus
   		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
@@ -321,12 +328,18 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	@Override	
 	protected void onPause() {
 		super.onPause();
+		Log.e(TAG,"paused");
+/*		if (i2dpDisconnectionTimerStarted) {
+			i2dpDisconnectionTimer.cancel();
+			Log.e(TAG,"instant disconnection");
+			A2dpService.connectBluetoothA2dp(this, deviceMAC);
+		}*/
 		unregisterReceiver(spotifyBroadcastReceiver);
-	}
+}
 	
 	
 	public void disconnect() {
-		finish();
+  		finish();
 	}
 	
 	public void closeIfNotBooted() {
@@ -351,13 +364,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	sendSppMessage("STB ON\r", true);
-		else 		sendSppMessage("STB OFF\r", true);
+		if (onOff) 	sendSppMessage("STB ON\r", false);
+		else 		sendSppMessage("STB OFF\r", false);
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	sendSppMessage("CHN BT\r",true);
-		else 						sendSppMessage("CHN FM\r",true);
+		if (channel == BT_CHANNEL) 	sendSppMessage("CHN BT\r",false);
+		else 						sendSppMessage("CHN FM\r",false);
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {
@@ -420,6 +433,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	@Override
 	protected void onDestroy() {
 		allowDisconnect = true;
+		Log.e(TAG,"destroyed");
+   
 		service.stop();
 		super.onDestroy();
 	}
@@ -438,19 +453,19 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 			switch (questionPending) {
 			case QUESTION_ALL:
 
-				String password = messageExtractor.getStringFromMessage();						Log.e("Password",password);
+				String password = messageExtractor.getStringFromMessage();						
 				selectBtState.updateName(messageExtractor.getIdentifierFromMessage());
 
 				selectBtState.updateOnOff(messageExtractor.getStringFromMessage());
 				
-				String standByMasterSettings = messageExtractor.getStringFromMessage();			Log.e("standByMasterSettings",standByMasterSettings);
-				String standBySlaveSettings = messageExtractor.getStringFromMessage();			Log.e("standBySlaveSettings",standBySlaveSettings);
+				String standByMasterSettings = messageExtractor.getStringFromMessage();			
+				String standBySlaveSettings = messageExtractor.getStringFromMessage();			
 				
-				String autoPowerMaster = messageExtractor.getStringFromMessage();				Log.e("autoPowerMaster",autoPowerMaster);
-				String autoPowerSlave = messageExtractor.getStringFromMessage();				Log.e("autoPowerSlave",autoPowerSlave);
-				String autoPowerVolume = messageExtractor.getStringFromMessage();				Log.e("autoPowerVolume",autoPowerVolume);
-				String autoPowerFM = messageExtractor.getStringFromMessage();					Log.e("autoPowerFM",autoPowerFM);
-				String autoPowerEQ = messageExtractor.getStringFromMessage();					Log.e("autoPowerEQ",autoPowerEQ);
+				String autoPowerMaster = messageExtractor.getStringFromMessage();				
+				String autoPowerSlave = messageExtractor.getStringFromMessage();				
+				String autoPowerVolume = messageExtractor.getStringFromMessage();				
+				String autoPowerFM = messageExtractor.getStringFromMessage();					
+				String autoPowerEQ = messageExtractor.getStringFromMessage();					
 				
 				selectBtState.updateChannel(messageExtractor.getStringFromMessage());
 				
@@ -458,12 +473,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				
 				selectBtState.updateRds(messageExtractor.getRDSFromMessage());
 
-				String tunerSensitivity = messageExtractor.getStringFromMessage();				Log.e("tunerSensitivity",tunerSensitivity);
-				String equalizationMode = messageExtractor.getStringFromMessage();				Log.e("equalizationMode",equalizationMode);
-//				String volumeFM = messageExtractor.getStringFromMessage();						Log.e("volumeFM",volumeFM);
+				String tunerSensitivity = messageExtractor.getStringFromMessage();				
+				String equalizationMode = messageExtractor.getStringFromMessage();				
+
 				
 				selectBtState.updateVolumeFM(messageExtractor.getStringFromMessage());
-				String keepFmOn = messageExtractor.message;										Log.e("keepFmOn",keepFmOn);
+				String keepFmOn = messageExtractor.message;										
 
 
 				break;

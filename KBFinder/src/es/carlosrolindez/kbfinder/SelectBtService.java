@@ -29,6 +29,7 @@ public class SelectBtService {
     private ConnectedThreadOutput mConnectedThreadOutput;
 
     private int mState;
+//    private boolean blocked;
     
     private List<MessageDelayed> mListOut;
     
@@ -74,6 +75,7 @@ public class SelectBtService {
         mSocket = null;
         mListOut = new ArrayList<MessageDelayed>();
         mActivity = activity;
+//        blocked = false;
     }
     
     /**
@@ -137,6 +139,10 @@ public class SelectBtService {
     		mListOut.add(message);
     	}
     }
+    
+/*    public void blockTemporally() {
+    	blocked = true;
+    }*/
 	/**
      * This thread runs while attempting to make an outgoing connection
      * with a device. It runs straight through; the connection either
@@ -259,27 +265,20 @@ public class SelectBtService {
             Log.e(TAG, "BEGIN mConnectedThreadOutput");
             byte[] buffer;
     
+    	    try {  
+    	    		sleep(500);
+    	    } catch (InterruptedException e) {
+                Log.e(TAG, "Interrupted Exception during warmup", e);      	    	
+    	    }
+    		
             while (true) {
+            	
             	if (closeThread) {
 	                Log.e(TAG, "write thread ordered to close");
             		return;
             	}
- /*           	if (keepConnection)
-            	{
-            		buffer = empty.getBytes();
-            		waitLonger = false;
-            		paused = true;
-                    try {       	
- 		                mmOutStream.write(buffer);
- 		                // Share the sent message back to the UI Activity
- 		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
- 		                        .sendToTarget();
- 		            } catch (IOException e) {
- 		                Log.e(TAG, "Exception during write", e);
- 		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
- 		                return;
- 		            }          
-            	} else */if (!mListOut.isEmpty()) {
+
+            	if (!mListOut.isEmpty()) {
             		paused = true;
                     synchronized (mListOut) {
                     	waitLonger =  mListOut.get(0).delayed;
@@ -300,8 +299,8 @@ public class SelectBtService {
 
                 if (paused) {
             	    try {  
-            	    	if (waitLonger)
-            	    		sleep(1000);
+            	    	if (waitLonger /*|| blocked*/)
+            	    		sleep(2500);
             	    	else
             	    		sleep(500);
 
@@ -309,6 +308,7 @@ public class SelectBtService {
     	                Log.e(TAG, "Interrupted Exception during write", e);      	    	
             	    }
             		paused = false;
+ //           		blocked = false;
             	}
             }
         }

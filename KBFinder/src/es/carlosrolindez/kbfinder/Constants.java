@@ -28,11 +28,13 @@ public interface Constants {
     public static final int MESSAGE_DEVICE_NAME = 4;
     public static final int MESSAGE_TOAST = 5;*/
 
-    // Key names from A2dpService
+    // Key names 
 	public static final String a2dpFilter = "es.carlosrolindez.A2dpService.FILTER";
 	public static final String NameFilter = "es.carlosrolindez.A2dpService.NAME";
+	public static final String LAUNCH_MAC = "es.carlosrolindez.A2dpService.MAC";
 	
     // Intent request codes
 	public static final int REQUEST_ENABLE_BT = 1;
+	
 
 }
