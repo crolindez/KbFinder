@@ -29,7 +29,7 @@ public class FmFragment extends Fragment {
 	private SppBridge spp;
 	
 	public static interface SppBridge {
-		public void sppMessage(String message,boolean delayed);
+		public void sppMessage(String message);
 	}
 	
 	
@@ -66,7 +66,7 @@ public class FmFragment extends Fragment {
 			@Override
 			public void onClick(View v) 
 			{
-				spp.sppMessage("SCN DOWN\r",false);
+				spp.sppMessage("SCN DOWN\r");
 				setFrequency("___._");
 				setRDS("");				
 			}
@@ -86,7 +86,7 @@ public class FmFragment extends Fragment {
 			@Override
 			public void onClick(View v) 
 			{
-				spp.sppMessage("SCN UP\r",false);
+				spp.sppMessage("SCN UP\r");
 				setFrequency("___._");
 				setRDS("");
 			}
@@ -127,7 +127,7 @@ public class FmFragment extends Fragment {
 		    }
 		     	
 		    public void onFinish() {
-		    	spp.sppMessage("TUN "+newFreq[0]+"."+newFreq[1]+"\r",false);
+		    	spp.sppMessage("TUN "+newFreq[0]+"."+newFreq[1]+"\r");
 				if (newFreq[0].length()<3)
 					setFrequency(" "+newFreq[0]+"."+newFreq[1]);
 				else

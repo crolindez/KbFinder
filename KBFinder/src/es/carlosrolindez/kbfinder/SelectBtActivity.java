@@ -18,6 +18,7 @@ import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -30,14 +31,11 @@ import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 
 
 
-// TODO take care of commands during BT re-connection 
-// TODO FM dial
+// TODO improve dial FM
 // TODO FM controls: forced mono; keypad; memories
-
-
-mejorar detector de i2dp 
-esperar 5 segundos sin actividad y actuar sobre i2dp bloqueando pulsaciones mostrando estado pensando 
-eliminar resto pausas y delay extralargos.  Solo 200 mseg
+// TODO short KBsound Devices
+// TODO check transitions when turning off I2dp (block on/off) button? and screen?
+// TODO improve song name on BT
 
 
 
@@ -64,6 +62,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private static boolean bootPending;
 	private static int questionPending;
 	private static boolean allowDisconnect;
+
 	
 	private static SelectBtState selectBtState;
 	
@@ -77,7 +76,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	private static CountDownTimer i2dpDisconnectionTimer;
 	private static boolean	i2dpDisconnectionTimerStarted;
-
+	private static BlockClass block;
 	
 	
 	// swipe fragments
@@ -89,6 +88,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	// animation
 	private	static AnimationDrawable frameAnimation;
 	private static ImageView splashImageView;
+	
+
 	
 	public void changeStateI2dp(boolean state) {
 		Log.e(TAG,"changeStateI2dp");
@@ -123,14 +124,38 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				
 			} else {
 				Log.e(TAG,"Change to Disconnected");
-				i2dpDisconnectionTimerStarted = false;
-				//service.blockTemporally();
-		 		//A2dpService.connectBluetoothA2dp(mContext, deviceMAC);					
+				i2dpDisconnectionTimerStarted = false;				
 				i2dpDisconnectionTimerStarted = true;
 				i2dpDisconnectionTimer.start();
 			}
 		}
 	}
+	
+	public class BlockClass {
+		public boolean UIblocked;
+		
+		public BlockClass() {
+			UIblocked = false;
+		}
+		
+		public void lock() {
+			Log.e(TAG,"blocked");
+			setProgressBarIndeterminateVisibility(true);	
+			service.block();
+			UIblocked = true;
+		}
+		
+		public void unlock() {
+			Log.e(TAG,"unblocked");
+			setProgressBarIndeterminateVisibility(false);	
+			service.unblock();
+			UIblocked = false;
+		}
+		
+	}
+
+
+	
 	
 	public static void resetI2dpCounter() {
 		if (i2dpDisconnectionTimerStarted) {
@@ -144,6 +169,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.e("TAG","created");
+	
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
 		setContentView(R.layout.activity_selectbt);
 		
 		mContext = this;
@@ -152,23 +180,27 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		splashImageView = (ImageView) findViewById(R.id.SplashImageView);
 		splashImageView.setBackgroundResource(R.drawable.on_animation);
 		frameAnimation = (AnimationDrawable)splashImageView.getBackground(); 
-		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);
+		
+		splashLayout = (RelativeLayout) findViewById(R.id.SplashLayout);		
 		controlLayout = (RelativeLayout) findViewById(R.id.ControlLoyaut);
 		windowLayout = (RelativeLayout) findViewById(R.id.WindowLayout);
 		mainButton = (ImageButton) findViewById(R.id.MainPower);
 		nameText = (TextView) findViewById(R.id.SelectBtName); 
 
+		block = new BlockClass();
 		  
 		volumeSeekBar = (SeekBar) findViewById(R.id.volumeControl);
 		
 		i2dpDisconnectionTimerStarted = false;
-		i2dpDisconnectionTimer = new CountDownTimer(1000,1000){
+		i2dpDisconnectionTimer = new CountDownTimer(1500,1500){
 		     public void onTick(long millisUntilFinished) {
 		     }
 		     	
 		     public void onFinish() {
 		    	i2dpDisconnectionTimerStarted = false;
 				Log.e(TAG,"stop after i2dConnection");
+		        block.lock();
+                service.stop();
 		 		A2dpService.connectBluetoothA2dp(mContext, deviceMAC);	
 		     }
 		  };
@@ -349,32 +381,32 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		}
 	}
 	
-	public void sppMessage(String message, boolean delayed) {
-		sendSppMessage(message, delayed);
+	public void sppMessage(String message) {
+		sendSppMessage(message);
 	}
 	
-	public static void sendSppMessage(String message,boolean delayed) {
-		service.write(message, delayed);
+	public static void sendSppMessage(String message) {
+		service.write(message);
 		resetI2dpCounter();
 	}
 		
 	public static void askAll() {
-		sendSppMessage("ALL ?\r", false); 
+		sendSppMessage("ALL ?\r"); 
 		questionPending = QUESTION_ALL;
     }
 	
 	public static void writeOnOffState(boolean onOff) {
-		if (onOff) 	sendSppMessage("STB ON\r", false);
-		else 		sendSppMessage("STB OFF\r", false);
+		if (onOff) 	sendSppMessage("STB ON\r");
+		else 		sendSppMessage("STB OFF\r");
     }
 	
 	public static void writeChannelState(int channel) {
-		if (channel == BT_CHANNEL) 	sendSppMessage("CHN BT\r",false);
-		else 						sendSppMessage("CHN FM\r",false);
+		if (channel == BT_CHANNEL) 	sendSppMessage("CHN BT\r");
+		else 						sendSppMessage("CHN FM\r");
     }
 		
 	public static void writeVolumeFMState(int volumeFM) {
-		sendSppMessage("VOL " + String.valueOf(volumeFM) +"\r",false);
+		sendSppMessage("VOL " + String.valueOf(volumeFM) +"\r");
     }
 		
 	public static class MessageExtractor {
@@ -435,7 +467,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		allowDisconnect = true;
 		Log.e(TAG,"destroyed");
    
-		service.stop();
 		super.onDestroy();
 	}
 		
@@ -510,6 +541,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
                     	case SelectBtService.STATE_CONNECTED:
         	                frameAnimation.stop();
         	        		splashImageView.setBackgroundResource(R.drawable.sec10);        	                
+        			        block.unlock();
         	                
                     		new Handler().postDelayed(new Runnable() {
                     		    @Override
@@ -873,4 +905,5 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             }*/
         }
     };
+
 }

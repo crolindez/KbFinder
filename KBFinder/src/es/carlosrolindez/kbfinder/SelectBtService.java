@@ -29,9 +29,9 @@ public class SelectBtService {
     private ConnectedThreadOutput mConnectedThreadOutput;
 
     private int mState;
-//    private boolean blocked;
+    private boolean blocked;
     
-    private List<MessageDelayed> mListOut;
+    private List<String> mListOut;
     
     private BluetoothSocket mSocket;
 
@@ -42,17 +42,7 @@ public class SelectBtService {
     public static final int STATE_DISCONNECTED = 3;  // now connected to a remote device
     public static final int STATE_RECONNECTING = 4;  // re-connecting to a remote device
     
-    public class MessageDelayed {
-  
-    	public String message;
-    	public boolean delayed;
 
-    	
-    	public MessageDelayed(String message, boolean delayed) {
-    		this.message = message;
-    		this.delayed = delayed;
-    	}
-    }
     
 
     
@@ -73,9 +63,9 @@ public class SelectBtService {
         mHandler = handler;
         mDevice = KBdevice.deviceInArray(A2dpService.deviceList, deviceMAC);
         mSocket = null;
-        mListOut = new ArrayList<MessageDelayed>();
+        mListOut = new ArrayList<String>();
         mActivity = activity;
-//        blocked = false;
+        blocked = false;
     }
     
     /**
@@ -132,18 +122,22 @@ public class SelectBtService {
         setState(STATE_DISCONNECTED);
     }
 
-    public  void write(String out, boolean waitLonger) {
+    public  void write(String out) {
     	Log.e(TAG,"write");
     	synchronized (mListOut) {
-    		MessageDelayed message = new MessageDelayed(out,waitLonger);
-    		mListOut.add(message);
+    		mListOut.add(out);
     	}
     }
     
-/*    public void blockTemporally() {
+    public void block() {
     	blocked = true;
-    }*/
-	/**
+    }
+    
+    public void unblock() {
+    	blocked = false;
+    }
+    
+    /**
      * This thread runs while attempting to make an outgoing connection
      * with a device. It runs straight through; the connection either
      * succeeds or fails.
@@ -244,9 +238,7 @@ public class SelectBtService {
     private class ConnectedThreadOutput extends Thread {
         private OutputStream mmOutStream;
         private boolean paused;
-        private boolean waitLonger;
         public boolean closeThread;
-        private String empty = "VOID";
 
         public ConnectedThreadOutput() {
             Log.e(TAG, "create ConnectedThreadOutput");
@@ -278,37 +270,34 @@ public class SelectBtService {
             		return;
             	}
 
-            	if (!mListOut.isEmpty()) {
-            		paused = true;
-                    synchronized (mListOut) {
-                    	waitLonger =  mListOut.get(0).delayed;
-                        buffer = mListOut.get(0).message.getBytes();
-                        	mListOut.remove(0);
-            		}
-                    try {       	
-		                mmOutStream.write(buffer);
-		                // Share the sent message back to the UI Activity
-		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
-		                        .sendToTarget();
-		            } catch (IOException e) {
-		                Log.e(TAG, "Exception during write", e);
-		                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
-		                return;
-		            }          
-           		}
-
-                if (paused) {
-            	    try {  
-            	    	if (waitLonger /*|| blocked*/)
-            	    		sleep(2500);
-            	    	else
-            	    		sleep(500);
-
-            	    } catch (InterruptedException e) {
-    	                Log.e(TAG, "Interrupted Exception during write", e);      	    	
-            	    }
-            		paused = false;
- //           		blocked = false;
+            	if (!blocked) {
+	            	if (!mListOut.isEmpty()) {
+	            		paused = true;
+	                    synchronized (mListOut) {
+	                        buffer = mListOut.get(0).getBytes();
+	                        	mListOut.remove(0);
+	            		}
+	                    try {       	
+			                mmOutStream.write(buffer);
+			                // Share the sent message back to the UI Activity
+			                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITE, -1, -1, buffer)
+			                        .sendToTarget();
+			            } catch (IOException e) {
+			                Log.e(TAG, "Exception during write", e);
+			                mHandler.obtainMessage(SelectBtHandler.MESSAGE_WRITING_FAILURE).sendToTarget();
+			                return;
+			            }          
+	           		}
+	
+	                if (paused) {
+	            	    try {  
+	            	    	sleep(500);
+	            	    } catch (InterruptedException e) {
+	    	                Log.e(TAG, "Interrupted Exception during write", e);      	    	
+	            	    }
+	            		paused = false;
+	 //           		blocked = false;
+	            	}
             	}
             }
         }
