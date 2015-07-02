@@ -49,7 +49,7 @@ public class KBdevice  {
 
 	}
 	
-	public static BluetoothDevice deviceInArray(ArrayList<KBdevice> deviceList, String MAC) {
+	public static BluetoothDevice deviceInArray(ArrayKBdevice deviceList, String MAC) {
 		for (KBdevice device : deviceList)
 		{
 			if (MAC.equals(device.deviceMAC)) return device.mDevice;
@@ -66,7 +66,7 @@ public class KBdevice  {
 		
 	}
 	
-	public static void connectDeviceInArray(String MAC,ArrayList<KBdevice> deviceList) {
+	public static void connectDeviceInArray(String MAC,ArrayKBdevice deviceList) {
 		for (KBdevice device : deviceList)
 		{
 			if (MAC.equals(device.deviceMAC)) {
@@ -76,7 +76,7 @@ public class KBdevice  {
 		}	
 	}
 	
-	public static void disconnectDevices(String MAC,ArrayList<KBdevice> deviceList) {
+	public static void disconnectDevices(String MAC,ArrayKBdevice deviceList) {
 		for (KBdevice device : deviceList)
 		{
 			if (MAC.equals(device.deviceMAC)) {
@@ -86,7 +86,7 @@ public class KBdevice  {
 		}	
 	}
 
-	public static boolean isDeviceConnected(String MAC,ArrayList<KBdevice> deviceList) {
+	public static boolean isDeviceConnected(String MAC,ArrayKBdevice deviceList) {
 		for (KBdevice device : deviceList)
 		{
 			if (MAC.equals(device.deviceMAC)) {
@@ -130,7 +130,7 @@ public class KBdevice  {
 				
 	}
 	
-	public static String findConnectedDevice(ArrayList<KBdevice> deviceList) {
+	public static String findConnectedDevice(ArrayKBdevice deviceList) {
 		for (KBdevice device : deviceList)
 		{
 			if (device.connected) {

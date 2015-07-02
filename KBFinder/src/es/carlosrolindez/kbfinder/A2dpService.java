@@ -44,7 +44,7 @@ public class A2dpService {
 	
     private static String connectingMAC;
 	
-	public static ArrayList<KBdevice> deviceList = new ArrayList<KBdevice>();
+	public static ArrayKBdevice deviceList = new ArrayKBdevice();
 	private static KBdeviceListAdapter deviceListAdapter = null;
 	private static ListView mListView = null;
 	
@@ -126,7 +126,7 @@ public class A2dpService {
 					KBdevice kbdevice = new KBdevice(currentName,device);
 
 					if (kbdevice.deviceType != KBdevice.OTHER)
-						deviceList.add(kbdevice);
+						deviceList.addSorted(kbdevice);
 								
 				}
 			}
@@ -250,7 +250,7 @@ public class A2dpService {
 				KBdevice kbdevice = new KBdevice(device.getName(), device);
             	if (KBdevice.deviceInArray(deviceList, device.getAddress())!=null) return;
 				if (kbdevice.deviceType == KBdevice.OTHER) return;
-				deviceList.add(kbdevice);
+				deviceList.addSorted(kbdevice);
 				deviceListAdapter.notifyDataSetChanged();
 					
             // When discovery is finished, change the Activity title

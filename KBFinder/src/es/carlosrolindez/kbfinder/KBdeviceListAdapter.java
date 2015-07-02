@@ -29,7 +29,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	private static String TAG = "KBdeviceListAdapter";
 
 	private LayoutInflater inflater;
-	private ArrayList<KBdevice> mKBdeviceList;
+	private ArrayKBdevice mKBdeviceList;
 	private Context mContext;
 	private ListView listView;
 	
@@ -39,7 +39,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
     	public void connectBluetoothA2dp(String deviceMAC);   	
     }*/
 	
-	public KBdeviceListAdapter(Context context,ArrayList<KBdevice> deviceList,ListView list/*, ConnectOnClick connectOnClick*/)
+	public KBdeviceListAdapter(Context context,ArrayKBdevice deviceList,ListView list)
 	{
 		mContext = context;
 		mKBdeviceList = deviceList;
@@ -350,7 +350,7 @@ public class KBdeviceListAdapter extends BaseAdapter {
 	}
 
 
-	public  void showResultSet(  ArrayList<KBdevice> deviceList)
+	public  void showResultSet(  ArrayKBdevice deviceList)
 	{
 	    mKBdeviceList = deviceList;
 	    notifyDataSetChanged();		

@@ -466,7 +466,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	protected void onDestroy() {
 		allowDisconnect = true;
 		Log.e(TAG,"destroyed");
-   
+        service.stop();
 		super.onDestroy();
 	}
 		
