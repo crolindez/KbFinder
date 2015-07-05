@@ -156,7 +156,7 @@ public class FmFragment extends Fragment {
         
         megaherzPicker.setMaxValue(maxFreq-minFreq);
         megaherzPicker.setMinValue(0);
-        megaherzPicker.setWrapSelectorWheel(true); 
+        megaherzPicker.setWrapSelectorWheel(false); 
         megaherzPicker.setDisplayedValues(dialMegaherz);
         megaherzPicker.setValue(maxFreq-Integer.parseInt(freq[0]));
         megaherzPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
