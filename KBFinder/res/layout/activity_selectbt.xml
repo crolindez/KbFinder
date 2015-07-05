@@ -67,8 +67,8 @@
 	        	android:layout_margin="20dp"
 	        	android:layout_above="@+id/volumeControl"
 				android:layout_below="@+id/MainPower"
-	        	android:background="@drawable/windows" >
-				<android.support.v4.view.ViewPager
+	        	android:background="@drawable/windows" >        	
+				<es.carlosrolindez.kbfinder.BlockingViewPager
 		   			xmlns:android="http://schemas.android.com/apk/res/android"
 		   			android:id="@+id/pager"
 		   			android:layout_width="match_parent"

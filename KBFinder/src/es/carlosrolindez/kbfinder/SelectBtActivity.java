@@ -1,5 +1,7 @@
 package es.carlosrolindez.kbfinder;
 
+import java.util.Set;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +12,7 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -81,7 +84,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	// swipe fragments
     private static final int NUM_PAGES = 2;
-    private ViewPager mPager;
+    private BlockingViewPager mPager;
     private ScreenSlidePagerAdapter mAdapter;
 
 	
@@ -89,68 +92,113 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private	static AnimationDrawable frameAnimation;
 	private static ImageView splashImageView;
 	
+	public void playBt() 
+	{
+		AudioManager am = (AudioManager)mContext.getSystemService(Context.AUDIO_SERVICE);
+
+		long eventtime = SystemClock.uptimeMillis() - 1;
+		KeyEvent downEvent = new KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY, 0);
+		am.dispatchMediaKeyEvent(downEvent);
+
+		eventtime++;
+		KeyEvent upEvent = new KeyEvent(eventtime,eventtime,KeyEvent.ACTION_UP,KeyEvent.KEYCODE_MEDIA_PLAY, 0);         
+		am.dispatchMediaKeyEvent(upEvent);
+
+	}
 
 	
 	public void changeStateI2dp(boolean state) {
 		Log.e(TAG,"changeStateI2dp");
-		i2dpDisconnectionTimer.cancel();
-		i2dpDisconnectionTimerStarted = false;
-		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == state) { // I2dp selected and already active or Not selected and not active
-			Log.e(TAG,"No change");
-	  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
-				Log.e(TAG,"Read Volume");
-	  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-	  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-	  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
-	  		}
-		} else {
-			if (state) {
-				Log.e(TAG,"Change to BT");
-		 		A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-		 		
-          		new Handler().postDelayed(new Runnable() {
-        		    @Override
-        		    public void run() {
-        				if ( (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == true)
-    			  			&& (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
-    						Log.e(TAG,"Read Volume");
-    			  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-    			  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-    			  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
-    			  		}
-        		    }
-        		}, 1000);
-				
-				
+		if (i2dpDisconnectionTimerStarted) {
+			i2dpDisconnectionTimerStarted = false;
+			i2dpDisconnectionTimer.cancel();
+			if (state) { // I2dp selected and already active or Not selected and not active
+				Log.e(TAG,"Disconnecting canceled");
+		  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
+					Log.e(TAG,"Read Volume");
+		  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+		  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
+		  			playBt();
+		  		}
 			} else {
-				Log.e(TAG,"Change to Disconnected");
-				i2dpDisconnectionTimerStarted = false;				
-				i2dpDisconnectionTimerStarted = true;
+				Log.e(TAG,"Disconnecting confirmed");
 				i2dpDisconnectionTimer.start();
+			}
+		} else {
+			if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == state) { // I2dp selected and already active or Not selected and not active
+				Log.e(TAG,"No change");
+		  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
+					Log.e(TAG,"Read Volume");
+		  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+		  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+		  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
+		  			playBt();
+		  		}
+			} else {
+				if (state) {
+					Log.e(TAG,"Change to BT");
+			        block.lock(1000);
+			 		A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
+			 		
+	          		new Handler().postDelayed(new Runnable() {
+	        		    @Override
+	        		    public void run() {
+	        				if ( (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == true)
+	    			  			&& (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
+	    						Log.e(TAG,"Read Volume");
+	    			  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+	    			  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+	    			  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
+	    			  			playBt();
+	    			  		}
+	        		    }
+	        		}, 1000);
+					
+					
+				} else {
+					Log.e(TAG,"Change to Disconnected");	
+					i2dpDisconnectionTimerStarted = true;
+					i2dpDisconnectionTimer.start();
+				}
 			}
 		}
 	}
 	
 	public class BlockClass {
-		public boolean UIblocked;
+		public boolean locked;
+		private CountDownTimer blockingCountDown;
 		
-		public BlockClass() {
-			UIblocked = false;
+		public BlockClass () {
+			locked = false;
 		}
-		
-		public void lock() {
+		public void lock(long time) {
 			Log.e(TAG,"blocked");
+			blockingCountDown = new CountDownTimer(time,time) {
+			     public void onTick(long millisUntilFinished) {
+			     }
+			     	
+			     public void onFinish() {
+						Log.e(TAG,"unblocked by timer");
+						unlock();
+			     }
+			  }.start();
 			setProgressBarIndeterminateVisibility(true);	
 			service.block();
-			UIblocked = true;
+			mPager.setPagingEnabled(false);
+			locked = true;
 		}
 		
 		public void unlock() {
 			Log.e(TAG,"unblocked");
+			if (blockingCountDown!=null) blockingCountDown.cancel();
 			setProgressBarIndeterminateVisibility(false);	
 			service.unblock();
-			UIblocked = false;
+			mPager.setPagingEnabled(true);
+			locked = false;
 		}
+		
+
 		
 	}
 
@@ -168,7 +216,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.e("TAG","created");
 	
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
@@ -198,9 +245,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		     	
 		     public void onFinish() {
 		    	i2dpDisconnectionTimerStarted = false;
-				Log.e(TAG,"stop after i2dConnection");
-		        block.lock();
-                service.stop();
+		        block.lock(5000);
+      //          service.stop();
 		 		A2dpService.connectBluetoothA2dp(mContext, deviceMAC);	
 		     }
 		  };
@@ -214,13 +260,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		service.start();			
 		
         // Instantiate a ViewPager and a PagerAdapter.
-        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager = (BlockingViewPager) findViewById(R.id.pager);
         mAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager());
         mPager.setAdapter(mAdapter);
-        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        mPager.addOnPageChangeListener(new BlockingViewPager.OnPageChangeListener() {
             @Override
             public void onPageSelected(int position) 
-            {     
+            {   
             	if (position == 1) {
             		selectBtState.setChannel(BT_CHANNEL);
             		volumeSeekBar.setProgress(selectBtState.volumeBT);
@@ -321,7 +367,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 			
 			@Override
 			public void onClick(View v) {
-				selectBtState.switchOnOff();				
+				if (!block.locked)
+					selectBtState.switchOnOff();				
 			}
 		});
     }
@@ -336,23 +383,26 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
            	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
 	    	selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
 	    	if (selectBtState.onOff) {
-	    		if (selectBtState.channel == BT_CHANNEL) 
-	    			volumeSeekBar.setProgress(selectBtState.volumeBT); 	    			
+	    		if (selectBtState.channel == BT_CHANNEL) {
+	    			volumeSeekBar.setProgress(selectBtState.volumeBT); 
+	    			playBt();
+	    		}
 	    	}
   		}
 		IntentFilter iF = new IntentFilter();
-//		iF.addAction("com.spotify.music.playbackstatechanged");
+		iF.addAction("com.spotify.music.playbackstatechanged");
 		iF.addAction("com.spotify.music.metadatachanged");
-//		iF.addAction("com.spotify.music.queuechanged");
+		iF.addAction("com.spotify.music.queuechanged");
 		
 		iF.addAction("com.android.music.metachanged");
-		
-		iF.addAction("com.htc.music.metachanged");
-		
-//		iF.addAction("com.android.music.playstatechanged");
-//		iF.addAction("com.android.music.playbackcomplete");
-// 		iF.addAction("com.android.music.queuechanged");
+		iF.addAction("com.android.music.playstatechanged");
+		iF.addAction("com.android.music.playbackcomplete");
+ 		iF.addAction("com.android.music.queuechanged");
 
+		iF.addAction("com.htc.music.metachanged");
+		iF.addAction("com.htc.music.playstatechanged");
+		iF.addAction("com.htc.music.playbackcomplete");
+		
 		registerReceiver(spotifyBroadcastReceiver, iF);
 
 	}
@@ -361,11 +411,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	protected void onPause() {
 		super.onPause();
 		Log.e(TAG,"paused");
-/*		if (i2dpDisconnectionTimerStarted) {
-			i2dpDisconnectionTimer.cancel();
-			Log.e(TAG,"instant disconnection");
-			A2dpService.connectBluetoothA2dp(this, deviceMAC);
-		}*/
 		unregisterReceiver(spotifyBroadcastReceiver);
 }
 	
@@ -464,8 +509,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
 	@Override
 	protected void onDestroy() {
-		allowDisconnect = true;
 		Log.e(TAG,"destroyed");
+		allowDisconnect = true;
+		block.unlock();
         service.stop();
 		super.onDestroy();
 	}
@@ -575,7 +621,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	            	if (!allowDisconnect) {
 		            	Log.e(TAG,"Re-connecting");
 		                service.stop();
-		        		new CountDownTimer(500,500){
+		        		new CountDownTimer(250,250){
 				   		    public void onTick(long millisUntilFinished) {
 				   		    }
 				   		     	
@@ -615,10 +661,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             return NUM_PAGES;
         }
         
-/*        @Override
-        public void finishUpdate(ViewGroup container) {
-        	super.finishUpdate(container);
-        }*/
     }
     
     @Override
@@ -710,7 +752,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
   
     	
     	public void updateOnOff(String onOffString) {
-    		Log.e("onoff",onOffString);
     		if (onOffString.equals("OFF")) {
         		mainButton.setBackground(getResources().getDrawable(R.drawable.power_off_selector));	
         		volumeSeekBar.setVisibility(View.INVISIBLE);   
@@ -743,7 +784,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         		volumeSeekBar.setVisibility(View.VISIBLE);
         		windowLayout.setVisibility(View.VISIBLE);
         		if (channel == BT_CHANNEL)
-        			changeStateI2dp(onOff);
+        			changeStateI2dp(true);
         		else
         			changeStateI2dp(false);
      		} else  {
@@ -761,22 +802,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         		mPager.setCurrentItem(1, false);
         		((BtFragment)mAdapter.getItem(1)).setSongName(songName);
         		changeStateI2dp(onOff);
-/*          		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
-
-        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC); 
-              		new Handler().postDelayed(new Runnable() {
-            		    @Override
-            		    public void run() {
-            	           	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
-            		    	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                			volumeSeekBar.setProgress(volumeBT);               
-            		    }
-            		}, 1000);
-        		} else {
-    	           	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE); 
-        			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        			volumeSeekBar.setProgress(volumeBT);   
-        		}*/
     		} else {
     			channel = FM_CHANNEL;
         		mPager.setCurrentItem(0, false);
@@ -792,21 +817,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     		if (numChannel == BT_CHANNEL) {
     			((BtFragment)mAdapter.getItem(1)).setSongName(songName);
     			changeStateI2dp(onOff);
-/*        		if (!((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
-        			A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
-              		new Handler().postDelayed(new Runnable() {
-            		    @Override
-            		    public void run() {
-            		    	AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            		    	volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-                			volumeSeekBar.setProgress(volumeBT);               
-            		    }
-            		}, 1000);
-            	} else {
-            		AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        			volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
-        			volumeSeekBar.setProgress(volumeBT);
-        		}*/
     		} else {
     			changeStateI2dp(false);
     			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
@@ -853,19 +863,25 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     }
     
     public BroadcastReceiver spotifyBroadcastReceiver = new BroadcastReceiver() {
-    	/*       final class BroadcastTypes {
+    	final class BroadcastTypes {
             static final String SPOTIFY_PACKAGE = "com.spotify.music";
             static final String ANDROID_PACKAGE = "com.android.music";
             static final String HTC_PACKAGE = "com.htc.music";
+            
             static final String ANDROID_METADATA_CHANGED = ANDROID_PACKAGE + ".metachanged";
-            static final String SPOTIFY_METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
-            static final String HTC_METADATA_CHANGED = SPOTIFY_PACKAGE + ".metachanged";
-            static final String SPOTIFY_PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged";
-            static final String SPOTIFY_QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";
-            static final String ANDROID_SPOTIFY_PLAYBACK_STATE_CHANGED = ANDROID_PACKAGE + ".playstatechanged";
+            static final String ANDROID_PLAYBACK_STATE_CHANGED = ANDROID_PACKAGE + ".playstatechanged";
             static final String ANDROID_QUEUE_CHANGED = ANDROID_PACKAGE + ".queuechanged";
             static final String ANDROID_PLAYBACK_COMPLETE = ANDROID_PACKAGE + ".playbackcomplete";
-            }*/
+            
+            static final String SPOTIFY_METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
+            static final String SPOTIFY_PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged";
+            static final String SPOTIFY_QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";            
+            
+            static final String HTC_METADATA_CHANGED = HTC_PACKAGE + ".metachanged";
+            static final String HTC_PLAYBACK_STATE_CHANGED = HTC_PACKAGE + ".playstatechanged";
+            static final String HTC_PLAYBACK_COMPLETE = HTC_PACKAGE + ".playbackcomplete";
+
+            }
 
 
         @Override
@@ -873,36 +889,45 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             // This is sent with all broadcasts, regardless of type. The value is taken from
             // System.currentTimeMillis(), which you can compare to in order to determine how
             // old the event is.
-  //          long timeSentInMs = intent.getLongExtra("timeSent", 0L);
-
+//            long timeSentInMs = intent.getLongExtra("timeSent", 0L);
             String action = intent.getAction();
-            
-            Log.e("FILTER",action);
-
- //           if ( (action.equals(BroadcastTypes.SPOTIFY_METADATA_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_METADATA_CHANGED)) ){
-   /*             String trackId = intent.getStringExtra("id");
-                String artistName = intent.getStringExtra("artist");
-                String albumName = intent.getStringExtra("album");
-               int trackLengthInSec = intent.getIntExtra("length", 0);*/
+            Log.d("RECEIVER",action);
+            Set<String> set = intent.getExtras().keySet();
+            for (String text:set) {
+            	Log.d("RECEIVER",text);
+            }
+            if ( (action.equals(BroadcastTypes.HTC_METADATA_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_METADATA_CHANGED)) || (action.equals(BroadcastTypes.SPOTIFY_METADATA_CHANGED))  ){
+ //               String trackId = intent.getStringExtra("id"); 			Log.d("ID",trackId);
+ //               String artistName = intent.getStringExtra("artist");	Log.d("Artist",artistName);
+ //               String albumName = intent.getStringExtra("album");		Log.d("Album",albumName);
+ //               int trackLengthInSec = intent.getIntExtra("length", 0);	Log.d("length",""+trackLengthInSec);
                 
-                String trackName = intent.getStringExtra("track");
+                String trackName = intent.getStringExtra("track");		Log.d("Name",trackName);
                 if (selectBtState!=null)
                 	selectBtState.updateTrackName(trackName);
-                Log.e("CHANGED",trackName);
-                // Do something with extracted information...
-  //          }
-                /* else if ( (action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_SPOTIFY_PLAYBACK_STATE_CHANGED)) ) {
-                Log.e("PLAY","STATE");
-//                boolean playing = intent.getBooleanExtra("playing", false);
- //               int positionInMs = intent.getIntExtra("playbackPosition", 0);
-                // Do something with extracted information
-            } else if ( (action.equals(BroadcastTypes.SPOTIFY_QUEUE_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_QUEUE_CHANGED)) ) {
-                Log.e("CHANGED","QUEUE");
+            } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_STATE_CHANGED)) ||(action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED)) ) {
+                boolean playing = intent.getBooleanExtra("playing", false);		Log.d("PLAY STATE ",""+playing);
+                if (selectBtState!=null) {
+	        		if (selectBtState.channel == BT_CHANNEL) {
+	        			((BtFragment)mAdapter.getItem(1)).setBlinking(!playing);
+	        		}
+                }
+            } else if  (action.equals(BroadcastTypes.HTC_PLAYBACK_STATE_CHANGED)) {
+                boolean playing = intent.getBooleanExtra("isplaying", false);		Log.d("PLAY STATE ",""+playing);
+                String trackName = intent.getStringExtra("track");					Log.d("Name",trackName);
+                if (selectBtState!=null) {
+                	selectBtState.updateTrackName(trackName);        
+	        		if (selectBtState.channel == BT_CHANNEL) {
+	        			((BtFragment)mAdapter.getItem(1)).setBlinking(!playing);
+	        		}
+                }
+            } else if ( /*(action.equals(BroadcastTypes.SPOTIFY_QUEUE_CHANGED)) || */(action.equals(BroadcastTypes.ANDROID_QUEUE_CHANGED)) ) {
+                Log.d("CHANGED","QUEUE");
                 // Sent only as a notification, your app may want to respond accordingly.
-            } else if (action.equals(BroadcastTypes.ANDROID_PLAYBACK_COMPLETE)) {
-                Log.e("PLAYBACK","COMPLETE");
+            } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_COMPLETE)) || (action.equals(BroadcastTypes.HTC_PLAYBACK_COMPLETE)) ){
+                Log.d("PLAYBACK","COMPLETE");
                 // Sent only as a notification, your app may want to respond accordingly.
-            }*/
+            } 
         }
     };
 

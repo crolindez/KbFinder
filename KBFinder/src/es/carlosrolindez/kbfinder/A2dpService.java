@@ -1,6 +1,5 @@
 package es.carlosrolindez.kbfinder;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -21,6 +20,7 @@ import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -347,7 +347,8 @@ public class A2dpService {
 	};
 	
 	private static BluetoothProfile.ServiceListener mProfileListener = new BluetoothProfile.ServiceListener() {
-        public void onServiceConnected(int profile, BluetoothProfile proxy) {
+
+        public void onServiceConnected(int profile, BluetoothProfile proxy) {        	
             if (profile == BluetoothProfile.A2DP) {
                 BluetoothA2dp btA2dp = (BluetoothA2dp) proxy;
                 List<BluetoothDevice> a2dpConnectedDevices = btA2dp.getConnectedDevices();
@@ -362,6 +363,8 @@ public class A2dpService {
         }
 
         public void onServiceDisconnected(int profile) {
+            if (profile == BluetoothProfile.A2DP) {
+            }
         }
     };
 

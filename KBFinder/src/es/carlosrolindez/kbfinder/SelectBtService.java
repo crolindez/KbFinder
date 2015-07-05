@@ -155,7 +155,6 @@ public class SelectBtService {
         }
 
         public void run() {
-            Log.d(TAG, "BEGIN mConnectingThread");
             setName("ConnectingThread");
 
             // Make a connection to the BluetoothSocket
@@ -197,7 +196,6 @@ public class SelectBtService {
       
         
         public ConnectedThreadInput() {
-            Log.e(TAG, "create ConnectedThreadInput");
 
             // Get the BluetoothSocket input and output streams
             try {
@@ -208,7 +206,6 @@ public class SelectBtService {
         }
 
         public void run() {
-            Log.e(TAG, "BEGIN mConnectedThreadInput");
             byte[] buffer = new byte[255];
             int bytes;
             setState(STATE_CONNECTED);
@@ -241,7 +238,6 @@ public class SelectBtService {
         public boolean closeThread;
 
         public ConnectedThreadOutput() {
-            Log.e(TAG, "create ConnectedThreadOutput");
             
             paused = false;
             closeThread = false;
@@ -254,11 +250,10 @@ public class SelectBtService {
         }
 
         public void run() {
-            Log.e(TAG, "BEGIN mConnectedThreadOutput");
             byte[] buffer;
     
     	    try {  
-    	    		sleep(500);
+    	    	sleep(500);
     	    } catch (InterruptedException e) {
                 Log.e(TAG, "Interrupted Exception during warmup", e);      	    	
     	    }

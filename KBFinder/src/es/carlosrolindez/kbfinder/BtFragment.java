@@ -10,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -102,6 +104,19 @@ public class BtFragment extends Fragment {
     public void setSongName(String name) {
         songName.setText(name);    	
     }    
+    
+    public void setBlinking(boolean blink) {
+    	if (blink) {
+		    Animation anim = new AlphaAnimation(0.0f, 1.0f);
+		    anim.setDuration(500); //You can manage the time of the blink with this parameter
+		    anim.setStartOffset(20);
+		    anim.setRepeatMode(Animation.REVERSE);
+		    anim.setRepeatCount(Animation.INFINITE);
+		    songName.startAnimation(anim);
+    	} else {
+    		songName.clearAnimation();		
+    	}
+    }
     
 
 }

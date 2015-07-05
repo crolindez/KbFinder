@@ -47,6 +47,7 @@ public class FmFragment extends Fragment {
         frequencyText = (TextView)rootView.findViewById(R.id.frequency);
         frequencyText.setTypeface(myTypeface);
         RDSText = (TextView)rootView.findViewById(R.id.RDS);
+        
 
 		ImageView button_scan_down_FM = (ImageView)rootView.findViewById(R.id.scan_down_FM);
 		ImageView button_dial_FM = (ImageView)rootView.findViewById(R.id.dial_FM);
@@ -122,7 +123,7 @@ public class FmFragment extends Fragment {
         String freq[] = frequencyText.getText().toString().trim().split("\\.");
         final String newFreq[] = {freq[0], freq[1]};
         
-    	final CountDownTimer countDownFm = new CountDownTimer(500,500){
+    	final CountDownTimer countDownFm = new CountDownTimer(800,800){
     		public void onTick(long millisUntilFinished) {
 		    }
 		     	
@@ -140,6 +141,16 @@ public class FmFragment extends Fragment {
     	final Dialog fmDialog = new Dialog(mContext, R.style.CustomDialog);
     	fmDialog.setTitle(getResources().getString(R.string.fm_dial));
     	fmDialog.setContentView(R.layout.fm_dial);
+
+ /*   	Window window = fmDialog.getWindow();
+        WindowManager.LayoutParams wlp = window.getAttributes();
+        wlp.gravity = Gravity.RIGHT;
+//        wlp.width = LayoutParams.MATCH_PARENT;
+        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        window.setAttributes(wlp);   	
+    	*/
+    	
+    	
         final FmPicker megaherzPicker = (FmPicker) fmDialog.findViewById(R.id.megaherzs);
         final FmPicker kiloherzPicker = (FmPicker) fmDialog.findViewById(R.id.kiloherzs);
         
