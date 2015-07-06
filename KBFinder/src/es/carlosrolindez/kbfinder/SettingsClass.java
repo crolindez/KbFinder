@@ -1,20 +1,29 @@
 package es.carlosrolindez.kbfinder;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.util.Log;
 
 
 
 
-public class SettingsClass implements Parcelable {
+
+
+public class SettingsClass {
 
 	private ArrayKBdeviceSettings listKBdeviceSettings;
+    private static final String TAG = "SettingsClass";
 
-	public SettingsClass ( ) {
+	public SettingsClass () {
 		listKBdeviceSettings = new ArrayKBdeviceSettings();
-	};
+	}
 	
 	public class KBdeviceSettings {
 		private String MAC;
@@ -24,7 +33,7 @@ public class SettingsClass implements Parcelable {
 			this.MAC = MAC;
 			fmPack = new ArrayFmPackage();
 		}
-	};
+	}
 	
 	
 	public class FmSet {
@@ -41,6 +50,7 @@ public class SettingsClass implements Parcelable {
 		
 
 	
+	@SuppressWarnings("serial")
 	public class ArrayKBdeviceSettings extends ArrayList<KBdeviceSettings> {
 		
 		public boolean addSorted(KBdeviceSettings newKbSettings) {
@@ -67,7 +77,7 @@ public class SettingsClass implements Parcelable {
 	}	
 	
 	
-
+	@SuppressWarnings("serial")
 	public class ArrayFmPackage extends ArrayList<FmSet> {
 		
 		public boolean addSorted(FmSet newStation) {
@@ -94,31 +104,35 @@ public class SettingsClass implements Parcelable {
 
 	}	
 	
-	@Override
-    public int describeContents() {
-        return 0;
-    }
-	
-    @Override
-    public void writeToParcel(Parcel parcel, int arg1) {
+
+
+    public void writeToFile(String filename) {
     	
-    	parcel.writeInt(listKBdeviceSettings.size());
-    	for (KBdeviceSettings deviceSettings:listKBdeviceSettings) {
-       
-            parcel.writeString(deviceSettings.MAC);
-            
-        	parcel.writeInt(deviceSettings.fmPack.size());
-        	for (FmSet set:deviceSettings.fmPack) {
-                parcel.writeString(set.frequency);
-                parcel.writeString(set.rds);
-            	boolean[] boolArraySet={set.forcedMono};
-                parcel.writeBooleanArray(boolArraySet);	
-        	}		
+
+    	try {	
+			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filename), "UTF-8");
+			
+	        writer.write(listKBdeviceSettings.size()); writer.write("\n");
+	      	for (KBdeviceSettings deviceSettings:listKBdeviceSettings) {
+	      		writer.write(deviceSettings.MAC + "\n");
+	      		writer.write(deviceSettings.fmPack.size()); writer.write("\n");
+	      		for (FmSet set:deviceSettings.fmPack) {
+	      			writer.write(set.frequency + "\n");
+	      			writer.write(set.rds + "\n");
+	      			if (set.forcedMono) writer.write("MONO\n");
+	      			else writer.write("STEREO\n");
+	      		}	      		
+	      	}
+	      	writer.flush();
+	      	writer.close();   	
+    	} catch (IOException e) {
+    	  e.printStackTrace();
     	}
-    }
+    	
+   }
      
-    public static final Parcelable.Creator<SettingsClass> CREATOR = new Creator<SettingsClass>() {
-    	boolean[] boolArray;
+    public static SettingsClass readFromFile(String filename) {
+    	boolean mono;
     	String freq;
     	String rds;
     	String mac;
@@ -127,32 +141,50 @@ public class SettingsClass implements Parcelable {
     	FmSet set;
     	KBdeviceSettings device;
 
+		SettingsClass settings = new SettingsClass();
     	
-		
-    	@Override
-        public SettingsClass createFromParcel(Parcel parcel) {
+        try {
+        	FileInputStream inputStream = new FileInputStream(filename);
+             
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                
+                if ( (receiveString = bufferedReader.readLine()) != null ) {
+                
+	               	for (numberKBdevices = Integer.parseInt(receiveString); numberKBdevices>0; numberKBdevices--) {
+	                    mac = bufferedReader.readLine();
+	            		device = settings.new KBdeviceSettings(mac);
+	                    if ( (receiveString = bufferedReader.readLine()) == null ) {
+	                    
+		    	        	for (numberFmSets = Integer.parseInt(receiveString); numberFmSets>0; numberFmSets--) {
+		    	        		freq = bufferedReader.readLine();
+		    	        		rds = bufferedReader.readLine();
+		    	        		receiveString = bufferedReader.readLine();
+		    	        		if (receiveString.equals("MONO"))
+		    	        			mono = true;
+		    	        		else
+		    	        			mono = false;
+		    	        		set = settings.new FmSet(freq,mono,rds);
+		    	        		device.fmPack.addSorted(set);
+		    	        	}
+		    	        	settings.listKBdeviceSettings.addSorted(device);
+		            	}
+	               	}
+                }
+                bufferedReader.close();
+            }
+            inputStream.close();
+        }
+        catch (FileNotFoundException e) {   
+            Log.e(TAG, "File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e(TAG, "Can not read file: " + e.toString());
+        }
 
-    		SettingsClass settings = new SettingsClass();
-        	for (numberKBdevices = parcel.readInt();numberKBdevices>0;numberKBdevices--) {
-        		mac = parcel.readString();
-        		device = settings.new KBdeviceSettings(mac);
-	        	for (numberFmSets = parcel.readInt();numberFmSets>0;numberFmSets--) {
-	        		freq = parcel.readString();
-	        		rds = parcel.readString();
-	        		parcel.readBooleanArray(boolArray);  
-	        		set = settings.new FmSet(freq,boolArray[0],rds);
-	        		device.fmPack.addSorted(set);
-	        	}
-	        	settings.listKBdeviceSettings.addSorted(device);
-        	}
-            return settings;
-            
-        }
- 
-        @Override
-        public SettingsClass[] newArray(int size) {
-            return new SettingsClass[size];
-        }
+        return settings;
+
     };
 
 }

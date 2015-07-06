@@ -36,9 +36,7 @@ import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 
 // TODO improve dial FM
 // TODO FM controls: forced mono; keypad; memories
-// TODO short KBsound Devices
-// TODO check transitions when turning off I2dp (block on/off) button? and screen?
-// TODO improve song name on BT
+// TODO sometimes track name from  spotify cracks
 
 
 
@@ -46,6 +44,7 @@ import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
 public class SelectBtActivity extends FragmentActivity implements DisconnectActivity, SppBridge {
 	
     private static final String TAG = "SelectBtActivity";
+    private static final String FILENAME = "settings.txt";
 	
 	private static final int FM_CHANNEL = 0;
 	private static final int BT_CHANNEL = 1;

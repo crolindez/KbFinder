@@ -2,6 +2,7 @@ package es.carlosrolindez.kbfinder;
 
 import java.util.ArrayList;
 
+@SuppressWarnings("serial")
 public class ArrayKBdevice extends ArrayList<KBdevice> {
 	
 	public boolean addSorted(KBdevice newDevice) {
