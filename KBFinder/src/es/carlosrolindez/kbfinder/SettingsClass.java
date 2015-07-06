@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.Parcelable.Creator;
 
 
 
@@ -12,7 +11,7 @@ import android.os.Parcelable.Creator;
 public class SettingsClass implements Parcelable {
 
 	private ArrayKBdeviceSettings listKBdeviceSettings;
-	
+
 	public SettingsClass ( ) {
 		listKBdeviceSettings = new ArrayKBdeviceSettings();
 	};
@@ -20,14 +19,10 @@ public class SettingsClass implements Parcelable {
 	public class KBdeviceSettings {
 		private String MAC;
 		private ArrayFmPackage fmPack;
-		private FmSet defaultFmSet;
-		private int defaultVolume;
 		
 		public KBdeviceSettings(String MAC) {
 			this.MAC = MAC;
 			fmPack = new ArrayFmPackage();
-			defaultFmSet = new FmSet("87.5",false,"");
-			defaultVolume = 5;
 		}
 	};
 	
@@ -61,8 +56,7 @@ public class SettingsClass implements Parcelable {
 				} else if (newKbSettings.MAC.compareTo(kbSettings.MAC)==0) {
 					kbSettings.MAC = newKbSettings.MAC;
 					kbSettings.fmPack = newKbSettings.fmPack;
-					kbSettings.defaultFmSet = newKbSettings.defaultFmSet;
-					kbSettings.defaultVolume = newKbSettings.defaultVolume;
+
 					return true;
 				}
 				position++;
@@ -110,14 +104,8 @@ public class SettingsClass implements Parcelable {
     	
     	parcel.writeInt(listKBdeviceSettings.size());
     	for (KBdeviceSettings deviceSettings:listKBdeviceSettings) {
-        	
+       
             parcel.writeString(deviceSettings.MAC);
-            parcel.writeInt(deviceSettings.defaultVolume);
-            
-            parcel.writeString(deviceSettings.defaultFmSet.frequency);
-            parcel.writeString(deviceSettings.defaultFmSet.rds);
-        	boolean[] boolArraySettings={deviceSettings.defaultFmSet.forcedMono};
-            parcel.writeBooleanArray(boolArraySettings);
             
         	parcel.writeInt(deviceSettings.fmPack.size());
         	for (FmSet set:deviceSettings.fmPack) {
@@ -131,12 +119,34 @@ public class SettingsClass implements Parcelable {
      
     public static final Parcelable.Creator<SettingsClass> CREATOR = new Creator<SettingsClass>() {
     	boolean[] boolArray;
-        @Override
+    	String freq;
+    	String rds;
+    	String mac;
+    	int numberKBdevices;
+    	int numberFmSets;
+    	FmSet set;
+    	KBdeviceSettings device;
+
+    	
+		
+    	@Override
         public SettingsClass createFromParcel(Parcel parcel) {
-            String frequency = parcel.readString();
-            String rds = parcel.readString();
-            parcel.readBooleanArray(boolArray);                 
-            return new SettingsClass(frequency, boolArray[0], rds);
+
+    		SettingsClass settings = new SettingsClass();
+        	for (numberKBdevices = parcel.readInt();numberKBdevices>0;numberKBdevices--) {
+        		mac = parcel.readString();
+        		device = settings.new KBdeviceSettings(mac);
+	        	for (numberFmSets = parcel.readInt();numberFmSets>0;numberFmSets--) {
+	        		freq = parcel.readString();
+	        		rds = parcel.readString();
+	        		parcel.readBooleanArray(boolArray);  
+	        		set = settings.new FmSet(freq,boolArray[0],rds);
+	        		device.fmPack.addSorted(set);
+	        	}
+	        	settings.listKBdeviceSettings.addSorted(device);
+        	}
+            return settings;
+            
         }
  
         @Override

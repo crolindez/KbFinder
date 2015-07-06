@@ -902,7 +902,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
  //               String albumName = intent.getStringExtra("album");		Log.d("Album",albumName);
  //               int trackLengthInSec = intent.getIntExtra("length", 0);	Log.d("length",""+trackLengthInSec);
                 
-                String trackName = intent.getStringExtra("track");		Log.d("Name",trackName);
+                String trackName = intent.getStringExtra("track");		
+                Log.d("Name",trackName);
                 if (selectBtState!=null)
                 	selectBtState.updateTrackName(trackName);
             } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_STATE_CHANGED)) ||(action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED)) ) {
