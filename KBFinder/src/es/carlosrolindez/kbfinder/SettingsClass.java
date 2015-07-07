@@ -38,12 +38,10 @@ public class SettingsClass {
 	
 	public class FmSet {
 		private String frequency;
-		private boolean forcedMono;
 		private String rds;
 		
-		public FmSet(String freq, boolean mono, String RDS ) {
+		public FmSet(String freq, String RDS ) {
 			frequency = freq;
-			forcedMono = mono;
 			rds = RDS;
 		}
 	}
@@ -66,7 +64,6 @@ public class SettingsClass {
 				} else if (newKbSettings.MAC.compareTo(kbSettings.MAC)==0) {
 					kbSettings.MAC = newKbSettings.MAC;
 					kbSettings.fmPack = newKbSettings.fmPack;
-
 					return true;
 				}
 				position++;
@@ -92,7 +89,6 @@ public class SettingsClass {
 					return true;
 				} else if (newStation.frequency.compareTo(station.frequency)==0) {
 					station.frequency = newStation.frequency;
-					station.forcedMono = newStation.forcedMono;
 					station.rds = newStation.rds;
 					return true;
 				}
@@ -119,8 +115,6 @@ public class SettingsClass {
 	      		for (FmSet set:deviceSettings.fmPack) {
 	      			writer.write(set.frequency + "\n");
 	      			writer.write(set.rds + "\n");
-	      			if (set.forcedMono) writer.write("MONO\n");
-	      			else writer.write("STEREO\n");
 	      		}	      		
 	      	}
 	      	writer.flush();
@@ -132,7 +126,6 @@ public class SettingsClass {
    }
      
     public static SettingsClass readFromFile(String filename) {
-    	boolean mono;
     	String freq;
     	String rds;
     	String mac;
@@ -162,11 +155,7 @@ public class SettingsClass {
 		    	        		freq = bufferedReader.readLine();
 		    	        		rds = bufferedReader.readLine();
 		    	        		receiveString = bufferedReader.readLine();
-		    	        		if (receiveString.equals("MONO"))
-		    	        			mono = true;
-		    	        		else
-		    	        			mono = false;
-		    	        		set = settings.new FmSet(freq,mono,rds);
+		    	        		set = settings.new FmSet(freq,rds);
 		    	        		device.fmPack.addSorted(set);
 		    	        	}
 		    	        	settings.listKBdeviceSettings.addSorted(device);
