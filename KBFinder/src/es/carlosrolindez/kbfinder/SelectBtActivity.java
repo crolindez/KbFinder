@@ -31,6 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import es.carlosrolindez.kbfinder.FmFragment.SppBridge;
 import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
+import es.carlosrolindez.kbfinder.SettingsClass.ArrayFmPackage;
 
 
 
@@ -51,9 +52,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	public static final int NO_QUESTION = 0;
 	public static final int QUESTION_ALL = 1;
-	public static final int RDS = 2;
-	public static final int BTID = 3;
-	public static final int FREQUENCY = 4;
+//	public static final int RDS = 2;
+//	public static final int BTID = 3;
+//	public static final int FREQUENCY = 4;
+	public static final int QUESTION_MON = 5;
 	
 	private static SelectBtService service;
 	private final SelectBtHandler  handler = new SelectBtHandler();
@@ -80,6 +82,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private static boolean	i2dpDisconnectionTimerStarted;
 	private static BlockClass block;
 	
+	private static SettingsClass settingsFm;
+	private static SettingsClass.KBdeviceSettings deviceFm;	
 	
 	// swipe fragments
     private static final int NUM_PAGES = 2;
@@ -222,6 +226,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		
 		mContext = this;
 		selectBtState = new SelectBtState();
+
 				
 		splashImageView = (ImageView) findViewById(R.id.SplashImageView);
 		splashImageView.setBackgroundResource(R.drawable.on_animation);
@@ -254,9 +259,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		Intent myIntent = getIntent();
 		deviceMAC = myIntent.getStringExtra(Constants.LAUNCH_MAC);	
 
+		
 		service = new SelectBtService(this, handler, deviceMAC);
 		allowDisconnect = false;
-		service.start();			
+		service.start();	
+		
+		settingsFm = new SettingsClass();
+		deviceFm = settingsFm.new KBdeviceSettings(deviceMAC);
 		
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (BlockingViewPager) findViewById(R.id.pager);
@@ -439,6 +448,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		questionPending = QUESTION_ALL;
     }
 	
+	public static void askForcedMono() {
+		sendSppMessage("FOR ?\r"); 
+		questionPending = QUESTION_MON;
+    }
+	
 	public static void writeOnOffState(boolean onOff) {
 		if (onOff) 	sendSppMessage("STB ON\r");
 		else 		sendSppMessage("STB OFF\r");
@@ -554,10 +568,15 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
 				
 				selectBtState.updateVolumeFM(messageExtractor.getStringFromMessage());
-				String keepFmOn = messageExtractor.message;										
-
+				String keepFmOn = messageExtractor.message;		
+				askForcedMono();
 
 				break;
+				
+			case QUESTION_MON:
+				selectBtState.updateForceMono(m);
+				break;
+				
 			
 		} 
 		questionPending = NO_QUESTION;
@@ -652,7 +671,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         	if (position == BT_CHANNEL)
         		return new BtFragment(mContext);
         	else
-        		return new FmFragment(mContext);       		
+        		return new FmFragment(mContext,false,deviceFm);       		
         }
 
         @Override
@@ -857,6 +876,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			((BtFragment)mAdapter.getItem(1)).setSongName(songName);
     		}			
 		}   
+     	
+     	public void updateForceMono(String state) {
+     		if (state.equals("OFF"))
+     			((FmFragment)mAdapter.getItem(0)).setStereo(false);
+     		else
+ 				((FmFragment)mAdapter.getItem(0)).setStereo(true);
+     	}
 		
      	
     }

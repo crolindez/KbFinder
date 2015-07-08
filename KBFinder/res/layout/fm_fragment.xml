@@ -1,76 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-   	android:id="@+id/fragment"
-   	android:layout_width="match_parent" 
-	android:layout_height="match_parent" 
-	android:padding="3dp">
-    <TextView 
-    	android:id="@+id/fragment_text"
-        android:padding="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:typeface="monospace"
-       	android:textSize="30sp"
-        android:textStyle="bold" 
-        android:textColor="#eeeeee"
-        android:text="" />
+	android:id="@+id/fragment"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:padding="3dp" >
 	<TextView
-    	android:id="@+id/RDS"
-    	android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"
-    	android:layout_centerHorizontal="true"
-    	android:layout_centerVertical="true"    	
-    	android:text=""
-        android:textColor="#00ff00"
-        android:textSize="30sp" />  
-    <TextView
-    	android:id="@+id/frequency"
-    	android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"
-    	android:layout_centerHorizontal="true"
-        android:layout_above="@id/RDS"
-    	android:text=""
-    	android:textColor="#00ff00"
-    	android:textSize="50sp" />   
+		android:id="@+id/fragment_text"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:padding="16dp"
+		android:text=""
+		android:textColor="#eeeeee"
+		android:textSize="30sp"
+		android:textStyle="bold"
+		android:typeface="monospace" />
+	<TextView
+		android:id="@+id/RDS"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_centerVertical="true"
+		android:text=""
+		android:textColor="#00ff00"
+		android:textSize="30sp" />
+	<TextView
+		android:id="@+id/frequency"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_above="@id/RDS"
+		android:layout_centerHorizontal="true"
+		android:text=""
+		android:textColor="#00ff00"
+		android:textSize="50sp" />
 	<ImageButton
 		android:id="@+id/dial_FM"
 		android:layout_width="64dp"
 		android:layout_height="64dp"
+		android:layout_below="@id/RDS"
 		android:layout_centerHorizontal="true"
-        android:layout_below="@id/RDS"
-		android:layout_marginTop="10dp"	
-		android:layout_marginBottom="10dp"		
-		android:background="@drawable/play_pause_selector"  />		
-   	<ImageButton
-        android:id="@+id/scan_down_FM"
+		android:layout_marginBottom="10dp"
+		android:layout_marginTop="10dp"
+		android:background="@drawable/play_pause_selector" />
+	<ImageButton
+		android:id="@+id/scan_down_FM"
+		android:layout_width="64dp"
+		android:layout_height="64dp"
+		android:layout_below="@id/RDS"
+		android:layout_marginBottom="10dp"
+		android:layout_marginTop="10dp"
 		android:layout_toLeftOf="@id/dial_FM"
-        android:layout_below="@id/RDS"
-		android:layout_marginTop="10dp"	
-        android:layout_width="64dp" 
-        android:layout_height="64dp" 
-		android:layout_marginBottom="10dp"		
-        android:background="@drawable/previous_selector" /> 
+		android:background="@drawable/previous_selector" />
 	<ImageButton
 		android:id="@+id/scan_up_FM"
 		android:layout_width="64dp"
 		android:layout_height="64dp"
+		android:layout_below="@id/RDS"
+		android:layout_marginBottom="10dp"
+		android:layout_marginTop="10dp"
 		android:layout_toRightOf="@id/dial_FM"
-        android:layout_below="@id/RDS"	
-		android:layout_marginTop="10dp"	
-		android:layout_marginBottom="10dp"		
 		android:background="@drawable/next_selector" />
-	<ImageButton
-		android:id="@+id/imageButton1"
+	<ImageView
+		android:id="@+id/mono_FM"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_alignParentRight="true"
+		android:layout_marginRight="18dp"
 		android:layout_alignTop="@+id/fragment_text"
-		android:src="@drawable/mono" />
-	<ImageButton
-		android:id="@+id/imageButton2"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_above="@+id/RDS"
-		android:layout_alignLeft="@+id/scan_up_FM"
-		android:src="@drawable/favorite" />
+		android:background="@drawable/mono"
+		android:padding="16dp" />
+	<ImageView
+		android:id="@+id/favorite_FM"
+		android:layout_width="36dp"
+		android:layout_height="36dp"
+		android:layout_marginLeft="18dp"
+		android:layout_alignTop="@+id/frequency"
+		android:layout_toRightOf="@+id/frequency"
+		android:background="@drawable/favorite" />
 </RelativeLayout>

@@ -20,11 +20,16 @@ import android.widget.TextView;
 public class FmFragment extends Fragment {
     private static final String TAG = "FmFragment";
 	
-	public String fragmentName;
+	private String fragmentName;
 	private final Context mContext;
 	
 	private static TextView frequencyText;
 	private static TextView RDSText;
+	private static ImageView mono;
+	private static boolean mStereo;
+	private static ImageView favorite;
+	
+	public static SettingsClass.KBdeviceSettings mDevice;
 	
 	private SppBridge spp;
 	
@@ -33,10 +38,12 @@ public class FmFragment extends Fragment {
 	}
 	
 	
-	public FmFragment(Context context) {
+	public FmFragment(Context context,boolean stereo,SettingsClass.KBdeviceSettings device) {
 		mContext = context;
 		fragmentName =  "FM";
 		spp = (SppBridge) context;
+		mStereo = stereo;
+		mDevice = device;
 	}
 	
     @Override
@@ -48,10 +55,35 @@ public class FmFragment extends Fragment {
         frequencyText.setTypeface(myTypeface);
         RDSText = (TextView)rootView.findViewById(R.id.RDS);
         
+		mono = (ImageView)rootView.findViewById(R.id.mono_FM);
+		favorite = (ImageView)rootView.findViewById(R.id.favorite_FM);
+		
+		setStereo(mStereo);
+		
+		if (mDevice.isFreqInArray(frequencyText.getText().toString()))
+			favorite.setBackgroundResource(R.drawable.favorite);
+		else
+			favorite.setBackgroundResource(R.drawable.nofavorite);			
+		
 
 		ImageView button_scan_down_FM = (ImageView)rootView.findViewById(R.id.scan_down_FM);
 		ImageView button_dial_FM = (ImageView)rootView.findViewById(R.id.dial_FM);
 		ImageView button_scan_up_FM = (ImageView)rootView.findViewById(R.id.scan_up_FM);
+		
+		favorite.setOnClickListener(new OnClickListener() 
+		{
+			@Override
+			public void onClick(View v) 
+			{
+				if (mDevice.isFreqInArray(frequencyText.getText().toString())) {
+					mDevice.removeFreqFromArray(frequencyText.getText().toString());
+					favorite.setBackgroundResource(R.drawable.nofavorite);
+				} else {
+					mDevice.addFreqFromArray(frequencyText.getText().toString(),RDSText.getText().toString());
+					favorite.setBackgroundResource(R.drawable.favorite);		
+				}
+			}
+		});
 		
 		frequencyText.setOnClickListener(new OnClickListener() 
 		{
@@ -105,6 +137,14 @@ public class FmFragment extends Fragment {
     public void setRDS(String RDS) {
     	RDSText.setText(RDS);    	
     }  
+    
+    public void setStereo(boolean stereo) {   
+    	mStereo = stereo;
+		if (mStereo) 
+			mono.setBackgroundResource(R.drawable.stereo);
+		else
+			mono.setBackgroundResource(R.drawable.mono);
+    }
     
 	public void showFmDialog() {
     	final int minFreq = 87;

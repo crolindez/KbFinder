@@ -33,6 +33,32 @@ public class SettingsClass {
 			this.MAC = MAC;
 			fmPack = new ArrayFmPackage();
 		}
+		
+		public boolean isFreqInArray(String targetFreq) {
+			for (FmSet set:fmPack) {
+				if (targetFreq.equals(set.frequency)) return true;
+			}
+			return false;
+		}
+		
+		public void addFreqFromArray(String targetFreq,String targetRDS) {
+			FmSet set = new FmSet(targetFreq, targetRDS);
+			fmPack.addSorted(set);
+		}
+		
+		public void removeFreqFromArray(String targetFreq) {
+			int counter = 0;
+			for (FmSet set:fmPack) {
+				if (targetFreq.equals(set.frequency)) {
+					fmPack.remove(counter);
+					return;
+				} else {
+					counter++;
+				}
+			}
+		}
+
+
 	}
 	
 	
@@ -71,6 +97,7 @@ public class SettingsClass {
 			add(newKbSettings);
 			return true;
 		}
+
 	}	
 	
 	
@@ -97,7 +124,6 @@ public class SettingsClass {
 			add(newStation);
 			return true;
 		}
-
 	}	
 	
 
