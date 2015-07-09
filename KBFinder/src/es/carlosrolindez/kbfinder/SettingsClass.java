@@ -24,7 +24,18 @@ public class SettingsClass {
 	public SettingsClass () {
 		listKBdeviceSettings = new ArrayKBdeviceSettings();
 	}
+
 	
+	public KBdeviceSettings getDeviceInArray(String MAC) {
+		for (KBdeviceSettings device:listKBdeviceSettings) {
+			if (MAC.equals(device.MAC)) return device;
+		}
+		KBdeviceSettings device = new KBdeviceSettings(MAC);
+		listKBdeviceSettings.addSorted(device);
+		return device;
+	}
+	
+
 	public class KBdeviceSettings {
 		private String MAC;
 		private ArrayFmPackage fmPack;
@@ -33,12 +44,14 @@ public class SettingsClass {
 			this.MAC = MAC;
 			fmPack = new ArrayFmPackage();
 		}
+
+
 		
-		public boolean isFreqInArray(String targetFreq) {
+		public FmSet getFreqInArray(String targetFreq) {
 			for (FmSet set:fmPack) {
-				if (targetFreq.equals(set.frequency)) return true;
+				if (targetFreq.equals(set.frequency)) return set;
 			}
-			return false;
+			return null;
 		}
 		
 		public void addFreqFromArray(String targetFreq,String targetRDS) {
@@ -69,6 +82,14 @@ public class SettingsClass {
 		public FmSet(String freq, String RDS ) {
 			frequency = freq;
 			rds = RDS;
+		}
+		
+		public String getRDS() {
+			return rds;
+		}
+		
+		public void setRDS(String rds) {
+			this.rds = rds;
 		}
 	}
 		
@@ -133,19 +154,22 @@ public class SettingsClass {
 
     	try {	
 			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filename), "UTF-8");
-			
+      		Log.e(TAG,"writing settings");
 	        writer.write(listKBdeviceSettings.size()); writer.write("\n");
 	      	for (KBdeviceSettings deviceSettings:listKBdeviceSettings) {
 	      		writer.write(deviceSettings.MAC + "\n");
 	      		writer.write(deviceSettings.fmPack.size()); writer.write("\n");
+	      		Log.e(TAG,deviceSettings.MAC+" "+deviceSettings.fmPack.size());
 	      		for (FmSet set:deviceSettings.fmPack) {
 	      			writer.write(set.frequency + "\n");
 	      			writer.write(set.rds + "\n");
+		      		Log.e(TAG,set.frequency+" "+set.rds);
 	      		}	      		
 	      	}
 	      	writer.flush();
 	      	writer.close();   	
     	} catch (IOException e) {
+      		Log.e(TAG,"error writing settings");
     	  e.printStackTrace();
     	}
     	
@@ -175,6 +199,7 @@ public class SettingsClass {
 	               	for (numberKBdevices = Integer.parseInt(receiveString); numberKBdevices>0; numberKBdevices--) {
 	                    mac = bufferedReader.readLine();
 	            		device = settings.new KBdeviceSettings(mac);
+	    	      		Log.e(TAG,device.MAC);
 	                    if ( (receiveString = bufferedReader.readLine()) == null ) {
 	                    
 		    	        	for (numberFmSets = Integer.parseInt(receiveString); numberFmSets>0; numberFmSets--) {
@@ -183,6 +208,7 @@ public class SettingsClass {
 		    	        		receiveString = bufferedReader.readLine();
 		    	        		set = settings.new FmSet(freq,rds);
 		    	        		device.fmPack.addSorted(set);
+			    	      		Log.e(TAG,set.frequency+" "+set.rds);
 		    	        	}
 		    	        	settings.listKBdeviceSettings.addSorted(device);
 		            	}

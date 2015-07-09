@@ -83,7 +83,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	private static BlockClass block;
 	
 	private static SettingsClass settingsFm;
-	private static SettingsClass.KBdeviceSettings deviceFm;	
 	
 	// swipe fragments
     private static final int NUM_PAGES = 2;
@@ -264,8 +263,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		allowDisconnect = false;
 		service.start();	
 		
-		settingsFm = new SettingsClass();
-		deviceFm = settingsFm.new KBdeviceSettings(deviceMAC);
+		settingsFm = SettingsClass.readFromFile(FILENAME);
+
+			
 		
         // Instantiate a ViewPager and a PagerAdapter.
         mPager = (BlockingViewPager) findViewById(R.id.pager);
@@ -526,6 +526,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		allowDisconnect = true;
 		block.unlock();
         service.stop();
+        settingsFm.writeToFile(FILENAME);
 		super.onDestroy();
 	}
 		
@@ -671,7 +672,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
         	if (position == BT_CHANNEL)
         		return new BtFragment(mContext);
         	else
-        		return new FmFragment(mContext,false,deviceFm);       		
+        		return new FmFragment(mContext,false,settingsFm.getDeviceInArray(deviceMAC));       		
         }
 
         @Override
@@ -824,7 +825,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     			channel = FM_CHANNEL;
         		mPager.setCurrentItem(0, false);
     			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
-    			((FmFragment)mAdapter.getItem(0)).setRDS(rds);
     			changeStateI2dp(false);
     		}
     	}
@@ -838,7 +838,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     		} else {
     			changeStateI2dp(false);
     			((FmFragment)mAdapter.getItem(0)).setFrequency(frequency);
-    			((FmFragment)mAdapter.getItem(0)).setRDS(rds);
     		}		
     	}
     	

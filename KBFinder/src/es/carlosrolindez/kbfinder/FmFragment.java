@@ -59,12 +59,6 @@ public class FmFragment extends Fragment {
 		favorite = (ImageView)rootView.findViewById(R.id.favorite_FM);
 		
 		setStereo(mStereo);
-		
-		if (mDevice.isFreqInArray(frequencyText.getText().toString()))
-			favorite.setBackgroundResource(R.drawable.favorite);
-		else
-			favorite.setBackgroundResource(R.drawable.nofavorite);			
-		
 
 		ImageView button_scan_down_FM = (ImageView)rootView.findViewById(R.id.scan_down_FM);
 		ImageView button_dial_FM = (ImageView)rootView.findViewById(R.id.dial_FM);
@@ -75,7 +69,7 @@ public class FmFragment extends Fragment {
 			@Override
 			public void onClick(View v) 
 			{
-				if (mDevice.isFreqInArray(frequencyText.getText().toString())) {
+				if (mDevice.getFreqInArray(frequencyText.getText().toString())!=null) {
 					mDevice.removeFreqFromArray(frequencyText.getText().toString());
 					favorite.setBackgroundResource(R.drawable.nofavorite);
 				} else {
@@ -101,8 +95,7 @@ public class FmFragment extends Fragment {
 			{
 				spp.sppMessage("SCN DOWN\r");
 				setFrequency("___._");
-				favorite.setVisibility(View.INVISIBLE);
-				setRDS("");				
+				favorite.setVisibility(View.INVISIBLE);		
 			}
 		});
 
@@ -123,7 +116,6 @@ public class FmFragment extends Fragment {
 				spp.sppMessage("SCN UP\r");
 				setFrequency("___._");
 				favorite.setVisibility(View.INVISIBLE);				
-				setRDS("");
 			}
 		});
            
@@ -135,16 +127,23 @@ public class FmFragment extends Fragment {
     public void setFrequency(String frequency) {
         frequencyText.setText(frequency);    	
 		favorite.setVisibility(View.VISIBLE);
-		if (mDevice.isFreqInArray(frequencyText.getText().toString())) {
+		
+		SettingsClass.FmSet set = mDevice.getFreqInArray(frequency);
+		if (set != null) {
 			favorite.setBackgroundResource(R.drawable.favorite);
+	    	RDSText.setText(set.getRDS());  			
 		} else {
-
-			favorite.setBackgroundResource(R.drawable.nofavorite);		
+			favorite.setBackgroundResource(R.drawable.nofavorite);	
+	    	RDSText.setText("");  
 		}
     }
     
     public void setRDS(String RDS) {
     	RDSText.setText(RDS);    	
+		SettingsClass.FmSet set = mDevice.getFreqInArray(frequencyText.getText().toString());
+		if (set != null) {
+			set.setRDS(RDS);			
+		} 
     }  
     
     public void setStereo(boolean stereo) {   
@@ -179,7 +178,6 @@ public class FmFragment extends Fragment {
 		    public void onFinish() {
 		    	spp.sppMessage("TUN "+newFreq[0]+"."+newFreq[1]+"\r");
 				setFrequency(newFreq[0]+"."+newFreq[1]);
-				setRDS("");
 		    }
     	};
     	  	
