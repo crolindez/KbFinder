@@ -101,6 +101,7 @@ public class FmFragment extends Fragment {
 			{
 				spp.sppMessage("SCN DOWN\r");
 				setFrequency("___._");
+				favorite.setVisibility(View.INVISIBLE);
 				setRDS("");				
 			}
 		});
@@ -121,6 +122,7 @@ public class FmFragment extends Fragment {
 			{
 				spp.sppMessage("SCN UP\r");
 				setFrequency("___._");
+				favorite.setVisibility(View.INVISIBLE);				
 				setRDS("");
 			}
 		});
@@ -132,6 +134,13 @@ public class FmFragment extends Fragment {
     
     public void setFrequency(String frequency) {
         frequencyText.setText(frequency);    	
+		favorite.setVisibility(View.VISIBLE);
+		if (mDevice.isFreqInArray(frequencyText.getText().toString())) {
+			favorite.setBackgroundResource(R.drawable.favorite);
+		} else {
+
+			favorite.setBackgroundResource(R.drawable.nofavorite);		
+		}
     }
     
     public void setRDS(String RDS) {
@@ -169,10 +178,7 @@ public class FmFragment extends Fragment {
 		     	
 		    public void onFinish() {
 		    	spp.sppMessage("TUN "+newFreq[0]+"."+newFreq[1]+"\r");
-				if (newFreq[0].length()<3)
-					setFrequency(" "+newFreq[0]+"."+newFreq[1]);
-				else
-					setFrequency(newFreq[0]+"."+newFreq[1]);
+				setFrequency(newFreq[0]+"."+newFreq[1]);
 				setRDS("");
 		    }
     	};
