@@ -449,7 +449,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     }
 	
 	public static void askForcedMono() {
-		sendSppMessage("FOR ?\r"); 
+		sendSppMessage("MON ?\r"); 
 		questionPending = QUESTION_MON;
     }
 	
@@ -879,9 +879,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
      	
      	public void updateForceMono(String state) {
      		if (state.equals("OFF"))
-     			((FmFragment)mAdapter.getItem(0)).setStereo(false);
+     			((FmFragment)mAdapter.getItem(0)).setStereo(true);
      		else
- 				((FmFragment)mAdapter.getItem(0)).setStereo(true);
+ 				((FmFragment)mAdapter.getItem(0)).setStereo(false);
      	}
 		
      	
