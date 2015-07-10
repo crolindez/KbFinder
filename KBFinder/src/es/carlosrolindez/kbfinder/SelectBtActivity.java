@@ -451,6 +451,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	public static void askForcedMono() {
 		sendSppMessage("MON ?\r"); 
 		questionPending = QUESTION_MON;
+		Log.e(TAG,"question "+questionPending);
     }
 	
 	public static void writeOnOffState(boolean onOff) {
@@ -509,6 +510,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 			return RDS;			
 		}
 		
+		public void removeCR() {
+			if (message.length()>0)
+				message = message.substring(0, message.length()-1);			
+		}
+		
 	}
 
 	public static void bootFinished() {
@@ -531,7 +537,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	}
 		
 	public static void interpreter(String m) {
-
+		Log.e(TAG,"Interpreter "+m);
 		MessageExtractor messageExtractor = new MessageExtractor(m);
 
 		String header = messageExtractor.getStringFromMessage();
@@ -540,6 +546,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		else if (header.equals("FMS"))
 			selectBtState.updateFrequency(messageExtractor.getStringFromMessage());
 		else {
+			Log.e(TAG,"question "+questionPending);
 			messageExtractor = new MessageExtractor(m);
 			switch (questionPending) {
 			case QUESTION_ALL:
@@ -570,17 +577,23 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				
 				selectBtState.updateVolumeFM(messageExtractor.getStringFromMessage());
 				String keepFmOn = messageExtractor.message;		
+				questionPending = NO_QUESTION;
 				askForcedMono();
 
 				break;
 				
 			case QUESTION_MON:
-				selectBtState.updateForceMono(m);
+				messageExtractor.removeCR();
+				Log.e(TAG,"Interpreting MON");
+				selectBtState.updateForceMono(messageExtractor.message);
+				questionPending = NO_QUESTION;
 				break;
 				
-			
-		} 
-		questionPending = NO_QUESTION;
+			default:
+				Log.e(TAG,"deleting question "+questionPending);
+				questionPending = NO_QUESTION;
+			} 
+
 		}
 
 	
@@ -877,10 +890,13 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		}   
      	
      	public void updateForceMono(String state) {
-     		if (state.equals("OFF"))
+     		if (state.equals("OFF")) {
+     			Log.e(TAG,"Forced Mono off");
      			((FmFragment)mAdapter.getItem(0)).setStereo(true);
-     		else
+     		} else {
+     			Log.e(TAG,"Forced Mono on");
  				((FmFragment)mAdapter.getItem(0)).setStereo(false);
+     		}
      	}
 		
      	

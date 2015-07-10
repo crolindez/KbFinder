@@ -78,7 +78,21 @@ public class FmFragment extends Fragment {
 				}
 			}
 		});
+
+		mono.setOnClickListener(new OnClickListener() 
+		{
+			@Override
+			public void onClick(View v) 
+			{
+				setStereo(!mStereo);
+				if (mStereo)
+					spp.sppMessage("MON OFF\r");
+				else
+					spp.sppMessage("MON ON\r");
+			}
+		});
 		
+
 		frequencyText.setOnClickListener(new OnClickListener() 
 		{
 			@Override
