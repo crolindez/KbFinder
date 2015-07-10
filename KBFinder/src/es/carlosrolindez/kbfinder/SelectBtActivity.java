@@ -263,7 +263,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		allowDisconnect = false;
 		service.start();	
 		
-		settingsFm = SettingsClass.readFromFile(FILENAME);
+		settingsFm = SettingsClass.readFromFile(FILENAME,this);
 
 			
 		
