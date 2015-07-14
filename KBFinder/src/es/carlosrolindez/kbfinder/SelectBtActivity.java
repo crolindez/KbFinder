@@ -930,6 +930,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             // System.currentTimeMillis(), which you can compare to in order to determine how
             // old the event is.
 //            long timeSentInMs = intent.getLongExtra("timeSent", 0L);
+            Log.d("RECEIVER",intent.toString());
             String action = intent.getAction();
             Log.d("RECEIVER",action);
             Set<String> set = intent.getExtras().keySet();
@@ -941,9 +942,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
  //               String artistName = intent.getStringExtra("artist");	Log.d("Artist",artistName);
  //               String albumName = intent.getStringExtra("album");		Log.d("Album",albumName);
  //               int trackLengthInSec = intent.getIntExtra("length", 0);	Log.d("length",""+trackLengthInSec);
-                
+
                 String trackName = intent.getStringExtra("track");		
-                Log.d("Name",trackName);
                 if (selectBtState!=null)
                 	selectBtState.updateTrackName(trackName);
             } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_STATE_CHANGED)) ||(action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED)) ) {
