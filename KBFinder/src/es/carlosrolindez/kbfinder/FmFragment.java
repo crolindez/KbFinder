@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -61,7 +62,7 @@ public class FmFragment extends Fragment {
 		setStereo(mStereo);
 
 		ImageView button_scan_down_FM = (ImageView)rootView.findViewById(R.id.scan_down_FM);
-		ImageView button_dial_FM = (ImageView)rootView.findViewById(R.id.dial_FM);
+		ImageView button_mem_FM = (ImageView)rootView.findViewById(R.id.mem_FM);
 		ImageView button_scan_up_FM = (ImageView)rootView.findViewById(R.id.scan_up_FM);
 		
 		favorite.setOnClickListener(new OnClickListener() 
@@ -113,12 +114,13 @@ public class FmFragment extends Fragment {
 			}
 		});
 
-		button_dial_FM.setOnClickListener(new OnClickListener() 
+		button_mem_FM.setOnClickListener(new OnClickListener() 
 		{
 			@Override
 			public void onClick(View v) 
 			{
-				showFmDialog();
+				if (mDevice.fmPack.size()>0) 
+					showMemDialog();
 			}
 		});
 
@@ -200,14 +202,6 @@ public class FmFragment extends Fragment {
     	fmDialog.setTitle(getResources().getString(R.string.fm_dial));
     	fmDialog.setContentView(R.layout.fm_dial);
 
- /*   	Window window = fmDialog.getWindow();
-        WindowManager.LayoutParams wlp = window.getAttributes();
-        wlp.gravity = Gravity.RIGHT;
-//        wlp.width = LayoutParams.MATCH_PARENT;
-        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
-        window.setAttributes(wlp);   	
-    	*/
-    	
     	
         final FmPicker megaherzPicker = (FmPicker) fmDialog.findViewById(R.id.megaherzs);
         final FmPicker kiloherzPicker = (FmPicker) fmDialog.findViewById(R.id.kiloherzs);
@@ -251,6 +245,69 @@ public class FmFragment extends Fragment {
         });
 
         fmDialog.show();
+
+    	
+    }
+
+	public void showMemDialog() {
+
+    	final String memories[] = new String[mDevice.fmPack.size()];
+
+    	for (int memInt=mDevice.fmPack.size(), index=0; memInt>1; memInt--,index++) {
+    		SettingsClass.FmSet fmSet = mDevice.fmPack.get(memInt-1);
+    		memories[index] = fmSet.getFm();
+    		if ( fmSet.getRDS()!=null) 
+    			memories[index] =memories[index] + " " + fmSet.getRDS();
+    		Log.e("mem "+index,memories[index]);
+    	}
+      
+        int index = mDevice.getIndexInArray(frequencyText.getText().toString());
+     	if (index>0) index--;
+		
+     	Log.e("mem ","finished");
+     	
+     	final String pack[] = {mDevice.fmPack.get(index).getFm(),mDevice.fmPack.get(index).getRDS()};
+
+        
+    	final CountDownTimer countDownFm = new CountDownTimer(800,800){
+    		public void onTick(long millisUntilFinished) {
+		    }
+		     	
+		    public void onFinish() {
+		    	spp.sppMessage("TUN "+pack[0]+"\r");
+				setFrequency(pack[0]);
+				if (pack[1]!=null)
+					setRDS(pack[1]);
+				else
+					setRDS("");	
+		    }
+    	};
+    	  	
+    	
+    	final Dialog memDialog = new Dialog(mContext, R.style.CustomDialog);
+    	memDialog.setTitle(getResources().getString(R.string.mem_dial));
+    	memDialog.setContentView(R.layout.mem_dial);
+ 	
+        final FmPicker memPicker = (FmPicker) memDialog.findViewById(R.id.memories);
+        
+        memPicker.setMaxValue(mDevice.fmPack.size());
+        memPicker.setMinValue(1);
+        memPicker.setWrapSelectorWheel(false); 
+        memPicker.setDisplayedValues(memories);
+ 		memPicker.setValue(index);
+        memPicker.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker numberPicker, int i, int i2) {
+            	int index = mDevice.fmPack.size()-i2;
+            	pack[0] = mDevice.fmPack.get(index).getFm();
+            	pack[1] = mDevice.fmPack.get(index).getRDS();
+            	countDownFm.cancel();
+            	countDownFm.start();
+            }
+        });
+
+
+        memDialog.show();
 
     	
     }

@@ -41,7 +41,7 @@ public class SettingsClass {
 
 	public class KBdeviceSettings {
 		private String MAC;
-		private ArrayFmPackage fmPack;
+		public ArrayFmPackage fmPack;
 		
 		public KBdeviceSettings(String MAC) {
 			this.MAC = MAC;
@@ -55,6 +55,15 @@ public class SettingsClass {
 				if (targetFreq.equals(set.frequency)) return set;
 			}
 			return null;
+		}
+		
+		public int getIndexInArray(String targetFreq) {
+			int index = 1;
+			for (FmSet set:fmPack) {
+				if (targetFreq.equals(set.frequency)) return index;
+				index++;
+			}
+			return 0;
 		}
 		
 		public void addFreqFromArray(String targetFreq,String targetRDS) {
@@ -93,6 +102,14 @@ public class SettingsClass {
 		
 		public void setRDS(String rds) {
 			this.rds = rds;
+		}
+		
+		public String getFm() {
+			return frequency;
+		}
+		
+		public void setFm(String Freq) {
+			frequency = Freq;
 		}
 	}
 		

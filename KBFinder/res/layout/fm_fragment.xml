@@ -33,14 +33,14 @@
 		android:textColor="#00ff00"
 		android:textSize="50sp" />
 	<ImageButton
-		android:id="@+id/dial_FM"
+		android:id="@+id/mem_FM"
 		android:layout_width="64dp"
 		android:layout_height="64dp"
 		android:layout_below="@id/RDS"
 		android:layout_centerHorizontal="true"
 		android:layout_marginBottom="10dp"
 		android:layout_marginTop="10dp"
-		android:background="@drawable/play_pause_selector" />
+		android:background="@drawable/mem_selector" />
 	<ImageButton
 		android:id="@+id/scan_down_FM"
 		android:layout_width="64dp"
@@ -48,7 +48,7 @@
 		android:layout_below="@id/RDS"
 		android:layout_marginBottom="10dp"
 		android:layout_marginTop="10dp"
-		android:layout_toLeftOf="@id/dial_FM"
+		android:layout_toLeftOf="@id/mem_FM"
 		android:background="@drawable/previous_selector" />
 	<ImageButton
 		android:id="@+id/scan_up_FM"
@@ -57,7 +57,7 @@
 		android:layout_below="@id/RDS"
 		android:layout_marginBottom="10dp"
 		android:layout_marginTop="10dp"
-		android:layout_toRightOf="@id/dial_FM"
+		android:layout_toRightOf="@id/mem_FM"
 		android:background="@drawable/next_selector" />
 	<ImageView
 		android:id="@+id/mono_FM"

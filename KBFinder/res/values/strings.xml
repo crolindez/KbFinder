@@ -8,4 +8,5 @@
 	<string name="a2dp_disconnected">A2dp Disconnected</string>
 	<string name="device_not_availabe">Device not available</string>	
 	<string name="fm_dial">FM Dial</string>	
+	<string name="mem_dial">Memories</string>	
 </resources>
