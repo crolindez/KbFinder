@@ -1,18 +1,22 @@
 package es.carlosrolindez.kbfinder;
 
+import java.io.File;
+
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class KBfinderActivity extends Activity  /*implements KBdeviceListAdapter.ConnectOnClick */{
+public class KBfinderActivity extends Activity  {
 	private static String TAG = "KBfinder";
+    private static final String FILENAME = "settings.txt";
 
     private BluetoothAdapter mBluetoothAdapter = null;
     
@@ -51,10 +55,8 @@ public class KBfinderActivity extends Activity  /*implements KBdeviceListAdapter
 
     
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    	Log.e(TAG,"result");
         switch (requestCode) {
             case Constants.REQUEST_ENABLE_BT:
-            	Log.e(TAG,"REQUEST_ENABLE_BT");
                 // When the request to enable Bluetooth returns
                 if (resultCode == Activity.RESULT_OK) {
                 		new A2dpService(this, (ListView)findViewById(R.id.list));
@@ -93,7 +95,29 @@ public class KBfinderActivity extends Activity  /*implements KBdeviceListAdapter
 	        	doDiscovery();
 	            return true;
 
-			case R.id.action_settings:
+			case R.id.clear_memory:
+				
+				DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+				    @Override
+				    public void onClick(DialogInterface dialog, int which) {
+				        switch (which){
+				        case DialogInterface.BUTTON_POSITIVE:
+
+				        	File dir = getFilesDir();
+				        	File file = new File(dir,FILENAME);
+				        	file.delete();
+				            break;
+
+				        case DialogInterface.BUTTON_NEGATIVE:
+				            //No button clicked
+				            break;
+				        }
+				    }
+				};
+
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setMessage(R.string.are_you_sure).setPositiveButton("Yes", dialogClickListener)
+				    .setNegativeButton("No", dialogClickListener).show();
                 return true;
 		}
 
@@ -101,7 +125,6 @@ public class KBfinderActivity extends Activity  /*implements KBdeviceListAdapter
 	}
 	
 
-	
 	/**
      * Start device discover with the BluetoothAdapter
      */

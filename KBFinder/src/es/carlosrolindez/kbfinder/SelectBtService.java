@@ -74,7 +74,7 @@ public class SelectBtService {
      * @param state An integer defining the current connection state
      */
     private synchronized void setState(int state) {
-        Log.e(TAG, "setState() " + mState + " -> " + state);
+        Log.d(TAG, "setState() " + mState + " -> " + state);
         mState = state;
         mHandler.obtainMessage(SelectBtHandler.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
@@ -91,7 +91,6 @@ public class SelectBtService {
      * Start the service.
      */
     public synchronized void start() {
-        Log.e(TAG, "start");
         setState(STATE_CONNECTING);
 
         mConnectingThread = new ConnectingThread();
@@ -104,7 +103,6 @@ public class SelectBtService {
      * Stop all threads
      */
     public synchronized void stop() {
-        Log.e(TAG, "stop");
         	
         try {
             mSocket.close();
@@ -123,7 +121,6 @@ public class SelectBtService {
     }
 
     public  void write(String out) {
-    	Log.e(TAG,"write");
     	synchronized (mListOut) {
     		mListOut.add(out);
     	}
@@ -261,7 +258,6 @@ public class SelectBtService {
             while (true) {
             	
             	if (closeThread) {
-	                Log.e(TAG, "write thread ordered to close");
             		return;
             	}
 

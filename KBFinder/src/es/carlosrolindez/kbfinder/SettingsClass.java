@@ -17,6 +17,7 @@ import android.util.Log;
 
 
 
+
 public class SettingsClass {
 
 	private ArrayKBdeviceSettings listKBdeviceSettings;
@@ -58,15 +59,15 @@ public class SettingsClass {
 		}
 		
 		public int getIndexInArray(String targetFreq) {
-			int index = 1;
+			int index = 0;
 			for (FmSet set:fmPack) {
 				if (targetFreq.equals(set.frequency)) return index;
 				index++;
 			}
-			return 0;
+			return -1;
 		}
 		
-		public void addFreqFromArray(String targetFreq,String targetRDS) {
+		public void addFreq2Array(String targetFreq,String targetRDS) {
 			FmSet set = new FmSet(targetFreq, targetRDS);
 			fmPack.addSorted(set);
 		}
@@ -150,16 +151,18 @@ public class SettingsClass {
 				add(newStation);
 				return true;
 			}
+			
 			int position=0;
 			for (FmSet station : this) {
-				if (newStation.frequency.compareTo(station.frequency)<0) {
+				if (Float.parseFloat(newStation.frequency)<Float.parseFloat(station.frequency)) {
 					add(position, newStation);
 					return true;
-				} else if (newStation.frequency.compareTo(station.frequency)==0) {
+				}  else if (Float.parseFloat(newStation.frequency)==Float.parseFloat(station.frequency)) {
 					station.frequency = newStation.frequency;
 					station.rds = newStation.rds;
 					return true;
 				}
+
 				position++;
 			}
 			add(newStation);
@@ -173,22 +176,17 @@ public class SettingsClass {
     	
 
     	try {	
-    		Log.e(TAG,"1");
     		FileOutputStream outStream = mContext.openFileOutput(filename, Context.MODE_PRIVATE);
-    		Log.e(TAG,"2");
     		OutputStreamWriter writer = new OutputStreamWriter(outStream, "UTF-8");
-    		Log.e(TAG,"3");
 //			OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(filename), "UTF-8");
 
 	        writer.write(Integer.toString(listKBdeviceSettings.size())); writer.write("\n");
 	      	for (KBdeviceSettings deviceSettings:listKBdeviceSettings) {
 	      		writer.write(deviceSettings.MAC + "\n");
 	      		writer.write(Integer.toString((deviceSettings.fmPack.size()))); writer.write("\n");
-	      		Log.e(TAG,deviceSettings.MAC+" "+deviceSettings.fmPack.size());
 	      		for (FmSet set:deviceSettings.fmPack) {
 	      			writer.write(set.frequency + "\n");
 	      			writer.write(set.rds + "\n");
-		      		Log.e(TAG,set.frequency+" "+set.rds);
 	      		}	      		
 	      	}
 	      	writer.flush();
@@ -214,26 +212,22 @@ public class SettingsClass {
 
         try {
 //        	FileInputStream inputStream = new FileInputStream(filename);
-        	FileInputStream inputStream = mContext.openFileInput(filename);           
+        	FileInputStream inputStream = mContext.openFileInput(filename);    
             if ( inputStream != null ) {
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
                 BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
                 String receiveString = "";
                 
                 if ( (receiveString = bufferedReader.readLine()) != null ) {
-                	Log.e(TAG,"Device Number "+receiveString);
 	               	for (numberKBdevices = Integer.parseInt(receiveString); numberKBdevices>0; numberKBdevices--) {
 	                    mac = bufferedReader.readLine();
 	            		device = settings.new KBdeviceSettings(mac);
-	    	      		Log.e(TAG,device.MAC);
 	                    if ( (receiveString = bufferedReader.readLine()) != null ) {
-	                    	Log.e(TAG,"FM station Number "+receiveString);
 		    	        	for (numberFmSets = Integer.parseInt(receiveString); numberFmSets>0; numberFmSets--) {
 		    	        		freq = bufferedReader.readLine();
 		    	        		rds = bufferedReader.readLine();
 		    	        		set = settings.new FmSet(freq,rds);
 		    	        		device.fmPack.addSorted(set);
-			    	      		Log.e(TAG,set.frequency+" "+set.rds);
 		    	        	}
 		    	        	settings.listKBdeviceSettings.addSorted(device);
 		            	}

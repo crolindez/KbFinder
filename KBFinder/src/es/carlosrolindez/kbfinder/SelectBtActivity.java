@@ -31,7 +31,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import es.carlosrolindez.kbfinder.FmFragment.SppBridge;
 import es.carlosrolindez.kbfinder.SelectBtService.DisconnectActivity;
-import es.carlosrolindez.kbfinder.SettingsClass.ArrayFmPackage;
+
 
 
 
@@ -110,28 +110,22 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
 	
 	public void changeStateI2dp(boolean state) {
-		Log.e(TAG,"changeStateI2dp");
 		if (i2dpDisconnectionTimerStarted) {
 			i2dpDisconnectionTimerStarted = false;
 			i2dpDisconnectionTimer.cancel();
 			if (state) { // I2dp selected and already active or Not selected and not active
-				Log.e(TAG,"Disconnecting canceled");
 		  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
-					Log.e(TAG,"Read Volume");
 		  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
 		  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
 		  			playBt();
 		  		}
 			} else {
-				Log.e(TAG,"Disconnecting confirmed");
 				i2dpDisconnectionTimer.start();
 			}
 		} else {
 			if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == state) { // I2dp selected and already active or Not selected and not active
-				Log.e(TAG,"No change");
 		  		if ( (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
-					Log.e(TAG,"Read Volume");
 		  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 		  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
 		  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
@@ -139,7 +133,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		  		}
 			} else {
 				if (state) {
-					Log.e(TAG,"Change to BT");
 			        block.lock(1000);
 			 		A2dpService.connectBluetoothA2dp(mContext, deviceMAC);
 			 		
@@ -148,7 +141,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	        		    public void run() {
 	        				if ( (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn() == true)
 	    			  			&& (selectBtState.channel == BT_CHANNEL) && (selectBtState.onOff) ) {
-	    						Log.e(TAG,"Read Volume");
 	    			  			AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 	    			  			selectBtState.volumeBT = am.getStreamVolume(AudioManager.STREAM_MUSIC);
 	    			  			volumeSeekBar.setProgress(selectBtState.volumeBT); 
@@ -158,8 +150,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	        		}, 1000);
 					
 					
-				} else {
-					Log.e(TAG,"Change to Disconnected");	
+				} else {	
 					i2dpDisconnectionTimerStarted = true;
 					i2dpDisconnectionTimer.start();
 				}
@@ -175,13 +166,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 			locked = false;
 		}
 		public void lock(long time) {
-			Log.e(TAG,"blocked");
 			blockingCountDown = new CountDownTimer(time,time) {
 			     public void onTick(long millisUntilFinished) {
 			     }
 			     	
 			     public void onFinish() {
-						Log.e(TAG,"unblocked by timer");
 						unlock();
 			     }
 			  }.start();
@@ -192,7 +181,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		}
 		
 		public void unlock() {
-			Log.e(TAG,"unblocked");
 			if (blockingCountDown!=null) blockingCountDown.cancel();
 			setProgressBarIndeterminateVisibility(false);	
 			service.unblock();
@@ -209,7 +197,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	
 	public static void resetI2dpCounter() {
 		if (i2dpDisconnectionTimerStarted) {
-			Log.e(TAG,"resetI2dpCounter");
 			i2dpDisconnectionTimer.cancel();
 			i2dpDisconnectionTimer.start();
 		}
@@ -384,7 +371,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	@Override	
 	protected void onResume() {
 		super.onResume();
-		Log.e(TAG,"resumed");
 		
 		// in case BT volume was modified when activity out of focus
   		if (((AudioManager) getSystemService(Context.AUDIO_SERVICE)).isBluetoothA2dpOn()) {
@@ -418,7 +404,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	@Override	
 	protected void onPause() {
 		super.onPause();
-		Log.e(TAG,"paused");
 		unregisterReceiver(spotifyBroadcastReceiver);
 }
 	
@@ -451,7 +436,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	public static void askForcedMono() {
 		sendSppMessage("MON ?\r"); 
 		questionPending = QUESTION_MON;
-		Log.e(TAG,"question "+questionPending);
     }
 	
 	public static void writeOnOffState(boolean onOff) {
@@ -528,7 +512,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
 	@Override
 	protected void onDestroy() {
-		Log.e(TAG,"destroyed");
 		allowDisconnect = true;
 		block.unlock();
         service.stop();
@@ -537,7 +520,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	}
 		
 	public static void interpreter(String m) {
-		Log.e(TAG,"Interpreter "+m);
+		Log.d(TAG,"Interpreter "+m);
 		MessageExtractor messageExtractor = new MessageExtractor(m);
 
 		String header = messageExtractor.getStringFromMessage();
@@ -546,7 +529,6 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		else if (header.equals("FMS"))
 			selectBtState.updateFrequency(messageExtractor.getStringFromMessage());
 		else {
-			Log.e(TAG,"question "+questionPending);
 			messageExtractor = new MessageExtractor(m);
 			switch (questionPending) {
 			case QUESTION_ALL:
@@ -584,13 +566,11 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 				
 			case QUESTION_MON:
 				messageExtractor.removeCR();
-				Log.e(TAG,"Interpreting MON");
 				selectBtState.updateForceMono(messageExtractor.message);
 				questionPending = NO_QUESTION;
 				break;
 				
 			default:
-				Log.e(TAG,"deleting question "+questionPending);
 				questionPending = NO_QUESTION;
 			} 
 
@@ -639,19 +619,19 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	            case MESSAGE_WRITE:
 	                byte[] writeBuf = (byte[]) msg.obj;
 	                String writeMessage = new String(writeBuf);
-	                Log.e("message written",writeMessage);
+	                Log.d("message written",writeMessage);
 	                break;
 	            case MESSAGE_READ:
 	                byte[] readBuf = (byte[]) msg.obj;
 	                String readMessage = new String(readBuf, 0, msg.arg1);
-	                Log.e("message received",readMessage);
+	                Log.d("message received",readMessage);
 					if (bootPending) bootFinished();
 	                interpreter(readMessage);
 	                break;
 	            case MESSAGE_READING_FAILURE:
 	            	Log.e(TAG,"Reading error");
 	            	if (!allowDisconnect) {
-		            	Log.e(TAG,"Re-connecting");
+		            	Log.d(TAG,"Re-connecting");
 		                service.stop();
 		        		new CountDownTimer(250,250){
 				   		    public void onTick(long millisUntilFinished) {
@@ -891,10 +871,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
      	
      	public void updateForceMono(String state) {
      		if (state.equals("OFF")) {
-     			Log.e(TAG,"Forced Mono off");
      			((FmFragment)mAdapter.getItem(0)).setStereo(true);
      		} else {
-     			Log.e(TAG,"Forced Mono on");
  				((FmFragment)mAdapter.getItem(0)).setStereo(false);
      		}
      	}
@@ -930,12 +908,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             // System.currentTimeMillis(), which you can compare to in order to determine how
             // old the event is.
 //            long timeSentInMs = intent.getLongExtra("timeSent", 0L);
-            Log.d("RECEIVER",intent.toString());
             String action = intent.getAction();
-            Log.d("RECEIVER",action);
             Set<String> set = intent.getExtras().keySet();
             for (String text:set) {
-            	Log.d("RECEIVER",text);
             }
             if ( (action.equals(BroadcastTypes.HTC_METADATA_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_METADATA_CHANGED)) || (action.equals(BroadcastTypes.SPOTIFY_METADATA_CHANGED))  ){
  //               String trackId = intent.getStringExtra("id"); 			Log.d("ID",trackId);
@@ -947,15 +922,15 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
                 if (selectBtState!=null)
                 	selectBtState.updateTrackName(trackName);
             } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_STATE_CHANGED)) ||(action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED)) ) {
-                boolean playing = intent.getBooleanExtra("playing", false);		Log.d("PLAY STATE ",""+playing);
+                boolean playing = intent.getBooleanExtra("playing", false);	
                 if (selectBtState!=null) {
 	        		if (selectBtState.channel == BT_CHANNEL) {
 	        			((BtFragment)mAdapter.getItem(1)).setBlinking(!playing);
 	        		}
                 }
             } else if  (action.equals(BroadcastTypes.HTC_PLAYBACK_STATE_CHANGED)) {
-                boolean playing = intent.getBooleanExtra("isplaying", false);		Log.d("PLAY STATE ",""+playing);
-                String trackName = intent.getStringExtra("track");					Log.d("Name",trackName);
+                boolean playing = intent.getBooleanExtra("isplaying", false);
+                String trackName = intent.getStringExtra("track");		
                 if (selectBtState!=null) {
                 	selectBtState.updateTrackName(trackName);        
 	        		if (selectBtState.channel == BT_CHANNEL) {

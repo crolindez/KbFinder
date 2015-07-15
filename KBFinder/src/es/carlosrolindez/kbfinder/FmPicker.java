@@ -35,7 +35,7 @@ public class FmPicker extends NumberPicker {
 	private void updateView(View view) {
 		if(view instanceof EditText){
 
-			((EditText) view).setTextSize(35);
+			((EditText) view).setTextSize(25);
 			((EditText) view).setTextColor(Color.parseColor("#333333"));
 
 		}

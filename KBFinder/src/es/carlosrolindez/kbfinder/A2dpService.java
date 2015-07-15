@@ -20,7 +20,6 @@ import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -246,7 +245,6 @@ public class A2dpService {
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Get the BluetoothDevice object from the Intent
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Log.e(TAG,"Found "+device.getName());
                 
 				KBdevice kbdevice = new KBdevice(device.getName(), device);
             	if (KBdevice.deviceInArray(deviceList, device.getAddress())!=null) return;
@@ -256,7 +254,6 @@ public class A2dpService {
 					
             // When discovery is finished, change the Activity title
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-                Log.e(TAG,"discovery finished");
             	((KBfinderActivity)context).setProgressBarIndeterminateVisibility(false);
             
             } else if (Constants.NameFilter.equals(action)) {
@@ -286,7 +283,6 @@ public class A2dpService {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);    
                 KBdevice.connectDeviceInArray(device.getAddress(),A2dpService.deviceList);
                 deviceListAdapter.notifyDataSetChanged();
-                Log.e(TAG,"Connected "+device.getName());
                 Toast.makeText(context, device.getName() + " Connected", Toast.LENGTH_SHORT).show();
             	final AudioManager am = (AudioManager) mContextBt.getSystemService(Context.AUDIO_SERVICE);                
 
@@ -318,14 +314,11 @@ public class A2dpService {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
                 KBdevice.disconnectDevices(device.getAddress(),A2dpService.deviceList);
                 Toast.makeText(context, device.getName() + " Disconnected", Toast.LENGTH_SHORT).show();
-                Log.e(TAG,"disconnected "+device.getName());
 				deviceListAdapter.notifyDataSetChanged();
             } else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                Log.e(TAG,"Bond changed "+device.getName());
                 if (device.getBondState()==BluetoothDevice.BOND_BONDED) {
                 	if ((KBdevice.getDeviceType(device.getAddress()) == KBdevice.IN_WALL) || (KBdevice.getDeviceType(device.getAddress()) == KBdevice.ISELECT)) {
-                        Log.e(TAG,"Bond changed to Bonded"+device.getName());
                     	connectBluetoothA2dp(mContextBt, device.getAddress());  
 	            	} else if (KBdevice.getDeviceType(device.getAddress()) == KBdevice.SELECTBT) {
 	            		//disconnect current A2dp connection (if different to current device)

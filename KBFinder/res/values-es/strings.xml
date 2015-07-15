@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="app_name">KBFinder</string>
-	<string name="action_settings">Configuración</string>
+	<string name="clear_memories">Borrar memorias</string>
 	<string name="bt_not_availabe">Bluetooth no disponible</string>
 	<string name="bt_not_enabled">Bluetooth no habilitado</string>
 	<string name="a2dp_connected">A2dp Conectado</string>
@@ -9,4 +9,5 @@
 	<string name="device_not_availabe">Dispositivo no disponible</string>	
 	<string name="fm_dial">FM Dial</string>	
 	<string name="mem_dial">Memorias</string>	
+	<string name="are_you_sure">¿Está seguro?</string>	
 </resources>

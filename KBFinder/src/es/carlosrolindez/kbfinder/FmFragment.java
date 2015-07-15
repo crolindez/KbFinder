@@ -30,6 +30,8 @@ public class FmFragment extends Fragment {
 	private static boolean mStereo;
 	private static ImageView favorite;
 	
+	private boolean scanning;
+	
 	public static SettingsClass.KBdeviceSettings mDevice;
 	
 	private SppBridge spp;
@@ -45,6 +47,7 @@ public class FmFragment extends Fragment {
 		spp = (SppBridge) context;
 		mStereo = stereo;
 		mDevice = device;
+		scanning = false;
 	}
 	
     @Override
@@ -74,7 +77,7 @@ public class FmFragment extends Fragment {
 					mDevice.removeFreqFromArray(frequencyText.getText().toString());
 					favorite.setBackgroundResource(R.drawable.nofavorite);
 				} else {
-					mDevice.addFreqFromArray(frequencyText.getText().toString(),RDSText.getText().toString());
+					mDevice.addFreq2Array(frequencyText.getText().toString(),RDSText.getText().toString());
 					favorite.setBackgroundResource(R.drawable.favorite);		
 				}
 			}
@@ -110,7 +113,8 @@ public class FmFragment extends Fragment {
 			{
 				spp.sppMessage("SCN DOWN\r");
 				setFrequency("___._");
-				favorite.setVisibility(View.INVISIBLE);		
+				favorite.setVisibility(View.INVISIBLE);	
+				scanning = true;
 			}
 		});
 
@@ -131,7 +135,8 @@ public class FmFragment extends Fragment {
 			{
 				spp.sppMessage("SCN UP\r");
 				setFrequency("___._");
-				favorite.setVisibility(View.INVISIBLE);				
+				favorite.setVisibility(View.INVISIBLE);	
+				scanning = true;
 			}
 		});
            
@@ -143,6 +148,7 @@ public class FmFragment extends Fragment {
     public void setFrequency(String frequency) {
         frequencyText.setText(frequency);    	
 		favorite.setVisibility(View.VISIBLE);
+		scanning = false;
 		
 		SettingsClass.FmSet set = mDevice.getFreqInArray(frequency);
 		if (set != null) {
@@ -155,10 +161,12 @@ public class FmFragment extends Fragment {
     }
     
     public void setRDS(String RDS) {
-    	RDSText.setText(RDS);    	
-		SettingsClass.FmSet set = mDevice.getFreqInArray(frequencyText.getText().toString());
-		if (set != null) {
-			set.setRDS(RDS);			
+    	if (!scanning) {
+    		RDSText.setText(RDS);    	
+			SettingsClass.FmSet set = mDevice.getFreqInArray(frequencyText.getText().toString());
+			if (set != null) {
+				set.setRDS(RDS);
+			}
 		} 
     }  
     
@@ -251,23 +259,24 @@ public class FmFragment extends Fragment {
 
 	public void showMemDialog() {
 
-    	final String memories[] = new String[mDevice.fmPack.size()];
-
-    	for (int memInt=mDevice.fmPack.size(), index=0; memInt>1; memInt--,index++) {
+		int index = 0;
+    	final String memories[] = new String[mDevice.fmPack.size()+1]; // one additional memory for empty line
+   	
+    	for (int memInt=mDevice.fmPack.size(); memInt>0; memInt--,index++) {
     		SettingsClass.FmSet fmSet = mDevice.fmPack.get(memInt-1);
     		memories[index] = fmSet.getFm();
     		if ( fmSet.getRDS()!=null) 
     			memories[index] =memories[index] + " " + fmSet.getRDS();
-    		Log.e("mem "+index,memories[index]);
     	}
-      
-        int index = mDevice.getIndexInArray(frequencyText.getText().toString());
-     	if (index>0) index--;
-		
-     	Log.e("mem ","finished");
-     	
-     	final String pack[] = {mDevice.fmPack.get(index).getFm(),mDevice.fmPack.get(index).getRDS()};
-
+    	memories[mDevice.fmPack.size()]=" ";
+    	
+    	final String pack[] = {" "," "};
+    	index=mDevice.fmPack.size() - mDevice.getIndexInArray(frequencyText.getText().toString()) - 1;
+        if (index<mDevice.fmPack.size()) {        	
+     		pack[0]=mDevice.fmPack.get(index).getFm();
+     		pack[1]=mDevice.fmPack.get(index).getRDS();
+        }
+        index++;
         
     	final CountDownTimer countDownFm = new CountDownTimer(800,800){
     		public void onTick(long millisUntilFinished) {
@@ -290,7 +299,7 @@ public class FmFragment extends Fragment {
  	
         final FmPicker memPicker = (FmPicker) memDialog.findViewById(R.id.memories);
         
-        memPicker.setMaxValue(mDevice.fmPack.size());
+        memPicker.setMaxValue(mDevice.fmPack.size()+1);       	
         memPicker.setMinValue(1);
         memPicker.setWrapSelectorWheel(false); 
         memPicker.setDisplayedValues(memories);
@@ -299,13 +308,23 @@ public class FmFragment extends Fragment {
             @Override
             public void onValueChange(NumberPicker numberPicker, int i, int i2) {
             	int index = mDevice.fmPack.size()-i2;
-            	pack[0] = mDevice.fmPack.get(index).getFm();
-            	pack[1] = mDevice.fmPack.get(index).getRDS();
-            	countDownFm.cancel();
-            	countDownFm.start();
+            	if (index<0)
+                	countDownFm.cancel();
+            	else {
+	            	pack[0] = mDevice.fmPack.get(index).getFm();
+	            	pack[1] = mDevice.fmPack.get(index).getRDS();
+	            	countDownFm.cancel();
+	            	countDownFm.start();
+            	}
             }
         });
-
+        memPicker.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+			
+			}
+		});
 
         memDialog.show();
 
