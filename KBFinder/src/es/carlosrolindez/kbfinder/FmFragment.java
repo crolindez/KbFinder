@@ -1,5 +1,7 @@
 package es.carlosrolindez.kbfinder;
 
+import it.sephiroth.android.wheel.view.Wheel;
+import it.sephiroth.android.wheel.view.Wheel.OnScrollListener;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Typeface;
@@ -36,6 +38,8 @@ public class FmFragment extends Fragment {
 	
 	private SppBridge spp;
 	
+	private Wheel mWheel;
+		
 	public static interface SppBridge {
 		public void sppMessage(String message);
 	}
@@ -61,6 +65,10 @@ public class FmFragment extends Fragment {
         
 		mono = (ImageView)rootView.findViewById(R.id.mono_FM);
 		favorite = (ImageView)rootView.findViewById(R.id.favorite_FM);
+		
+		mWheel = (Wheel) rootView.findViewById( R.id.wheel );
+		
+		
 		
 		setStereo(mStereo);
 
@@ -139,6 +147,65 @@ public class FmFragment extends Fragment {
 				scanning = true;
 			}
 		});
+		
+
+		mWheel.setOnScrollListener( new OnScrollListener() {
+	
+			String frequency;
+			
+			final CountDownTimer countDownFm = new CountDownTimer(200,200){
+	    		public void onTick(long millisUntilFinished) {
+	    			
+			    }
+			     	
+			    public void onFinish() {
+			    	spp.sppMessage("TUN "+frequency+"\r");
+					setFrequency(frequency);
+			    }
+	    	};
+	    	
+			@Override
+			public void onScrollStarted( Wheel view, float value, int roundValue ) {
+		    	RDSText.setText("");  
+				favorite.setVisibility(View.INVISIBLE);	
+				scanning = true;
+				
+				try {
+					float fr = Float.parseFloat(frequencyText.getText().toString());
+					Log.e(TAG," "+fr);
+					fr = (fr - (float)97.8)/(float)10.2;
+					if (fr<-1) fr = -1; // 87.5 is not available.
+					if (mWheel != null)	mWheel.setValue(fr, false);
+					else Log.e(TAG,"wheel not ready");
+				}catch (NumberFormatException e) {
+		            // not a number   	    	
+			    }
+				
+				
+				
+				
+			}
+			
+			@Override
+			public void onScrollFinished( Wheel view, float value, int roundValue ) {
+/*				float fr = (roundValue+978)/(float)10.0;
+				frequency = Float.toString(fr);
+            	countDownFm.cancel();
+            	countDownFm.start();*/
+
+			}
+			
+			@Override
+			public void onScroll( Wheel view, float value, int roundValue ) {
+            	float fr = (roundValue+978)/(float)10.0;
+				frequency = Float.toString(fr);
+		        frequencyText.setText(frequency);   
+            	countDownFm.cancel();
+            	countDownFm.start();
+			}
+		} );
+		
+		
            
         
         
@@ -158,6 +225,17 @@ public class FmFragment extends Fragment {
 			favorite.setBackgroundResource(R.drawable.nofavorite);	
 	    	RDSText.setText("");  
 		}
+		try {
+			float fr = Float.parseFloat(frequency);
+			Log.e(TAG," "+fr);
+			fr = (fr - (float)97.8)/(float)10.2;
+			if (fr<-1) fr = -1; // 87.5 is not available.
+			if (mWheel != null)	mWheel.setValue(fr, false);
+			else Log.e(TAG,"wheel not ready");
+		}catch (NumberFormatException e) {
+            // not a number   	    	
+	    }
+
     }
     
     public void setRDS(String RDS) {
