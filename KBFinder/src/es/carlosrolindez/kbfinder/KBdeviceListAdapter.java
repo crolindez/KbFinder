@@ -1,8 +1,5 @@
 package es.carlosrolindez.kbfinder;
 
-import java.util.ArrayList;
-
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;

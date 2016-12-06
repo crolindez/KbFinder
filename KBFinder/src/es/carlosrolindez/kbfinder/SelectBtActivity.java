@@ -397,7 +397,12 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 		iF.addAction("com.htc.music.playstatechanged");
 		iF.addAction("com.htc.music.playbackcomplete");
 		
+		iF.addAction("es.carlosrolindez.chainedcast.playstatechanged");
+		iF.addAction("es.carlosrolindez.chainedcast.metachanged");
+		
+		
 		registerReceiver(spotifyBroadcastReceiver, iF);
+		
 
 	}
 	
@@ -885,6 +890,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             static final String SPOTIFY_PACKAGE = "com.spotify.music";
             static final String ANDROID_PACKAGE = "com.android.music";
             static final String HTC_PACKAGE = "com.htc.music";
+            static final String CHAINEDCAST_PACKAGE = "es.carlosrolindez.chainedcast";
+            
+            private static final String AVRCP_PLAYSTATE_CHANGED = "es.carlosrolindez.chainedcast.playstatechanged";
+            private static final String AVRCP_META_CHANGED = "es.carlosrolindez.chainedcast.metachanged";
             
             static final String ANDROID_METADATA_CHANGED = ANDROID_PACKAGE + ".metachanged";
             static final String ANDROID_PLAYBACK_STATE_CHANGED = ANDROID_PACKAGE + ".playstatechanged";
@@ -898,6 +907,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             static final String HTC_METADATA_CHANGED = HTC_PACKAGE + ".metachanged";
             static final String HTC_PLAYBACK_STATE_CHANGED = HTC_PACKAGE + ".playstatechanged";
             static final String HTC_PLAYBACK_COMPLETE = HTC_PACKAGE + ".playbackcomplete";
+            
+            static final String CHAINEDCAST_METADATA_CHANGED = CHAINEDCAST_PACKAGE + ".metachanged";
+            static final String CHAINEDCAST_PLAYBACK_STATE_CHANGED = CHAINEDCAST_PACKAGE + ".playstatechanged";
+
 
             }
 
@@ -911,8 +924,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             String action = intent.getAction();
             Set<String> set = intent.getExtras().keySet();
             for (String text:set) {
+            	Log.e(TAG,text);
             }
-            if ( (action.equals(BroadcastTypes.HTC_METADATA_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_METADATA_CHANGED)) || (action.equals(BroadcastTypes.SPOTIFY_METADATA_CHANGED))  ){
+            if ( (action.equals(BroadcastTypes.HTC_METADATA_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_METADATA_CHANGED)) 
+            		|| (action.equals(BroadcastTypes.SPOTIFY_METADATA_CHANGED)) || (action.equals(BroadcastTypes.CHAINEDCAST_METADATA_CHANGED))  ){
  //               String trackId = intent.getStringExtra("id"); 			Log.d("ID",trackId);
  //               String artistName = intent.getStringExtra("artist");	Log.d("Artist",artistName);
  //               String albumName = intent.getStringExtra("album");		Log.d("Album",albumName);
@@ -921,14 +936,14 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
                 String trackName = intent.getStringExtra("track");		
                 if (selectBtState!=null)
                 	selectBtState.updateTrackName(trackName);
-            } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_STATE_CHANGED)) ||(action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED)) ) {
+            } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_STATE_CHANGED)) ||(action.equals(BroadcastTypes.SPOTIFY_PLAYBACK_STATE_CHANGED))) {
                 boolean playing = intent.getBooleanExtra("playing", false);	
                 if (selectBtState!=null) {
 	        		if (selectBtState.channel == BT_CHANNEL) {
 	        			((BtFragment)mAdapter.getItem(1)).setBlinking(!playing);
 	        		}
                 }
-            } else if  (action.equals(BroadcastTypes.HTC_PLAYBACK_STATE_CHANGED)) {
+            } else if  (action.equals(BroadcastTypes.HTC_PLAYBACK_STATE_CHANGED) || action.equals(BroadcastTypes.CHAINEDCAST_PLAYBACK_STATE_CHANGED) ){
                 boolean playing = intent.getBooleanExtra("isplaying", false);
                 String trackName = intent.getStringExtra("track");		
                 if (selectBtState!=null) {
