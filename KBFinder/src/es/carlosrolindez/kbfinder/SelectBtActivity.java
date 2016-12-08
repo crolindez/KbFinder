@@ -892,8 +892,8 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             static final String HTC_PACKAGE = "com.htc.music";
             static final String CHAINEDCAST_PACKAGE = "es.carlosrolindez.chainedcast";
             
-            private static final String AVRCP_PLAYSTATE_CHANGED = "es.carlosrolindez.chainedcast.playstatechanged";
-            private static final String AVRCP_META_CHANGED = "es.carlosrolindez.chainedcast.metachanged";
+ //           private static final String AVRCP_PLAYSTATE_CHANGED = "es.carlosrolindez.chainedcast.playstatechanged";
+ //           private static final String AVRCP_META_CHANGED = "es.carlosrolindez.chainedcast.metachanged";
             
             static final String ANDROID_METADATA_CHANGED = ANDROID_PACKAGE + ".metachanged";
             static final String ANDROID_PLAYBACK_STATE_CHANGED = ANDROID_PACKAGE + ".playstatechanged";
@@ -902,7 +902,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             
             static final String SPOTIFY_METADATA_CHANGED = SPOTIFY_PACKAGE + ".metadatachanged";
             static final String SPOTIFY_PLAYBACK_STATE_CHANGED = SPOTIFY_PACKAGE + ".playbackstatechanged";
-            static final String SPOTIFY_QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";            
+//            static final String SPOTIFY_QUEUE_CHANGED = SPOTIFY_PACKAGE + ".queuechanged";            
             
             static final String HTC_METADATA_CHANGED = HTC_PACKAGE + ".metachanged";
             static final String HTC_PLAYBACK_STATE_CHANGED = HTC_PACKAGE + ".playstatechanged";
@@ -922,10 +922,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
             // old the event is.
 //            long timeSentInMs = intent.getLongExtra("timeSent", 0L);
             String action = intent.getAction();
-            Set<String> set = intent.getExtras().keySet();
-            for (String text:set) {
-            	Log.e(TAG,text);
-            }
+  //          Set<String> set = intent.getExtras().keySet();
+  //          for (String text:set) {
+  //          	Log.e(TAG,text);
+  //          }
             if ( (action.equals(BroadcastTypes.HTC_METADATA_CHANGED)) || (action.equals(BroadcastTypes.ANDROID_METADATA_CHANGED)) 
             		|| (action.equals(BroadcastTypes.SPOTIFY_METADATA_CHANGED)) || (action.equals(BroadcastTypes.CHAINEDCAST_METADATA_CHANGED))  ){
  //               String trackId = intent.getStringExtra("id"); 			Log.d("ID",trackId);
@@ -953,10 +953,10 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 	        		}
                 }
             } else if ( /*(action.equals(BroadcastTypes.SPOTIFY_QUEUE_CHANGED)) || */(action.equals(BroadcastTypes.ANDROID_QUEUE_CHANGED)) ) {
-                Log.d("CHANGED","QUEUE");
+ //               Log.d("CHANGED","QUEUE");
                 // Sent only as a notification, your app may want to respond accordingly.
             } else if ( (action.equals(BroadcastTypes.ANDROID_PLAYBACK_COMPLETE)) || (action.equals(BroadcastTypes.HTC_PLAYBACK_COMPLETE)) ){
-                Log.d("PLAYBACK","COMPLETE");
+//                Log.d("PLAYBACK","COMPLETE");
                 // Sent only as a notification, your app may want to respond accordingly.
             } 
         }

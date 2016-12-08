@@ -40,6 +40,15 @@ public class FmFragment extends Fragment {
 	}
 	
 	
+	public FmFragment(Context context) {
+		mContext = context;
+		fragmentName =  "FM";
+		spp = (SppBridge) context;
+		mStereo = true;
+		mDevice = null;
+		scanning = false;
+	}
+	
 	public FmFragment(Context context,boolean stereo,SettingsClass.KBdeviceSettings device) {
 		mContext = context;
 		fragmentName =  "FM";
