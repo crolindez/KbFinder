@@ -88,6 +88,9 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
     private static final int NUM_PAGES = 2;
     private BlockingViewPager mPager;
     private ScreenSlidePagerAdapter mAdapter;
+    
+    private static FmFragment mFmFragment;
+    private static BtFragment mBtFragment;
 
 	
 	// animation
@@ -667,10 +670,16 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
         @Override
         public Fragment getItem(int position) {
-        	if (position == BT_CHANNEL)
-        		return new BtFragment(mContext);
-        	else
-        		return new FmFragment(mContext,false,settingsFm.getDeviceInArray(deviceMAC));       		
+        	if (position == BT_CHANNEL) {
+        		if (mBtFragment!=null) return mBtFragment;
+        		else return new BtFragment(mContext);	
+        	}
+
+        	else {
+        		if (mFmFragment!=null) return mFmFragment;
+        		else return new FmFragment(mContext,false,settingsFm.getDeviceInArray(deviceMAC));      	
+        	}
+ 		
         }
 
         @Override
