@@ -677,7 +677,7 @@ public class SelectBtActivity extends FragmentActivity implements DisconnectActi
 
         	else {
         		if (mFmFragment!=null) return mFmFragment;
-        		else return new FmFragment(mContext,false,settingsFm.getDeviceInArray(deviceMAC));      	
+        		else return FmFragment.newInstance(false,settingsFm.getDeviceInArray(deviceMAC));      	
         	}
  		
         }

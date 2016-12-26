@@ -19,9 +19,12 @@ import android.widget.TextView;
 
 public class FmFragment extends Fragment {
     private static final String TAG = "FmFragment";
-	
+    
+    private static final String EXTRA_STEREO = "FmFragment.Stereo";
+    private static final String EXTRA_DEVICE = "FmFragment.Device";
+    
 	private String fragmentName;
-	private final Context mContext;
+	private Context mContext;
 	
 	private static TextView frequencyText;
 	private static TextView RDSText;
@@ -31,7 +34,7 @@ public class FmFragment extends Fragment {
 	
 	private boolean scanning;
 	
-	public static SettingsClass.KBdeviceSettings mDevice;
+	public static KBdeviceSettings mDevice;
 	
 	private SppBridge spp;
 	
@@ -39,17 +42,48 @@ public class FmFragment extends Fragment {
 		public void sppMessage(String message);
 	}
 	
-	
-	public FmFragment(Context context) {
+
+/*	public FmFragment(Context context) {
 		mContext = context;
 		fragmentName =  "FM";
 		spp = (SppBridge) context;
 		mStereo = true;
 		mDevice = null;
 		scanning = false;
+	}*/
+	
+	public FmFragment() {
+		super();
 	}
 	
-	public FmFragment(Context context,boolean stereo,SettingsClass.KBdeviceSettings device) {
+	
+	public static final FmFragment newInstance(boolean stereo,KBdeviceSettings device)
+	{
+		FmFragment fmFragment = new FmFragment();
+	    Bundle bdl = new Bundle(2);
+	    bdl.putBoolean(EXTRA_STEREO, stereo);
+	    bdl.putParcelable(EXTRA_DEVICE, device);
+	    fmFragment.setArguments(bdl);
+	    return fmFragment;
+	}
+	
+	@Override
+	public void onCreate(Bundle savedInstanceState)
+	{
+
+		mStereo = getArguments().getBoolean(EXTRA_STEREO);
+		mDevice = getArguments().getParcelable(EXTRA_DEVICE);
+		mContext = getActivity();
+		fragmentName =  "FM";
+		spp = (SppBridge) mContext;
+
+		scanning = false;
+		
+		super.onCreate(savedInstanceState);
+
+	}
+	
+/*	public FmFragment(Context context,boolean stereo,SettingsClass.KBdeviceSettings device) {
 		mContext = context;
 		fragmentName =  "FM";
 		spp = (SppBridge) context;
@@ -57,7 +91,7 @@ public class FmFragment extends Fragment {
 		mDevice = device;
 		scanning = false;
 	}
-	
+	*/
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fm_fragment, container, false);
@@ -158,7 +192,7 @@ public class FmFragment extends Fragment {
 		favorite.setVisibility(View.VISIBLE);
 		scanning = false;
 		
-		SettingsClass.FmSet set = mDevice.getFreqInArray(frequency);
+		FmSet set = mDevice.getFreqInArray(frequency);
 		if (set != null) {
 			favorite.setBackgroundResource(R.drawable.favorite);
 	    	RDSText.setText(set.getRDS());  			
@@ -171,7 +205,7 @@ public class FmFragment extends Fragment {
     public void setRDS(String RDS) {
     	if (!scanning) {
     		RDSText.setText(RDS);    	
-			SettingsClass.FmSet set = mDevice.getFreqInArray(frequencyText.getText().toString());
+			FmSet set = mDevice.getFreqInArray(frequencyText.getText().toString());
 			if (set != null) {
 				set.setRDS(RDS);
 			}
@@ -271,7 +305,7 @@ public class FmFragment extends Fragment {
     	final String memories[] = new String[mDevice.fmPack.size()+1]; // one additional memory for empty line
    	
     	for (int memInt=mDevice.fmPack.size(); memInt>0; memInt--,index++) {
-    		SettingsClass.FmSet fmSet = mDevice.fmPack.get(memInt-1);
+    		FmSet fmSet = mDevice.fmPack.get(memInt-1);
     		memories[index] = fmSet.getFm();
     		if ( fmSet.getRDS()!=null) 
     			memories[index] =memories[index] + " " + fmSet.getRDS();
